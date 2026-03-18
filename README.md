@@ -12,6 +12,14 @@ El sitio toma los topics del foro de Aldea Pucela, los normaliza, genera página
 - `Discourse API` como fuente de datos
 - `GitHub Actions` + `GitHub Pages` para build y despliegue
 
+## Licencia
+
+El código de esta web se distribuye bajo la licencia `GNU AGPL v3.0`.
+
+Consulta el texto completo en:
+
+- `LICENSE`
+
 ## Fuente de datos
 
 La fuente principal es la categoría de Discourse:
