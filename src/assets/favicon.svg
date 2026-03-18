@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title>Favicon La Otra Pucela</title>
+  <desc>Monograma con una O mayuscula sobre fondo morado.</desc>
+  <rect width="256" height="256" rx="56" fill="#5e2a70" />
+  <text
+    x="50%"
+    y="50%"
+    fill="#f6efe8"
+    font-family="Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif"
+    font-size="164"
+    font-weight="700"
+    text-anchor="middle"
+    dominant-baseline="central"
+    dy="-4"
+  >
+    O
+  </text>
+</svg>

@@ -1,0 +1,220 @@
+---
+layout: base.njk
+pagination:
+  data: articulos.items
+  size: 1
+  alias: articulo
+permalink: "/p/{{ articulo.id }}/{{ articulo.slug }}/index.html"
+eleventyComputed:
+  title: "{{ articulo.title }} - La Otra Pucela"
+  description: "{{ articulo.description or 'Articulo publicado en Aldea Pucela.' }}"
+  ogType: "article"
+  ogTitle: "{{ articulo.title }} - La Otra Pucela"
+  ogDescription: "{{ articulo.description or 'Articulo publicado en Aldea Pucela.' }}"
+  ogImage: "{{ articulo.image or site.defaultSocialImage }}"
+  canonicalUrl: "{{ articulo.publicPath }}"
+---
+{% set relatedItems = articulos.items | relatedArticles(articulo, 5) %}
+
+<section class="mx-auto max-w-6xl px-4 pb-40 pt-8 sm:px-6 md:pb-28 lg:px-8 lg:pt-12">
+  <div class="mx-auto max-w-4xl">
+    <header class="border-b border-gray-200 pb-8">
+      {% if articulo.tags.length %}
+      <div class="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
+        {% for tag in articulo.tags %}
+        <a
+          href="/tema/{{ tag.slug }}/"
+          class="transition-colors duration-200 hover:text-gray-900"
+        >
+          {{ tag.name | themeName }}
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <h1 class="font-serif text-[2rem] font-semibold leading-[1.02] tracking-tight text-gray-900 md:text-[3.2rem]">
+        {{ articulo.title }}
+      </h1>
+
+      {% if articulo.description or articulo.excerpt %}
+      <p class="mt-5 max-w-3xl text-[1.1rem] leading-[1.35] text-gray-600 md:text-[1.45rem] md:leading-[1.4]">
+        {{ articulo.description or articulo.excerpt }}
+      </p>
+      {% endif %}
+
+      <div class="mt-7">
+        <div class="flex items-center gap-3 text-sm text-gray-600">
+          {% if articulo.author.avatarUrl %}
+          <img
+            src="{{ articulo.author.avatarUrl }}"
+            alt="{{ articulo.author.name }}"
+            class="h-10 w-10 rounded-full object-cover"
+            loading="lazy"
+          >
+          {% else %}
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700">
+            {{ articulo.author.name[0] }}
+          </div>
+          {% endif %}
+          <div class="min-w-0">
+            <div class="text-base font-medium text-gray-900">{{ articulo.author.name }}</div>
+            <time datetime="{{ articulo.createdAt }}" class="mt-1 block text-sm text-gray-500">{{ articulo.createdAt | date("d MMMM yyyy") }}</time>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center gap-6 pl-[0.7rem] text-sm text-gray-700 sm:pl-[0.85rem]">
+          <a
+            href="#comentarios"
+            class="inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
+          >
+            <i class="fa-regular fa-comment w-4 text-center text-sm" aria-hidden="true"></i>
+            <span class="js-comment-count{% if articulo.replies == 0 %} hidden{% endif %}">{{ articulo.replies }}</span>
+          </a>
+          <button
+            type="button"
+            class="js-share-btn inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
+            data-url="{{ articulo.publicPath }}"
+            data-title="{{ articulo.title }}"
+            aria-label="Compartir artículo"
+          >
+            <i class="fa-solid fa-share-nodes js-share-btn-icon w-4 text-center text-sm" aria-hidden="true"></i>
+            <span class="js-share-btn-label">Compartir</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  </div>
+
+  <article class="prose prose-lg prose-gray mx-auto mb-12 mt-10 w-full max-w-prose text-lg leading-relaxed text-gray-800 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 prose-p:my-5 prose-li:my-1 prose-img:my-6 prose-img:rounded-2xl prose-img:shadow-sm prose-hr:my-10 prose-a:text-blue-700 prose-a:no-underline hover:prose-a:text-blue-900 [&_.emoji]:my-0 [&_.emoji]:inline-block [&_.emoji]:h-[1.1em] [&_.emoji]:w-[1.1em] [&_.emoji]:align-[-0.15em] [&_.emoji]:rounded-none [&_.emoji]:shadow-none">
+    {{ articulo.contentHtml | safe }}
+  </article>
+
+  <div class="mx-auto mb-10 hidden max-w-prose justify-end lg:flex">
+    <button
+      type="button"
+      class="js-share-btn inline-flex min-h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+      data-url="{{ articulo.publicPath }}"
+      data-title="{{ articulo.title }}"
+      aria-label="Compartir artículo"
+    >
+      <i class="fa-solid fa-share-nodes js-share-btn-icon w-4 text-center text-sm" aria-hidden="true"></i>
+      <span class="js-share-btn-label">Compartir</span>
+    </button>
+  </div>
+
+  {% if relatedItems.length %}
+  <section class="mx-auto mt-16 max-w-6xl border-t border-gray-200 pt-8">
+    <div class="mb-6 flex items-center justify-between gap-4">
+      <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Relacionadas</h2>
+      <div class="hidden items-center gap-3 lg:flex">
+        <button
+          type="button"
+          class="js-related-prev inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+          aria-label="Ver relacionadas anteriores"
+        >
+          <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="js-related-next inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+          aria-label="Ver más relacionadas"
+        >
+          <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="js-related-viewport -mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:-mx-6 sm:px-6 lg:mx-0 lg:max-w-[64rem] lg:px-0">
+      <div class="js-related-track flex gap-5 lg:gap-4">
+        {% for related in relatedItems %}
+        <article class="w-[17.5rem] min-w-[17.5rem] border-r border-gray-200 pr-5 last:border-r-0 last:pr-0 sm:w-[19rem] sm:min-w-[19rem] lg:w-[14rem] lg:min-w-[14rem] lg:pr-4">
+          <a href="{{ related.publicPath }}" class="block">
+            {% if related.image %}
+            <div class="mb-4 overflow-hidden rounded-[1.75rem] bg-gray-100">
+              <img
+                src="{{ related.image }}"
+                alt="{{ related.title }}"
+                class="aspect-[16/10] w-full object-cover"
+                loading="lazy"
+              >
+            </div>
+            {% endif %}
+
+            <h3 class="font-serif text-[1.65rem] font-semibold leading-[1.08] tracking-tight text-gray-900 lg:text-[1.28rem]">
+              {{ related.title }}
+            </h3>
+
+            {% if related.author and related.author.name %}
+            <p class="mt-3 text-base text-gray-700 lg:text-[0.95rem]">
+              {{ related.author.name }}
+            </p>
+            {% endif %}
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white p-3 md:hidden">
+    <div class="mx-auto flex max-w-prose items-center gap-3">
+      <a
+        href="#comentarios"
+        class="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors duration-200 hover:bg-gray-100"
+      >
+        <i class="fa-regular fa-comment text-base" aria-hidden="true"></i>
+        <span>Comentar</span>
+        <span class="js-comment-count{% if articulo.replies == 0 %} hidden{% endif %}">{{ articulo.replies }}</span>
+      </a>
+      <button
+        type="button"
+        class="js-share-btn inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
+        data-url="{{ articulo.publicPath }}"
+        data-title="{{ articulo.title }}"
+        aria-label="Compartir artículo"
+      >
+        <i class="fa-solid fa-share-nodes js-share-btn-icon text-base" aria-hidden="true"></i>
+        <span class="js-share-btn-label">Compartir</span>
+      </button>
+    </div>
+  </div>
+
+  <section
+    id="comentarios"
+    class="js-comments-root mx-auto mt-16 max-w-prose rounded-[2rem] border border-gray-200 bg-white px-6 py-8 shadow-sm"
+    data-discourse-url="https://foro.aldeapucela.org/"
+    data-topic-id="{{ articulo.id }}"
+    data-topic-json-url="{{ articulo.source.topicJsonUrl }}"
+    data-initial-replies="{{ articulo.replies }}"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Comentarios</h2>
+      <a
+        href="{{ articulo.discourseTopicUrl }}/2"
+        class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Añadir comentario
+      </a>
+    </div>
+
+    <div id="discourse-comments" class="js-comments-embed{% if articulo.replies == 0 %} hidden{% endif %} mt-6 bg-white"></div>
+
+    <div class="js-comments-empty-state{% if articulo.replies > 0 %} hidden{% endif %} mt-6 rounded-[1.5rem] border border-gray-200 bg-white px-6 py-7 text-center">
+      <p class="text-xl font-semibold text-gray-900">¿Qué piensas de este artículo?</p>
+      <p class="mt-2 leading-relaxed text-gray-600">
+        Sé la primera persona en comentar y comparte tu punto de vista en el foro.
+      </p>
+      <a
+        href="{{ articulo.discourseTopicUrl }}/2"
+        class="mx-auto mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Añadir un comentario
+      </a>
+    </div>
+  </section>
+</section>
