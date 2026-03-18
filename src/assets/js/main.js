@@ -103,6 +103,445 @@ function setupHeaderMenu() {
   });
 }
 
+function normalizeSearchValue(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenizeSearchValue(value = "") {
+  const normalizedValue = normalizeSearchValue(value);
+
+  if (!normalizedValue) {
+    return [];
+  }
+
+  return normalizedValue.split(" ").filter(Boolean);
+}
+
+function stripHtmlTags(value = "") {
+  return String(value).replace(/<[^>]+>/g, " ");
+}
+
+function buildSearchDocument(article) {
+  const tagsLabel = (article.tags ?? [])
+    .map((tag) => tag?.name || tag?.slug || "")
+    .filter(Boolean)
+    .join(" ");
+
+  const contentText = stripHtmlTags(article.contentHtml ?? "");
+  const authorName = article.author?.name ?? "";
+
+  return {
+    title: normalizeSearchValue(article.title ?? ""),
+    description: normalizeSearchValue(article.description ?? ""),
+    excerpt: normalizeSearchValue(article.excerpt ?? ""),
+    tags: normalizeSearchValue(tagsLabel),
+    author: normalizeSearchValue(authorName),
+    content: normalizeSearchValue(contentText)
+  };
+}
+
+function splitIntoSearchSegments(value = "") {
+  const source = String(value).replace(/\s+/g, " ").trim();
+
+  if (!source) {
+    return [];
+  }
+
+  return source
+    .split(/(?<=[.!?])\s+/)
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+}
+
+function scoreSearchMatch(searchDocument, tokens) {
+  let score = 0;
+
+  for (const token of tokens) {
+    let tokenScore = 0;
+
+    if (searchDocument.title.includes(token)) {
+      tokenScore = Math.max(tokenScore, 12);
+    }
+
+    if (searchDocument.tags.includes(token)) {
+      tokenScore = Math.max(tokenScore, 8);
+    }
+
+    if (searchDocument.author.includes(token)) {
+      tokenScore = Math.max(tokenScore, 6);
+    }
+
+    if (searchDocument.description.includes(token) || searchDocument.excerpt.includes(token)) {
+      tokenScore = Math.max(tokenScore, 4);
+    }
+
+    if (searchDocument.content.includes(token)) {
+      tokenScore = Math.max(tokenScore, 2);
+    }
+
+    if (tokenScore === 0) {
+      return 0;
+    }
+
+    score += tokenScore;
+  }
+
+  return score;
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getNormalizedIndexMap(value = "") {
+  const source = String(value);
+  let normalizedValue = "";
+  const indexMap = [];
+
+  for (let index = 0; index < source.length; index += 1) {
+    const normalizedChar = source[index]
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    for (const char of normalizedChar) {
+      if (/[\w\s-]/.test(char)) {
+        normalizedValue += char;
+        indexMap.push(index);
+      } else if (char.trim() === "") {
+        normalizedValue += " ";
+        indexMap.push(index);
+      }
+    }
+  }
+
+  return {
+    normalizedValue: normalizedValue.replace(/\s+/g, " "),
+    indexMap
+  };
+}
+
+function highlightSearchTerms(value = "", tokens = []) {
+  const source = String(value);
+
+  if (!source) {
+    return "";
+  }
+
+  const { normalizedValue, indexMap } = getNormalizedIndexMap(source);
+  const ranges = [];
+
+  for (const token of tokens) {
+    if (!token) {
+      continue;
+    }
+
+    let searchStartIndex = 0;
+
+    while (searchStartIndex < normalizedValue.length) {
+      const matchIndex = normalizedValue.indexOf(token, searchStartIndex);
+
+      if (matchIndex === -1) {
+        break;
+      }
+
+      const start = indexMap[matchIndex];
+      const end = indexMap[Math.min(matchIndex + token.length - 1, indexMap.length - 1)] + 1;
+
+      if (typeof start === "number" && typeof end === "number" && end > start) {
+        ranges.push({ start, end });
+      }
+
+      searchStartIndex = matchIndex + token.length;
+    }
+  }
+
+  if (!ranges.length) {
+    return escapeHtml(source);
+  }
+
+  ranges.sort((a, b) => a.start - b.start);
+
+  const mergedRanges = [];
+
+  for (const range of ranges) {
+    const previousRange = mergedRanges[mergedRanges.length - 1];
+
+    if (!previousRange || range.start > previousRange.end) {
+      mergedRanges.push({ ...range });
+      continue;
+    }
+
+    previousRange.end = Math.max(previousRange.end, range.end);
+  }
+
+  let highlighted = "";
+  let cursor = 0;
+
+  for (const range of mergedRanges) {
+    highlighted += escapeHtml(source.slice(cursor, range.start));
+    highlighted += `<mark class="rounded-sm bg-[#E8D7A7] px-1 py-[0.05rem] text-gray-900">${escapeHtml(source.slice(range.start, range.end))}</mark>`;
+    cursor = range.end;
+  }
+
+  highlighted += escapeHtml(source.slice(cursor));
+
+  return highlighted;
+}
+
+function formatSearchDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  try {
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function buildHighlightedSnippet(article, tokens) {
+  const candidateSegments = [
+    ...splitIntoSearchSegments(stripHtmlTags(article.contentHtml ?? "")),
+    ...splitIntoSearchSegments(article.description ?? ""),
+    ...splitIntoSearchSegments(article.excerpt ?? "")
+  ];
+
+  const fallbackSnippet = article.description || article.excerpt || "";
+
+  if (!candidateSegments.length) {
+    return escapeHtml(fallbackSnippet);
+  }
+
+  let bestSegment = candidateSegments[0];
+  let bestScore = -1;
+
+  for (const segment of candidateSegments) {
+    const normalizedSegment = normalizeSearchValue(segment);
+    let score = 0;
+
+    for (const token of tokens) {
+      if (normalizedSegment.includes(token)) {
+        score += token.length;
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestSegment = segment;
+    }
+  }
+
+  if (bestScore <= 0) {
+    return escapeHtml(fallbackSnippet || bestSegment);
+  }
+
+  let snippet = bestSegment.trim();
+  let hasLeadingEllipsis = false;
+  let hasTrailingEllipsis = false;
+  const originalSnippet = snippet;
+
+  if (snippet.length > 220) {
+    const normalizedSnippet = normalizeSearchValue(snippet);
+    const firstMatchIndex = tokens.reduce((matchIndex, token) => {
+      const tokenIndex = normalizedSnippet.indexOf(token);
+
+      if (tokenIndex === -1) {
+        return matchIndex;
+      }
+
+      if (matchIndex === -1 || tokenIndex < matchIndex) {
+        return tokenIndex;
+      }
+
+      return matchIndex;
+    }, -1);
+
+    if (firstMatchIndex > 90) {
+      snippet = snippet.slice(firstMatchIndex - 70);
+      hasLeadingEllipsis = true;
+    }
+
+    if (snippet.length > 220) {
+      snippet = snippet.slice(0, 220).trimEnd();
+      hasTrailingEllipsis = true;
+    }
+  }
+
+  if (snippet !== bestSegment.trim()) {
+    hasLeadingEllipsis = true;
+    hasTrailingEllipsis = true;
+  }
+
+  if (originalSnippet !== snippet && !hasLeadingEllipsis) {
+    hasLeadingEllipsis = true;
+  }
+
+  if (originalSnippet !== snippet && !hasTrailingEllipsis) {
+    hasTrailingEllipsis = true;
+  }
+
+  hasLeadingEllipsis = true;
+  hasTrailingEllipsis = true;
+
+  if (hasLeadingEllipsis && !snippet.startsWith("…")) {
+    snippet = `…${snippet}`;
+  }
+
+  if (hasTrailingEllipsis && !snippet.endsWith("…")) {
+    snippet = `${snippet}…`;
+  }
+
+  return highlightSearchTerms(snippet, tokens);
+}
+
+function createSearchResultMarkup(article, tokens) {
+  const title = escapeHtml(article.title ?? "");
+  const snippet = buildHighlightedSnippet(article, tokens);
+  const publicPath = article.publicPath ?? "#";
+
+  const imageMarkup = article.image
+    ? `
+      <a href="${publicPath}" class="block overflow-hidden rounded-[1rem] bg-gray-100 shadow-sm">
+        <img
+          src="${escapeHtml(article.image)}"
+          alt="${title}"
+          class="h-24 w-full object-cover sm:h-20"
+          loading="lazy"
+        >
+      </a>
+    `
+    : "";
+  const layoutClass = imageMarkup
+    ? "grid grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-5"
+    : "block";
+
+  const descriptionMarkup = snippet
+    ? `<p class="mt-4 text-base leading-[1.6] text-gray-600">${snippet}</p>`
+    : "";
+
+  return `
+    <article class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+      <div class="${layoutClass}">
+        ${imageMarkup ? `<div>${imageMarkup}</div>` : ""}
+        <div class="min-w-0">
+          <h2 class="font-serif text-[1.2rem] font-semibold leading-[1.16] tracking-tight text-gray-900 sm:text-[1.32rem]">
+            <a href="${publicPath}" class="transition-colors duration-200 hover:text-gray-700">${title}</a>
+          </h2>
+          ${descriptionMarkup}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+async function setupSearchPage() {
+  const searchRoot = document.querySelector(".js-search-page");
+
+  if (!searchRoot) {
+    return;
+  }
+
+  const searchEndpoint = searchRoot.dataset.searchEndpoint;
+  const inputElement = document.querySelector(".js-search-input");
+  const loadingElement = searchRoot.querySelector(".js-search-loading");
+  const summaryElement = searchRoot.querySelector(".js-search-summary");
+  const countElement = searchRoot.querySelector(".js-search-count");
+  const queryElement = searchRoot.querySelector(".js-search-query");
+  const idleElement = searchRoot.querySelector(".js-search-idle");
+  const emptyElement = searchRoot.querySelector(".js-search-empty");
+  const errorElement = searchRoot.querySelector(".js-search-error");
+  const resultsElement = searchRoot.querySelector(".js-search-results");
+  const currentQuery = new URLSearchParams(window.location.search).get("q") ?? "";
+
+  if (inputElement) {
+    inputElement.value = currentQuery;
+  }
+
+  function setState(stateName) {
+    idleElement?.classList.toggle("hidden", stateName !== "idle");
+    loadingElement?.classList.toggle("hidden", stateName !== "loading");
+    emptyElement?.classList.toggle("hidden", stateName !== "empty");
+    errorElement?.classList.toggle("hidden", stateName !== "error");
+    summaryElement?.classList.toggle("hidden", stateName !== "results");
+    resultsElement?.classList.toggle("hidden", stateName !== "results");
+  }
+
+  const tokens = tokenizeSearchValue(currentQuery);
+
+  if (!tokens.length) {
+    setState("idle");
+    return;
+  }
+
+  setState("loading");
+
+  try {
+    const response = await fetch(searchEndpoint, {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Search request failed");
+    }
+
+    const payload = await response.json();
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const results = items
+      .map((article) => ({
+        article,
+        score: scoreSearchMatch(buildSearchDocument(article), tokens)
+      }))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+
+        return new Date(b.article.createdAt).getTime() - new Date(a.article.createdAt).getTime();
+      })
+      .map((entry) => entry.article);
+
+    if (!results.length) {
+      setState("empty");
+      return;
+    }
+
+    resultsElement.innerHTML = results.map((article) => createSearchResultMarkup(article, tokens)).join("");
+
+    if (countElement) {
+      countElement.textContent = String(results.length);
+    }
+
+    if (queryElement) {
+      queryElement.textContent = `“${currentQuery.trim()}”`;
+    }
+
+    setState("results");
+  } catch {
+    setState("error");
+  }
+}
+
 function setShareButtonFeedback(buttonElement, labelText, iconClass) {
   const iconElement = buttonElement.querySelector(".js-share-btn-icon");
   const labelElement = buttonElement.querySelector(".js-share-btn-label");
@@ -245,6 +684,42 @@ function loadDiscourseEmbed(discourseUrl, topicId) {
   document.body.appendChild(embedScript);
 }
 
+function refreshDiscourseEmbed() {
+  const embedFrame =
+    document.getElementById("discourse-embed-frame") ??
+    document.querySelector('iframe[id^="discourse-embed"]');
+
+  if (!embedFrame || !embedFrame.src) {
+    return;
+  }
+
+  embedFrame.src = embedFrame.src;
+}
+
+async function fetchCommentCount(topicJsonUrl, fallbackCount) {
+  if (!topicJsonUrl) {
+    return fallbackCount;
+  }
+
+  try {
+    const response = await fetch(topicJsonUrl, {
+      headers: {
+        Accept: "application/json"
+      },
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      return fallbackCount;
+    }
+
+    const topicPayload = await response.json();
+    return normalizeCommentCount(topicPayload);
+  } catch {
+    return fallbackCount;
+  }
+}
+
 async function setupCommentsSection() {
   const commentsRoot = document.querySelector(".js-comments-root");
 
@@ -261,40 +736,62 @@ async function setupCommentsSection() {
   const initialReplies = Number(commentsRoot.dataset.initialReplies ?? 0);
 
   let commentCount = initialReplies;
+  let hasLoadedEmbed = false;
 
-  try {
-    const response = await fetch(topicJsonUrl, {
-      headers: {
-        Accept: "application/json"
+  function renderCommentsSection(nextCommentCount, previousCommentCount = commentCount) {
+    updateCommentCount(nextCommentCount);
+
+    if (nextCommentCount > 0) {
+      addCommentLink?.classList.remove("hidden");
+      emptyState?.classList.add("hidden");
+      embedContainer?.classList.remove("hidden");
+
+      if (!hasLoadedEmbed) {
+        loadDiscourseEmbed(discourseUrl, topicId);
+        hasLoadedEmbed = true;
+      } else if (nextCommentCount !== previousCommentCount) {
+        refreshDiscourseEmbed();
       }
-    });
 
-    if (response.ok) {
-      const topicPayload = await response.json();
-      commentCount = normalizeCommentCount(topicPayload);
+      return;
     }
-  } catch {
-    commentCount = initialReplies;
+
+    addCommentLink?.classList.add("hidden");
+    embedContainer?.classList.add("hidden");
+    emptyState?.classList.remove("hidden");
   }
 
-  updateCommentCount(commentCount);
+  async function syncCommentsSection() {
+    const nextCommentCount = await fetchCommentCount(topicJsonUrl, commentCount);
+    const previousCommentCount = commentCount;
 
-  if (commentCount > 0) {
-    addCommentLink?.classList.remove("hidden");
-    emptyState?.classList.add("hidden");
-    embedContainer?.classList.remove("hidden");
-    loadDiscourseEmbed(discourseUrl, topicId);
-    return;
+    commentCount = nextCommentCount;
+    renderCommentsSection(nextCommentCount, previousCommentCount);
   }
 
-  addCommentLink?.classList.add("hidden");
-  embedContainer?.classList.add("hidden");
-  emptyState?.classList.remove("hidden");
+  await syncCommentsSection();
+
+  const refreshIntervalMs = 30000;
+
+  window.setInterval(() => {
+    if (document.hidden) {
+      return;
+    }
+
+    syncCommentsSection();
+  }, refreshIntervalMs);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      syncCommentsSection();
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   setupHeaderAutoHide();
   setupHeaderMenu();
+  setupSearchPage();
   setupShareButtons();
   setupRelatedCarousel();
   setupCommentsSection();

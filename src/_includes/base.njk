@@ -97,6 +97,28 @@
         >
           <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-5">
+              <form action="/buscar/" method="get" class="border-b border-gray-200 pb-5">
+                <div class="flex items-center gap-3">
+                  <label for="menu-search" class="sr-only">Buscar</label>
+                  <input
+                    id="menu-search"
+                    name="q"
+                    type="search"
+                    inputmode="search"
+                    autocomplete="off"
+                    placeholder="Buscar"
+                    class="block min-h-12 w-full min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 outline-none transition-colors duration-200 placeholder:text-gray-400 focus:border-gray-900"
+                  >
+                  <button
+                    type="submit"
+                    class="hidden h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-gray-50 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 sm:inline-flex"
+                    aria-label="Buscar"
+                  >
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </form>
+
               <a href="/" class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-900">
                 Portada
               </a>
