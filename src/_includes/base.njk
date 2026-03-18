@@ -59,7 +59,7 @@
           </button>
 
           <a href="/" class="text-center text-gray-900 {% if page.url == '/' %}lg:hidden{% endif %}">
-            <span class="block font-serif text-[1.75rem] font-extrabold uppercase tracking-[0.04em] sm:text-[2rem]">La Otra Pucela</span>
+            <span class="block font-serif text-[1.2rem] font-extrabold uppercase tracking-[0.035em] sm:text-[1.35rem]">La Otra Pucela</span>
           </a>
 
           {% if page.url == '/' and articulos and articulos.tags and articulos.tags.length %}
@@ -171,6 +171,7 @@
         </div>
       </header>
 
+      {% if page.url == '/' %}
       <section
         class="border-y border-[#DDD7CC] bg-[#F6F1E7] px-5 py-4 text-center sm:px-6 sm:py-[18px] lg:hidden"
         aria-label="Identidad editorial"
@@ -182,6 +183,7 @@
           </p>
         </div>
       </section>
+      {% endif %}
 
       <main class="{% if page.url == '/' %}mt-0{% else %}mt-8 md:mt-10{% endif %}">
         {{ content | safe }}
