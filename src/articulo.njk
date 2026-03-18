@@ -150,12 +150,12 @@ eleventyComputed:
             </div>
             {% endif %}
 
-            <h3 class="font-serif text-[1.65rem] font-semibold leading-[1.08] tracking-tight text-gray-900 lg:text-[1.28rem]">
+            <h3 class="font-serif text-[1.35rem] font-semibold leading-[1.08] tracking-tight text-gray-900 lg:text-[1.28rem]">
               {{ related.title }}
             </h3>
 
             {% if related.author and related.author.name %}
-            <p class="mt-3 text-base text-gray-700 lg:text-[0.95rem]">
+            <p class="mt-3 text-sm text-gray-700 lg:text-[0.95rem]">
               <a href="{{ related.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-900">
                 {{ related.author.name }}
               </a>
@@ -195,6 +195,14 @@ eleventyComputed:
     </div>
   </div>
 
+  <button
+    type="button"
+    class="js-scroll-top pointer-events-none fixed bottom-24 right-4 z-40 inline-flex h-12 w-12 translate-y-3 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-800 opacity-0 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-gray-950 md:hidden"
+    aria-label="Volver arriba"
+  >
+    <i class="fa-solid fa-arrow-up text-sm" aria-hidden="true"></i>
+  </button>
+
   <section
     id="comentarios"
     class="js-comments-root mx-auto mt-16 max-w-prose rounded-[2rem] border border-gray-200 bg-white px-6 py-8 shadow-sm"
@@ -207,7 +215,7 @@ eleventyComputed:
       <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Comentarios</h2>
       <a
         href="{{ articulo.discourseTopicUrl }}/2"
-        class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+        class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
         target="_blank"
         rel="noreferrer"
       >
@@ -217,8 +225,8 @@ eleventyComputed:
 
     <div id="discourse-comments" class="js-comments-embed{% if articulo.replies == 0 %} hidden{% endif %} mt-6 bg-white"></div>
 
-    <div class="js-comments-empty-state{% if articulo.replies > 0 %} hidden{% endif %} mt-6 rounded-[1.5rem] border border-gray-200 bg-white px-6 py-7 text-center">
-      <p class="text-xl font-semibold text-gray-900">¿Qué piensas de este artículo?</p>
+    <div class="js-comments-empty-state{% if articulo.replies > 0 %} hidden{% endif %} mt-6 rounded-[1.5rem] bg-white text-left">
+      <p class="text-xl font-semibold text-gray-700">¿Qué piensas de este artículo?</p>
       <p class="mt-2 leading-relaxed text-gray-600">
         Sé la primera persona en comentar y comparte tu punto de vista en el foro.
       </p>

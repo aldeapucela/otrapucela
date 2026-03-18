@@ -721,6 +721,34 @@ function setupRelatedCarousel() {
   });
 }
 
+function setupScrollTopButton() {
+  const scrollTopButton = document.querySelector(".js-scroll-top");
+
+  if (!scrollTopButton || window.matchMedia("(min-width: 768px)").matches) {
+    return;
+  }
+
+  function syncScrollTopButton() {
+    const shouldShow = window.scrollY > 520;
+
+    scrollTopButton.classList.toggle("pointer-events-none", !shouldShow);
+    scrollTopButton.classList.toggle("opacity-0", !shouldShow);
+    scrollTopButton.classList.toggle("translate-y-3", !shouldShow);
+    scrollTopButton.classList.toggle("opacity-100", shouldShow);
+    scrollTopButton.classList.toggle("translate-y-0", shouldShow);
+  }
+
+  scrollTopButton.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+
+  syncScrollTopButton();
+  window.addEventListener("scroll", syncScrollTopButton, { passive: true });
+}
+
 function normalizeCommentCount(topicPayload) {
   const posts = Array.isArray(topicPayload?.post_stream?.posts)
     ? topicPayload.post_stream.posts
@@ -893,5 +921,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearchPage();
   setupShareButtons();
   setupRelatedCarousel();
+  setupScrollTopButton();
   setupCommentsSection();
 });
