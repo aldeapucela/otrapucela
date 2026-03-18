@@ -55,7 +55,9 @@ canonicalUrl: /
 
           {% if articulo.author and articulo.author.name %}
           <p class="mt-5 text-sm font-normal text-gray-400">
-            {{ articulo.author.name }}
+            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+              {{ articulo.author.name }}
+            </a>
           </p>
           {% endif %}
 
@@ -112,7 +114,9 @@ canonicalUrl: /
 
         {% if articulo.author and articulo.author.name %}
         <p class="mt-4 text-sm text-gray-500">
-          {{ articulo.author.name }}
+          <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+            {{ articulo.author.name }}
+          </a>
         </p>
         {% endif %}
 

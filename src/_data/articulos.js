@@ -5,10 +5,12 @@ import * as cheerio from "cheerio";
 const discourseBaseUrl = "https://foro.aldeapucela.org";
 const categoryUrl = `${discourseBaseUrl}/c/9.json`;
 const topicRequestConcurrency = 2;
+const authorRequestConcurrency = 2;
 const maxFetchAttempts = 4;
 const baseRetryDelayMs = 1200;
 const cacheDirectory = path.resolve(process.cwd(), ".cache");
 const cacheFilePath = path.join(cacheDirectory, "articulos.json");
+const authorsCacheFilePath = path.join(cacheDirectory, "autores.json");
 
 function stripHtml(html = "") {
   return html
@@ -217,11 +219,20 @@ function normalizeAuthor(author = {}) {
   const name = author.name || author.display_username || author.username || "Aldea Pucela";
   const username = author.username || null;
   const avatarUrl = author.avatarUrl || buildAvatarUrl(author.avatar_template);
+  const publicPath = username ? `/autor/${encodeURIComponent(username)}/` : null;
+  const website = author.website || null;
+  const websiteName = author.website_name || null;
+  const location = author.location || null;
 
   return {
     name,
     username,
     avatarUrl,
+    bio: author.bio ?? author.bio_excerpt ?? "",
+    website,
+    websiteName,
+    location,
+    publicPath,
     profileUrl: username ? `${discourseBaseUrl}/u/${username}` : null
   };
 }
@@ -264,6 +275,49 @@ function writeCache(items) {
       {
         generatedAt: new Date().toISOString(),
         itemsById
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
+function readAuthorsCache() {
+  if (!existsSync(authorsCacheFilePath)) {
+    return {
+      itemsByUsername: {}
+    };
+  }
+
+  try {
+    const rawCache = readFileSync(authorsCacheFilePath, "utf8");
+    const parsedCache = JSON.parse(rawCache);
+
+    return {
+      itemsByUsername: parsedCache.itemsByUsername ?? {}
+    };
+  } catch {
+    return {
+      itemsByUsername: {}
+    };
+  }
+}
+
+function writeAuthorsCache(authors) {
+  mkdirSync(cacheDirectory, { recursive: true });
+
+  const itemsByUsername = Object.fromEntries(
+    authors
+      .filter((author) => author?.username)
+      .map((author) => [String(author.username), author])
+  );
+
+  writeFileSync(
+    authorsCacheFilePath,
+    JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        itemsByUsername
       },
       null,
       2
@@ -364,10 +418,50 @@ async function fetchTopicDetail(topic) {
   }
 }
 
+async function fetchAuthorDetail(author) {
+  if (!author?.username) {
+    return normalizeAuthor(author);
+  }
+
+  const authorUrl = `${discourseBaseUrl}/u/${encodeURIComponent(author.username)}.json`;
+
+  try {
+    const payload = await fetchJson(authorUrl);
+    const user = payload.user ?? {};
+    const userProfile = payload.user_profile ?? {};
+    const bio = stripHtml(
+      userProfile.bio_cooked
+      ?? userProfile.bio_raw
+      ?? user.bio_cooked
+      ?? user.bio_raw
+      ?? user.bio_excerpt
+      ?? payload.bio_cooked
+      ?? payload.bio_raw
+      ?? ""
+    ).replace(/\s+/g, " ").trim();
+
+    return normalizeAuthor({
+      ...author,
+      ...payload,
+      ...user,
+      bio,
+      website: user.website ?? payload.website ?? userProfile.website ?? author.website,
+      website_name: payload.website_name ?? author.websiteName,
+      website_name: user.website_name ?? payload.website_name ?? author.websiteName,
+      location: user.location ?? payload.location ?? userProfile.location ?? author.location,
+      avatar_template: user.avatar_template || author.avatar_template,
+      avatarUrl: author.avatarUrl || buildAvatarUrl(user.avatar_template)
+    });
+  } catch {
+    return normalizeAuthor(author);
+  }
+}
+
 export default async function articulos() {
   const payload = await fetchJson(categoryUrl);
   const topics = payload.topic_list?.topics ?? [];
   const cache = readCache();
+  const authorsCache = readAuthorsCache();
 
   const items = await mapWithConcurrency(
     topics,
@@ -458,6 +552,7 @@ export default async function articulos() {
   writeCache(items);
 
   const tagsMap = new Map();
+  const articleIdsByAuthor = new Map();
 
   for (const articulo of items) {
     for (const tag of articulo.tags) {
@@ -470,13 +565,82 @@ export default async function articulos() {
 
       tagsMap.get(tag.slug).count += 1;
     }
+
+    if (articulo.author?.username) {
+      if (!articleIdsByAuthor.has(articulo.author.username)) {
+        articleIdsByAuthor.set(articulo.author.username, []);
+      }
+
+      articleIdsByAuthor.get(articulo.author.username).push(articulo.id);
+    }
   }
+
+  const uniqueAuthors = Array.from(articleIdsByAuthor.keys())
+    .map((username) => {
+      const article = items.find((item) => item.author?.username === username);
+      const cachedAuthor = normalizeAuthor(authorsCache.itemsByUsername[username] ?? {});
+
+      return {
+        ...normalizeAuthor(article?.author ?? {}),
+        bio: cachedAuthor.bio || article?.author?.bio || "",
+        articleIds: articleIdsByAuthor.get(username) ?? []
+      };
+    });
+
+  const authors = await mapWithConcurrency(
+    uniqueAuthors,
+    authorRequestConcurrency,
+    async (author) => {
+      const cachedAuthor = normalizeAuthor(authorsCache.itemsByUsername[author.username] ?? {});
+      const hasReusableCache = cachedAuthor.username
+        && cachedAuthor.name !== "Aldea Pucela"
+        && cachedAuthor.avatarUrl
+        && (
+          Boolean(cachedAuthor.bio)
+          || Boolean(cachedAuthor.website)
+          || Boolean(cachedAuthor.location)
+        );
+
+      const resolvedAuthor = hasReusableCache
+        ? {
+          ...author,
+          ...cachedAuthor,
+          bio: cachedAuthor.bio || author.bio || "",
+          website: cachedAuthor.website || author.website || null,
+          websiteName: cachedAuthor.websiteName || author.websiteName || null,
+          location: cachedAuthor.location || author.location || null,
+          articleIds: author.articleIds
+        }
+        : {
+          ...(await fetchAuthorDetail(author)),
+          articleIds: author.articleIds
+        };
+
+      return resolvedAuthor;
+    }
+  );
+
+  const authorsByUsername = new Map(
+    authors.map((author) => [author.username, author])
+  );
+
+  for (const articulo of items) {
+    if (articulo.author?.username && authorsByUsername.has(articulo.author.username)) {
+      articulo.author = {
+        ...articulo.author,
+        ...authorsByUsername.get(articulo.author.username)
+      };
+    }
+  }
+
+  writeAuthorsCache(authors);
 
   return {
     discourseBaseUrl,
     categoryUrl,
     generatedAt: new Date().toISOString(),
     items,
+    authors: authors.sort((a, b) => a.name.localeCompare(b.name, "es")),
     tags: Array.from(tagsMap.values()).sort((a, b) =>
       a.name.localeCompare(b.name, "es")
     )

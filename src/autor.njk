@@ -1,0 +1,146 @@
+---
+layout: base.njk
+pagination:
+  data: articulos.authors
+  size: 1
+  alias: author
+permalink: "/autor/{{ author.username | urlencode }}/index.html"
+eleventyComputed:
+  authorArticles: "{{ articulos.items | articlesForAuthor(author.username) }}"
+  title: "{{ author.name }} - La Otra Pucela"
+  description: "{% if author.bio %}{{ author.bio }}{% else %}Articulos publicados por {{ author.name }} en La Otra Pucela.{% endif %}"
+  ogTitle: "{{ author.name }} - La Otra Pucela"
+  ogDescription: "{% if author.bio %}{{ author.bio }}{% else %}Articulos publicados por {{ author.name }} en La Otra Pucela.{% endif %}"
+  ogImage: "{{ author.avatarUrl or site.defaultSocialImage }}"
+  canonicalUrl: "/autor/{{ author.username | urlencode }}/"
+---
+{% set authorArticles = articulos.items | articlesForAuthor(author.username) %}
+{% set featuredArticle = authorArticles | firstWithImage %}
+{% set secondaryArticles = authorArticles | excludeArticle(featuredArticle.id if featuredArticle else null) %}
+
+<section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+  <header class="border-b border-gray-200 pb-8 sm:pb-10">
+    <div class="flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-between">
+      <div class="flex min-w-0 items-start gap-4 sm:gap-6">
+        {% if author.avatarUrl %}
+        <img
+          src="{{ author.avatarUrl }}"
+          alt="{{ author.name }}"
+          class="h-20 w-20 rounded-full object-cover shadow-sm sm:h-24 sm:w-24"
+          loading="lazy"
+        >
+        {% else %}
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-2xl font-semibold text-gray-700 shadow-sm sm:h-24 sm:w-24 sm:text-3xl">
+          {{ author.name[0] }}
+        </div>
+        {% endif %}
+
+        <div class="min-w-0 max-w-3xl">
+          <h1 class="text-[2rem] font-extrabold uppercase tracking-tight text-gray-900 sm:text-[2.6rem]">
+            {{ author.name }}
+          </h1>
+
+          {% if author.bio %}
+          <p class="mt-4 max-w-2xl text-base leading-[1.6] text-gray-600 sm:text-lg">
+            {{ author.bio }}
+          </p>
+          {% endif %}
+
+          <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[1rem] text-gray-500 sm:text-[1.05rem]">
+            {% if author.location %}
+            <span class="inline-flex min-h-11 items-center gap-2">
+              <i class="fa-solid fa-location-dot w-4 text-center text-[0.9rem] leading-none text-gray-500" aria-hidden="true"></i>
+              <span>{{ author.location }}</span>
+            </span>
+            {% endif %}
+            {% if author.website %}
+            <a
+              href="{{ author.website }}"
+              class="inline-flex min-h-11 items-center gap-2 text-[1rem] text-gray-500 transition-colors duration-200 hover:text-gray-800 sm:text-[1.05rem]"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <i class="fa-solid fa-globe w-4 text-center text-[0.86rem] leading-none" aria-hidden="true"></i>
+              <span>Web</span>
+            </a>
+            {% endif %}
+            <span class="inline-flex min-h-11 items-center gap-2 whitespace-nowrap">
+              <i class="fa-regular fa-newspaper w-4 text-center text-[0.92rem] leading-none text-gray-500" aria-hidden="true"></i>
+              <span>{{ authorArticles.length }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {% if featuredArticle %}
+  <div class="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.7fr)] lg:items-start lg:gap-8">
+    <article class="order-2 lg:order-1">
+      <a href="{{ featuredArticle.publicPath }}" class="block">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <time datetime="{{ featuredArticle.createdAt }}">{{ featuredArticle.createdAt | date("d MMM yyyy") }}</time>
+        </div>
+
+        <h2 class="mt-4 font-serif text-[2.05rem] font-semibold leading-[1.04] tracking-tight text-gray-900">
+          {{ featuredArticle.title }}
+        </h2>
+
+        {% if featuredArticle.description %}
+        <p class="mt-4 text-[1.05rem] leading-[1.55] text-gray-600">
+          {{ featuredArticle.description }}
+        </p>
+        {% elif featuredArticle.excerpt %}
+        <p class="mt-4 text-[1.05rem] leading-[1.55] text-gray-600">
+          {{ featuredArticle.excerpt }}
+        </p>
+        {% endif %}
+      </a>
+    </article>
+
+    <article class="order-1 lg:order-2">
+      <a href="{{ featuredArticle.publicPath }}" class="block">
+        {% if featuredArticle.image %}
+        <div class="overflow-hidden rounded-[1.75rem] bg-gray-100 shadow-sm">
+          <img
+            src="{{ featuredArticle.image }}"
+            alt="{{ featuredArticle.title }}"
+            class="aspect-[21/11] w-full object-cover"
+            loading="lazy"
+          >
+        </div>
+        {% endif %}
+      </a>
+    </article>
+  </div>
+  {% endif %}
+
+  {% if secondaryArticles.length %}
+  <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-10 border-t border-gray-200 pt-8 sm:grid-cols-2 xl:grid-cols-3">
+    {% for articulo in secondaryArticles %}
+    <article class="border-b border-gray-200 pb-8">
+      <a href="{{ articulo.publicPath }}" class="block">
+        {% if articulo.image %}
+        <div class="mb-5 overflow-hidden rounded-[1.5rem] bg-gray-100 shadow-sm">
+          <img
+            src="{{ articulo.image }}"
+            alt="{{ articulo.title }}"
+            class="aspect-[16/10] w-full object-cover"
+            loading="lazy"
+          >
+        </div>
+        {% endif %}
+
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <time datetime="{{ articulo.createdAt }}">{{ articulo.createdAt | date("d MMM yyyy") }}</time>
+        </div>
+
+        <h2 class="mt-4 font-serif text-[1.45rem] font-semibold leading-[1.08] tracking-tight text-gray-900">
+          {{ articulo.title }}
+        </h2>
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>

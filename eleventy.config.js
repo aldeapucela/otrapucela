@@ -121,6 +121,14 @@ export default function eleventyConfig(config) {
     );
   });
 
+  config.addFilter("articlesForAuthor", (items = [], username = "") => {
+    if (!Array.isArray(items) || !username) {
+      return [];
+    }
+
+    return items.filter((item) => item?.author?.username === username);
+  });
+
   config.addFilter("firstWithImage", (items = []) => {
     if (!Array.isArray(items)) {
       return null;
