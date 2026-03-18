@@ -722,8 +722,33 @@ function setupRelatedCarousel() {
 }
 
 function normalizeCommentCount(topicPayload) {
-  const postsCount = Number(topicPayload?.posts_count ?? 0);
-  return Math.max(postsCount - 1, 0);
+  const posts = Array.isArray(topicPayload?.post_stream?.posts)
+    ? topicPayload.post_stream.posts
+    : [];
+
+  if (!posts.length) {
+    const replyCount = Number(topicPayload?.reply_count ?? 0);
+    return Math.max(replyCount, 0);
+  }
+
+  const visibleReplies = posts.filter((post) => {
+    if (!post || Number(post.post_number) <= 1) {
+      return false;
+    }
+
+    if (post.hidden || post.deleted_at) {
+      return false;
+    }
+
+    // Discourse marks open/close/status changes as small_action posts.
+    if (post.post_type !== 1) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return visibleReplies.length;
 }
 
 function updateCommentCount(commentCount) {
