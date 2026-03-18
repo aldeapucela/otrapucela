@@ -563,8 +563,68 @@ function restoreShareButton(buttonElement) {
   setShareButtonFeedback(buttonElement, originalLabel, originalIcon);
 }
 
-async function copyCurrentUrl() {
-  const shareText = `${document.title}\n\n${window.location.href}`;
+function trackMatomoEvent(category, action, name, value) {
+  if (!Array.isArray(window._paq)) {
+    return;
+  }
+
+  const payload = ["trackEvent", category, action];
+
+  if (typeof name !== "undefined") {
+    payload.push(name);
+  }
+
+  if (typeof value !== "undefined") {
+    payload.push(value);
+  }
+
+  window._paq.push(payload);
+}
+
+function withShareCampaign(rawUrl) {
+  const url = new URL(rawUrl, window.location.origin);
+  url.searchParams.set("mtm_campaign", "share");
+  return url.toString();
+}
+
+function getSharePayload(buttonElement) {
+  const currentUrl = window.location.href;
+  const currentTitle = document.title;
+  const canonicalPath = window.location.pathname;
+  const explicitType = buttonElement.dataset.shareContentType;
+  const pageType = explicitType || (canonicalPath === "/" ? "homepage" : "article");
+  const contentId = buttonElement.dataset.shareContentId || (pageType === "homepage" ? "homepage" : canonicalPath);
+  const homepageTitle = "La Otra Pucela - Informacion vecinal, util e independiente sobre Valladolid";
+  const rawContentUrl = buttonElement.dataset.url || currentUrl;
+  const contentTitle = buttonElement.dataset.title || (pageType === "homepage" ? homepageTitle : currentTitle);
+  const contentUrl = withShareCampaign(rawContentUrl);
+  const shareSource = buttonElement.dataset.shareSource || "unknown";
+  const eventName = pageType === "homepage"
+    ? "Home"
+    : pageType === "article"
+      ? String(contentId)
+      : contentUrl;
+
+  return {
+    contentId,
+    contentTitle,
+    contentUrl,
+    eventName,
+    pageType,
+    shareSource
+  };
+}
+
+function trackShare(buttonElement, method) {
+  const {
+    eventName
+  } = getSharePayload(buttonElement);
+
+  trackMatomoEvent("share", method, eventName);
+}
+
+async function copyCurrentUrl(sharePayload) {
+  const shareText = `${sharePayload.contentTitle}\n\n${sharePayload.contentUrl}`;
   await navigator.clipboard.writeText(shareText);
 }
 
@@ -581,18 +641,32 @@ async function handleShareClick(event) {
 
   try {
     if (navigator.share) {
-      await navigator.share({
-        title: document.title,
-        text: `${document.title}\n\n${window.location.href}`,
-        url: window.location.href
-      });
+      const sharePayload = getSharePayload(buttonElement);
+
+      try {
+        await navigator.share({
+          title: sharePayload.contentTitle,
+          text: `${sharePayload.contentTitle}\n\n${sharePayload.contentUrl}`,
+          url: sharePayload.contentUrl
+        });
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          restoreShareButton(buttonElement);
+          return;
+        }
+
+        throw error;
+      }
+
+      trackShare(buttonElement, "web_share");
       return;
     }
 
     throw new Error("Web Share API not available");
   } catch {
     try {
-      await copyCurrentUrl();
+      await copyCurrentUrl(getSharePayload(buttonElement));
+      trackShare(buttonElement, "clipboard");
       setShareButtonFeedback(buttonElement, "¡Enlace copiado!", "fa-solid fa-check js-share-btn-icon text-base");
 
       window.setTimeout(() => {

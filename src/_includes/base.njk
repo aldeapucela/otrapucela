@@ -128,6 +128,12 @@
               >
                 Quiénes somos
               </a>
+              <a
+                href="https://foro.aldeapucela.org/t/acerca-de-la-otra-pucela/966"
+                class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 transition-colors duration-200 hover:text-gray-900"
+              >
+                Colaborar
+              </a>
 
               {% if articulos and articulos.tags and articulos.tags.length %}
               <div class="border-t border-gray-200 pt-5 lg:hidden">
@@ -144,6 +150,22 @@
                 </div>
               </div>
               {% endif %}
+
+              <div class="border-t border-gray-200 pt-5">
+                <button
+                  type="button"
+                  class="js-share-btn inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
+                  data-share-source="menu-drawer"
+                  data-share-content-type="homepage"
+                  data-share-content-id="homepage"
+                  data-url="/"
+                  data-title="La Otra Pucela - Informacion vecinal, util e independiente sobre Valladolid"
+                  aria-label="Compartir portada"
+                >
+                  <i class="fa-solid fa-share-nodes js-share-btn-icon text-base" aria-hidden="true"></i>
+                  <span class="js-share-btn-label">Compartir</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
