@@ -20,33 +20,92 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.detect-forum-changes.outputs.should_build }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore forum state cache
+        id: restore-forum-state
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/workflow
+          key: ${{ runner.os }}-forum-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-forum-state-${{ github.ref_name }}-
+
+      - name: Detect forum changes
+        id: detect-forum-changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cache/workflow
+          curl --fail --silent --show-error --location \
+            "https://foro.aldeapucela.org/c/9.json" \
+            -o .cache/workflow/current-category.json
+
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            cp .cache/workflow/current-category.json .cache/workflow/last-category.json
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ ! -f .cache/workflow/last-category.json ]; then
+            cp .cache/workflow/current-category.json .cache/workflow/last-category.json
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          current_hash=$(sha256sum .cache/workflow/current-category.json | awk '{print $1}')
+          previous_hash=$(sha256sum .cache/workflow/last-category.json | awk '{print $1}')
+
+          cp .cache/workflow/current-category.json .cache/workflow/last-category.json
+
+          if [ "$current_hash" = "$previous_hash" ]; then
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
+
+      - name: Save forum state cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/workflow
+          key: ${{ runner.os }}-forum-state-${{ github.ref_name }}-${{ github.run_id }}
+
       - name: Setup Node.js
+        if: steps.detect-forum-changes.outputs.should_build == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
       - name: Configure Pages
+        if: steps.detect-forum-changes.outputs.should_build == 'true'
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
-        run: npm install
+        if: steps.detect-forum-changes.outputs.should_build == 'true'
+        run: npm ci
 
       - name: Build site
+        if: steps.detect-forum-changes.outputs.should_build == 'true'
         run: npm run build
 
       - name: Upload Pages artifact
+        if: steps.detect-forum-changes.outputs.should_build == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
   deploy:
     needs: build
+    if: needs.build.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
