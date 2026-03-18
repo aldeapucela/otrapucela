@@ -7,10 +7,10 @@ pagination:
 permalink: "/p/{{ articulo.id }}/{{ articulo.slug }}/index.html"
 eleventyComputed:
   title: "{{ articulo.title }} - La Otra Pucela"
-  description: "{{ articulo.description or 'Articulo publicado en Aldea Pucela.' }}"
+  description: "{{ articulo.description or 'Artículo publicado en Aldea Pucela.' }}"
   ogType: "article"
   ogTitle: "{{ articulo.title }} - La Otra Pucela"
-  ogDescription: "{{ articulo.description or 'Articulo publicado en Aldea Pucela.' }}"
+  ogDescription: "{{ articulo.description or 'Artículo publicado en Aldea Pucela.' }}"
   ogImage: "{{ articulo.image or site.defaultSocialImage }}"
   canonicalUrl: "{{ articulo.publicPath }}"
 ---
@@ -109,7 +109,7 @@ eleventyComputed:
   {% if relatedItems.length %}
   <section class="mx-auto mt-16 max-w-6xl border-t border-gray-200 pt-8">
     <div class="mb-6 flex items-center justify-between gap-4">
-      <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Relacionadas</h2>
+      <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Relacionados</h2>
       <div class="hidden items-center gap-3 lg:flex">
         <button
           type="button"

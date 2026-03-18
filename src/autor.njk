@@ -8,9 +8,9 @@ permalink: "/autor/{{ author.username | urlencode }}/index.html"
 eleventyComputed:
   authorArticles: "{{ articulos.items | articlesForAuthor(author.username) }}"
   title: "{{ author.name }} - La Otra Pucela"
-  description: "{% if author.bio %}{{ author.bio }}{% else %}Articulos publicados por {{ author.name }} en La Otra Pucela.{% endif %}"
+  description: "{% if author.bio %}{{ author.bio }}{% else %}Artículos publicados por {{ author.name }} en La Otra Pucela.{% endif %}"
   ogTitle: "{{ author.name }} - La Otra Pucela"
-  ogDescription: "{% if author.bio %}{{ author.bio }}{% else %}Articulos publicados por {{ author.name }} en La Otra Pucela.{% endif %}"
+  ogDescription: "{% if author.bio %}{{ author.bio }}{% else %}Artículos publicados por {{ author.name }} en La Otra Pucela.{% endif %}"
   ogImage: "{{ author.avatarUrl or site.defaultSocialImage }}"
   canonicalUrl: "/autor/{{ author.username | urlencode }}/"
 ---

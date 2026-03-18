@@ -7,9 +7,9 @@ pagination:
 permalink: "/tema/{{ tag.slug }}/index.html"
 eleventyComputed:
   title: "{{ tag.name | themeName }} - La Otra Pucela"
-  description: "Articulos del tema {{ tag.name | themeName }}."
+  description: "Artículos del tema {{ tag.name | themeName }}."
   ogTitle: "{{ tag.name | themeName }} - La Otra Pucela"
-  ogDescription: "Articulos del tema {{ tag.name | themeName }}."
+  ogDescription: "Artículos del tema {{ tag.name | themeName }}."
   canonicalUrl: "/tema/{{ tag.slug }}/"
 ---
 {% set themeArticles = articulos.items | articlesForTheme(tag.slug) %}
