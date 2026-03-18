@@ -72,7 +72,7 @@ eleventyComputed:
             class="inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
           >
             <i class="fa-regular fa-comment w-4 text-center text-sm" aria-hidden="true"></i>
-            <span class="js-comment-count{% if articulo.replies == 0 %} hidden{% endif %}">{{ articulo.replies }}</span>
+            <span class="js-comment-count hidden" aria-live="polite"></span>
           </a>
           <button
             type="button"
@@ -171,7 +171,7 @@ eleventyComputed:
       >
         <i class="fa-regular fa-comment text-base" aria-hidden="true"></i>
         <span>Comentar</span>
-        <span class="js-comment-count{% if articulo.replies == 0 %} hidden{% endif %}">{{ articulo.replies }}</span>
+        <span class="js-comment-count hidden" aria-live="polite"></span>
       </a>
       <button
         type="button"
@@ -192,7 +192,7 @@ eleventyComputed:
     data-discourse-url="https://foro.aldeapucela.org/"
     data-topic-id="{{ articulo.id }}"
     data-topic-json-url="{{ articulo.source.topicJsonUrl }}"
-    data-initial-replies="{{ articulo.replies }}"
+    data-initial-replies="0"
   >
     <div class="flex items-center justify-between gap-4">
       <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Comentarios</h2>
