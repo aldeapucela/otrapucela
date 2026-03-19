@@ -3,7 +3,7 @@ permalink: /feed.xml
 eleventyExcludeFromCollections: true
 ---
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>{{ site.name | escape }}</title>
     <link>{{ site.siteUrl }}/</link>
@@ -12,11 +12,20 @@ eleventyExcludeFromCollections: true
     <lastBuildDate>{{ articulos.generatedAt | date("rfc2822") }}</lastBuildDate>
     <atom:link href="{{ site.siteUrl }}{{ site.feedPath }}" rel="self" type="application/rss+xml" />
     {% for articulo in articulos.items | feedItems %}
+    {% set articleImageUrl = articulo.image %}
+    {% if articleImageUrl and articleImageUrl[0] == "/" %}
+    {% set articleImageUrl = site.siteUrl + articleImageUrl %}
+    {% endif %}
     <item>
       <title>{{ articulo.title | escape }}</title>
       <link>{{ site.siteUrl }}{{ articulo.publicPath }}</link>
       <guid isPermaLink="true">{{ site.siteUrl }}{{ articulo.publicPath }}</guid>
       <pubDate>{{ articulo.createdAt | date("rfc2822") }}</pubDate>
+      {% if articleImageUrl %}
+      <enclosure url="{{ articleImageUrl | escape }}" type="image/*" />
+      <media:content url="{{ articleImageUrl | escape }}" medium="image" />
+      <media:thumbnail url="{{ articleImageUrl | escape }}" />
+      {% endif %}
       <description><![CDATA[{{ articulo.contentHtml | safe }}<p><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es">Contenido publicado bajo licencia CC BY-SA 4.0</a>.</p>]]></description>
       <content:encoded><![CDATA[{{ articulo.contentHtml | safe }}<p><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es">Contenido publicado bajo licencia CC BY-SA 4.0</a>.</p>]]></content:encoded>
       {% if articulo.author and articulo.author.name %}
