@@ -4,6 +4,7 @@ import path from "node:path";
 export default function eleventyConfig(config) {
   config.addPassthroughCopy({ "src/assets/favicon.ico": "favicon.ico" });
   config.addPassthroughCopy({ "src/assets/favicon.svg": "favicon.svg" });
+  config.addPassthroughCopy({ "src/assets/logo-wordmark.svg": "assets/logo-wordmark.svg" });
   config.addPassthroughCopy({ "src/assets/social-preview.png": "assets/social-preview.png" });
 
   config.addWatchTarget("./src/assets/js");
