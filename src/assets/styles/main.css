@@ -3,6 +3,58 @@
 @tailwind utilities;
 
 @layer components {
+  .subscription-module {
+    @apply border border-[#DDD] bg-[#F4F1E9] text-[#1F2937];
+  }
+
+  .subscription-module__eyebrow {
+    @apply font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-[#6B6253];
+  }
+
+  .subscription-module__content {
+    @apply flex flex-col gap-5 p-7;
+  }
+
+  .subscription-module__copy {
+    @apply space-y-2;
+  }
+
+  .subscription-module__title {
+    @apply font-serif text-[1.45rem] font-semibold leading-[1.1] tracking-tight text-[#1F2937] sm:text-[1.85rem];
+  }
+
+  .subscription-module__description {
+    @apply text-base leading-[1.6] text-[#4B5563] sm:text-[1.02rem];
+  }
+
+  .subscription-module__button {
+    @apply inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1F2937] px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-200 hover:bg-[#111827];
+  }
+
+  .subscription-module--compact .subscription-module__content {
+    @apply gap-4 p-4 sm:p-5;
+  }
+
+  .subscription-module--compact .subscription-module__title {
+    @apply text-[1.25rem] sm:text-[1.35rem];
+  }
+
+  .subscription-module--inline .subscription-module__content {
+    @apply gap-4 p-7 lg:flex-row lg:items-center lg:justify-between;
+  }
+
+  .subscription-module--inline .subscription-module__copy {
+    @apply max-w-2xl;
+  }
+
+  .subscription-module--inline .subscription-module__button {
+    @apply lg:min-w-[14rem] lg:w-auto;
+  }
+
+  .subscription-module--article-card .subscription-module__content {
+    @apply h-full justify-between;
+  }
+
   .article-body img {
     border-radius: 0;
   }

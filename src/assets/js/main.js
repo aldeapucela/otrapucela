@@ -681,6 +681,10 @@ function trackMatomoEvent(category, action, name, value) {
   window._paq.push(payload);
 }
 
+function trackSubscriptionIntent(source) {
+  trackMatomoEvent("subscription", "open_boletin", source || "unknown");
+}
+
 function withShareCampaign(rawUrl) {
   const url = new URL(rawUrl, window.location.origin);
   url.searchParams.set("mtm_campaign", "share");
@@ -703,6 +707,8 @@ function getSharePayload(buttonElement) {
     ? "Home"
     : pageType === "article"
       ? String(contentId)
+      : pageType === "newsletter"
+        ? "Boletin"
       : contentUrl;
 
   return {
@@ -787,6 +793,22 @@ function setupShareButtons() {
 
   shareButtons.forEach((buttonElement) => {
     buttonElement.addEventListener("click", handleShareClick);
+  });
+}
+
+function setupSubscriptionLinks() {
+  const subscriptionLinks = document.querySelectorAll("[data-subscription-link]");
+
+  if (!subscriptionLinks.length) {
+    return;
+  }
+
+  subscriptionLinks.forEach((linkElement) => {
+    const source = linkElement.dataset.subscriptionSource || "unknown";
+
+    linkElement.addEventListener("click", () => {
+      trackSubscriptionIntent(source);
+    });
   });
 }
 
@@ -1135,6 +1157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupHeaderMenu();
   setupSearchPage();
   setupShareButtons();
+  setupSubscriptionLinks();
   setupRssDialog();
   setupRelatedCarousel();
   setupScrollTopButton();

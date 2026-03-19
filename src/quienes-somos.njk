@@ -7,7 +7,7 @@ ogDescription: Qué es La Otra Pucela, qué encontrarás aquí y cómo se constr
 canonicalUrl: /quienes-somos/
 ---
 <section class="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20">
-  <div class="overflow-hidden rounded-[2rem] border border-[#DDD7CC] bg-[#F6F1E7] shadow-sm">
+  <div class="overflow-hidden rounded-[2rem] border border-[#DDD7CC] bg-[#F6F1E7]">
     <div class="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
       <div class="px-6 py-10 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
         <span class="inline-flex min-h-11 items-center rounded-full border border-[#D8CCB5] bg-white/70 px-4 py-2 font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-[#5F5645]">
@@ -38,10 +38,19 @@ canonicalUrl: /quienes-somos/
             La idea no es producir ruido ni llenar la ciudad de titulares, sino probar formatos que ayuden a contar mejor Valladolid desde cerca. Si con el tiempo este proyecto encuentra una comunidad, una utilidad clara y una forma sostenible de crecer, podrá evolucionar. Y si no, seguirá siendo al menos un archivo vivo de contenido valioso para la comunidad.
           </p>
         </div>
+
+        <div class="mt-10 max-w-3xl">
+          {% set subscriptionVariant = 'inline' %}
+          {% set subscriptionTitle = 'Si quieres seguir de cerca este proyecto independiente, puedes recibir las publicaciones en tu correo.' %}
+          {% set subscriptionDescription = '' %}
+          {% set subscriptionButton = 'Seguir el proyecto' %}
+          {% set subscriptionSource = 'about' %}
+          {% include "partials/subscription-module.njk" %}
+        </div>
       </div>
 
       <aside class="border-t border-[#DDD7CC] bg-white/65 px-6 py-10 sm:px-10 lg:border-t-0 lg:border-l lg:px-10 lg:py-16">
-        <div class="rounded-[1.75rem] border border-white/70 bg-white/85 p-6 shadow-sm sm:p-7">
+        <div class="rounded-[1.75rem] border border-white/70 bg-white/85 p-6 sm:p-7">
           <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-[#7B6D56]">
             Qué encontrarás aquí
           </p>
@@ -74,7 +83,7 @@ canonicalUrl: /quienes-somos/
           </ul>
         </div>
 
-        <div class="mt-6 rounded-[1.75rem] border border-[#DDD7CC] bg-[#F9F6EF] p-6 shadow-sm sm:p-7">
+        <div class="mt-6 rounded-[1.75rem] border border-[#DDD7CC] bg-[#F9F6EF] p-6 sm:p-7">
           <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-[#7B6D56]">
             Cómo se hace
           </p>

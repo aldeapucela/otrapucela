@@ -1,0 +1,30 @@
+{% set subscriptionVariant = subscriptionVariant or 'default' %}
+{% set subscriptionTitle = subscriptionTitle or 'No te pierdas nada' %}
+{% set subscriptionDescription = subscriptionDescription or 'Recibe nuevos artículos y resúmenes directamente en tu bandeja de entrada.' %}
+{% set subscriptionButton = subscriptionButton or 'Ir al boletín' %}
+{% set subscriptionSource = subscriptionSource or 'site-module' %}
+{% set subscriptionHref = subscriptionHref or '/boletin/' %}
+
+<section class="subscription-module subscription-module--{{ subscriptionVariant }}{% if subscriptionArticleCard %} subscription-module--article-card{% endif %}" data-subscription-module>
+  {% if subscriptionEyebrow %}
+  <p class="subscription-module__eyebrow">{{ subscriptionEyebrow }}</p>
+  {% endif %}
+
+  <div class="subscription-module__content">
+    <div class="subscription-module__copy">
+      <h2 class="subscription-module__title">{{ subscriptionTitle }}</h2>
+      {% if subscriptionDescription %}
+      <p class="subscription-module__description">{{ subscriptionDescription }}</p>
+      {% endif %}
+    </div>
+
+    <a
+      href="{{ subscriptionHref }}"
+      class="subscription-module__button"
+      data-subscription-link
+      data-subscription-source="{{ subscriptionSource }}"
+    >
+      {{ subscriptionButton }}
+    </a>
+  </div>
+</section>

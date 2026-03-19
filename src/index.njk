@@ -20,7 +20,7 @@ canonicalUrl: /
 
   <div class="mt-10 grid grid-cols-1 gap-x-10 gap-y-12 lg:hidden">
     {% for articulo in articulos.items %}
-    <article class="border-b border-gray-200 pb-5 last:border-b-0 last:pb-0">
+    <article class="border-b border-[#EEE] pb-5 last:border-b-0 last:pb-0">
       <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
         {% if articulo.image %}
         <div class="mb-6 overflow-hidden bg-gray-100">
@@ -63,12 +63,13 @@ canonicalUrl: /
         </div>
       </a>
     </article>
+
     {% endfor %}
   </div>
 
-  <div class="mt-4 hidden border-t border-gray-300 pt-6 lg:block">
+  <div class="mt-4 hidden border-t border-[#EEE] pt-6 lg:block">
     {% if articulos.items[0] %}
-    <div class="border-b border-gray-200 pb-10">
+    <div class="border-b border-[#EEE] pb-10">
       <article>
         <div class="grid items-start gap-12 lg:grid-cols-10">
           <a
@@ -118,11 +119,10 @@ canonicalUrl: /
       </article>
     </div>
     {% endif %}
-
     <div class="mt-10 grid grid-cols-3 gap-6">
       {% for articulo in articulos.items %}
       {% if loop.index > 1 and loop.index < 5 %}
-      <article class="border-b border-gray-200 pb-8">
+      <article class="border-b border-[#EEE] pb-8">
         <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
           {% if articulo.image %}
           <div class="mb-4 overflow-hidden bg-gray-100">
