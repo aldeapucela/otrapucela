@@ -17,83 +17,85 @@ eleventyComputed:
 {% set relatedItems = articulos.items | relatedArticles(articulo, 5) %}
 
 <section class="mx-auto max-w-6xl px-4 pb-40 pt-8 sm:px-6 md:pb-28 lg:px-8 lg:pt-12">
-  <div class="mx-auto max-w-4xl">
-    <header class="border-b border-gray-200 pb-8">
-      {% if articulo.tags.length %}
-      <div class="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
-        {% for tag in articulo.tags %}
-        <a
-          href="/tema/{{ tag.slug }}/"
-          class="transition-colors duration-200 hover:text-gray-900"
-        >
-          {{ tag.name | themeName }}
-        </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <h1 class="font-serif text-[2rem] font-semibold leading-[1.02] tracking-tight text-gray-900 md:text-[3.2rem]">
-        {{ articulo.title }}
-      </h1>
-
-      {% if articulo.description or articulo.excerpt %}
-      <p class="mt-5 max-w-3xl text-[1.1rem] leading-[1.35] text-gray-600 md:text-[1.45rem] md:leading-[1.4]">
-        {{ articulo.description or articulo.excerpt }}
-      </p>
-      {% endif %}
-
-      <div class="mt-7">
-        <div class="flex items-center gap-3 text-sm text-gray-600">
-          {% if articulo.author.avatarUrl %}
-          <img
-            src="{{ articulo.author.avatarUrl }}"
-            alt="{{ articulo.author.name }}"
-            class="h-10 w-10 rounded-full object-cover"
-            loading="lazy"
-          >
-          {% else %}
-          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700">
-            {{ articulo.author.name[0] }}
-          </div>
-          {% endif %}
-          <div class="min-w-0">
-            <div class="text-base font-medium text-gray-900">
-              <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
-                {{ articulo.author.name }}
-              </a>
-            </div>
-            <time datetime="{{ articulo.createdAt }}" class="mt-1 block text-sm text-gray-500">{{ articulo.createdAt | date("d MMMM yyyy") }}</time>
-          </div>
-        </div>
-
-        <div class="mt-5 flex items-center gap-6 pl-[0.7rem] text-sm text-gray-700 sm:pl-[0.85rem]">
+  <article class="mx-auto mb-12 w-full max-w-6xl">
+    <div class="mx-auto max-w-4xl">
+      <header class="border-b border-gray-200 pb-8">
+        {% if articulo.tags.length %}
+        <div class="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
+          {% for tag in articulo.tags %}
           <a
-            href="#comentarios"
-            class="inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
+            href="/tema/{{ tag.slug }}/"
+            class="transition-colors duration-200 hover:text-gray-900"
           >
-            <i class="fa-regular fa-comment w-4 text-center text-sm" aria-hidden="true"></i>
-            <span class="js-comment-count hidden" aria-live="polite"></span>
+            {{ tag.name | themeName }}
           </a>
-          <button
-            type="button"
-            class="js-share-btn inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
-            data-share-source="article-header"
-            data-share-content-type="article"
-            data-share-content-id="{{ articulo.id }}"
-            data-url="{{ articulo.publicPath }}"
-            data-title="{{ articulo.title }}"
-            aria-label="Compartir artículo"
-          >
-            <i class="fa-solid fa-share-nodes js-share-btn-icon w-4 text-center text-sm" aria-hidden="true"></i>
-            <span class="js-share-btn-label">Compartir</span>
-          </button>
+          {% endfor %}
         </div>
-      </div>
-    </header>
-  </div>
+        {% endif %}
 
-  <article class="prose prose-lg prose-gray mx-auto mb-12 mt-10 w-full max-w-prose text-lg leading-relaxed text-gray-800 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 prose-p:my-5 prose-li:my-1 prose-img:my-6 prose-img:rounded-2xl prose-img:shadow-sm prose-hr:my-10 prose-a:text-blue-700 prose-a:no-underline hover:prose-a:text-blue-900 [&_.emoji]:my-0 [&_.emoji]:inline-block [&_.emoji]:h-[1.1em] [&_.emoji]:w-[1.1em] [&_.emoji]:align-[-0.15em] [&_.emoji]:rounded-none [&_.emoji]:shadow-none">
-    {{ (articulo.bodyHtml or articulo.contentHtml) | safe }}
+        <h1 class="font-serif text-[2rem] font-semibold leading-[1.02] tracking-tight text-gray-900 md:text-[3.2rem]">
+          {{ articulo.title }}
+        </h1>
+
+        {% if articulo.description or articulo.excerpt %}
+        <p class="mt-5 max-w-3xl text-[1.1rem] leading-[1.35] text-gray-600 md:text-[1.45rem] md:leading-[1.4]">
+          {{ articulo.description or articulo.excerpt }}
+        </p>
+        {% endif %}
+
+        <div class="mt-7">
+          <div class="flex items-center gap-3 text-sm text-gray-600">
+            {% if articulo.author.avatarUrl %}
+            <img
+              src="{{ articulo.author.avatarUrl }}"
+              alt="{{ articulo.author.name }}"
+              class="h-10 w-10 rounded-full object-cover"
+              loading="lazy"
+            >
+            {% else %}
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700">
+              {{ articulo.author.name[0] }}
+            </div>
+            {% endif %}
+            <div class="min-w-0">
+              <div class="text-base font-medium text-gray-900">
+                <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+                  {{ articulo.author.name }}
+                </a>
+              </div>
+              <time datetime="{{ articulo.createdAt }}" class="mt-1 block text-sm text-gray-500">{{ articulo.createdAt | date("d MMMM yyyy") }}</time>
+            </div>
+          </div>
+
+          <div class="mt-5 flex items-center gap-6 pl-[0.7rem] text-sm text-gray-700 sm:pl-[0.85rem]">
+            <a
+              href="#comentarios"
+              class="inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
+            >
+              <i class="fa-regular fa-comment w-4 text-center text-sm" aria-hidden="true"></i>
+              <span class="js-comment-count hidden" aria-live="polite"></span>
+            </a>
+            <button
+              type="button"
+              class="js-share-btn inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
+              data-share-source="article-header"
+              data-share-content-type="article"
+              data-share-content-id="{{ articulo.id }}"
+              data-url="{{ articulo.publicPath }}"
+              data-title="{{ articulo.title }}"
+              aria-label="Compartir artículo"
+            >
+              <i class="fa-solid fa-share-nodes js-share-btn-icon w-4 text-center text-sm" aria-hidden="true"></i>
+              <span class="js-share-btn-label">Compartir</span>
+            </button>
+          </div>
+        </div>
+      </header>
+    </div>
+
+    <div class="prose prose-lg prose-gray mx-auto mt-10 w-full max-w-prose text-lg leading-relaxed text-gray-800 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 prose-p:my-5 prose-li:my-1 prose-img:my-6 prose-img:rounded-2xl prose-img:shadow-sm prose-hr:my-10 prose-a:text-blue-700 prose-a:no-underline hover:prose-a:text-blue-900 [&_.emoji]:my-0 [&_.emoji]:inline-block [&_.emoji]:h-[1.1em] [&_.emoji]:w-[1.1em] [&_.emoji]:align-[-0.15em] [&_.emoji]:rounded-none [&_.emoji]:shadow-none">
+      {{ (articulo.bodyHtml or articulo.contentHtml) | safe }}
+    </div>
   </article>
 
   <div class="mx-auto mb-10 hidden max-w-prose justify-end lg:flex">
