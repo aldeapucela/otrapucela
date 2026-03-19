@@ -205,39 +205,41 @@ eleventyComputed:
 
   <section
     id="comentarios"
-    class="js-comments-root mx-auto mt-16 max-w-prose rounded-[2rem] border border-gray-200 bg-white px-6 py-8 shadow-sm"
+    class="js-comments-root -mx-4 mt-16 w-auto border-t border-gray-200 bg-white px-4 py-8 sm:-mx-6 sm:px-6 lg:mx-[calc(50%-50vw)] lg:w-screen lg:px-[max(1.5rem,calc(50vw-32rem))]"
     data-discourse-url="https://foro.aldeapucela.org/"
     data-topic-id="{{ articulo.id }}"
     data-topic-json-url="{{ articulo.source.topicJsonUrl }}"
     data-initial-replies="0"
   >
-    <div class="flex items-center justify-between gap-4">
-      <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Comentarios</h2>
-      <a
-        href="{{ articulo.discourseTopicUrl }}/2"
-        class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Añadir comentario
-      </a>
-    </div>
+    <div class="mx-auto w-full max-w-prose">
+      <div class="flex items-center justify-between gap-4">
+        <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Comentarios</h2>
+        <a
+          href="{{ articulo.discourseTopicUrl }}/2"
+          class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Añadir comentario
+        </a>
+      </div>
 
-    <div id="discourse-comments" class="js-comments-embed{% if articulo.replies == 0 %} hidden{% endif %} mt-6 bg-white"></div>
+      <div id="discourse-comments" class="js-comments-embed{% if articulo.replies == 0 %} hidden{% endif %} mt-6 bg-white"></div>
 
-    <div class="js-comments-empty-state{% if articulo.replies > 0 %} hidden{% endif %} mt-6 rounded-[1.5rem] bg-white text-left">
-      <p class="text-xl font-semibold text-gray-700">¿Qué piensas de este artículo?</p>
-      <p class="mt-2 leading-relaxed text-gray-600">
-        Sé la primera persona en comentar y comparte tu punto de vista en el foro.
-      </p>
-      <a
-        href="{{ articulo.discourseTopicUrl }}/2"
-        class="mx-auto mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Añadir un comentario
-      </a>
+      <div class="js-comments-empty-state{% if articulo.replies > 0 %} hidden{% endif %} mt-6 bg-white text-left">
+        <p class="text-xl font-semibold text-gray-700">¿Qué piensas de este artículo?</p>
+        <p class="mt-2 leading-relaxed text-gray-600">
+          Sé la primera persona en comentar y comparte tu punto de vista en el foro.
+        </p>
+        <a
+          href="{{ articulo.discourseTopicUrl }}/2"
+          class="mx-auto mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Añadir un comentario
+        </a>
+      </div>
     </div>
   </section>
 </section>

@@ -12,7 +12,7 @@
     "build:css": "tailwindcss -c tailwind.config.js -i ./src/assets/styles/main.css -o ./dist/assets/styles/main.css --minify",
     "build:assets": "node ./scripts/rev-assets.mjs",
     "build": "npm run clean && npm run build:css && npm run build:assets && eleventy",
-    "start": "eleventy --serve --port=8080"
+    "start": "eleventy --serve --port=8000"
   },
   "dependencies": {
     "@11ty/eleventy": "^3.0.0"
