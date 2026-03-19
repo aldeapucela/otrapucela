@@ -238,11 +238,14 @@ eleventyComputed:
     data-initial-replies="0"
   >
     <div class="mx-auto w-full max-w-prose">
-      <div class="flex items-center justify-between gap-4">
-        <h2 class="text-2xl font-semibold tracking-tight text-gray-900">Comentarios</h2>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight text-gray-900 uppercase">Comentarios</h2>
+          <p class="mt-0 text-xs leading-[1.6] text-gray-400">con tecnología de Aldea Pucela</p>
+        </div>
         <a
           href="{{ articulo.discourseTopicUrl }}/2"
-          class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+          class="js-add-comment-link{% if articulo.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-gray-900 px-4 py-2 text-xs font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
           target="_blank"
           rel="noreferrer"
         >
