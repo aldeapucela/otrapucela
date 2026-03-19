@@ -752,7 +752,7 @@ async function handleShareClick(event) {
       try {
         await navigator.share({
           title: sharePayload.contentTitle,
-          text: `${sharePayload.contentTitle}\n\n${sharePayload.contentUrl}`,
+          text: sharePayload.contentTitle,
           url: sharePayload.contentUrl
         });
       } catch (error) {
