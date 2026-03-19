@@ -723,8 +723,9 @@ function setupRelatedCarousel() {
 
 function setupScrollTopButton() {
   const scrollTopButton = document.querySelector(".js-scroll-top");
+  const scrollShareButton = document.querySelector(".js-scroll-share-btn");
 
-  if (!scrollTopButton || window.matchMedia("(min-width: 768px)").matches) {
+  if (!scrollTopButton) {
     return;
   }
 
@@ -736,6 +737,14 @@ function setupScrollTopButton() {
     scrollTopButton.classList.toggle("translate-y-3", !shouldShow);
     scrollTopButton.classList.toggle("opacity-100", shouldShow);
     scrollTopButton.classList.toggle("translate-y-0", shouldShow);
+
+    if (scrollShareButton) {
+      scrollShareButton.classList.toggle("pointer-events-none", !shouldShow);
+      scrollShareButton.classList.toggle("opacity-0", !shouldShow);
+      scrollShareButton.classList.toggle("translate-y-3", !shouldShow);
+      scrollShareButton.classList.toggle("opacity-100", shouldShow);
+      scrollShareButton.classList.toggle("translate-y-0", shouldShow);
+    }
   }
 
   scrollTopButton.addEventListener("click", () => {
