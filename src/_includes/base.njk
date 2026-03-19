@@ -193,9 +193,13 @@
         <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-gray-600 {% if ogType == 'article' %}pb-28 md:pb-8{% endif %} sm:px-6 lg:px-8">
           <p>Proyecto comunitario e independiente sobre Valladolid</p>
           <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+            {% set absoluteFeedUrl = site.siteUrl + site.feedPath %}
             <a
               href="{{ site.feedPath }}"
-              class="inline-flex min-h-11 items-center gap-2 self-start rounded-full border border-gray-200 bg-white px-4 py-2 font-medium text-gray-800 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-950"
+              class="inline-flex min-h-11 items-center gap-2 self-start py-2 font-medium text-gray-700 transition-colors duration-200 hover:text-gray-950"
+              data-rss-trigger
+              data-feed-url="{{ absoluteFeedUrl }}"
+              aria-haspopup="dialog"
             >
               <i class="fa-solid fa-rss text-[0.95rem] text-[#8A5A2B]" aria-hidden="true"></i>
               <span>RSS</span>
@@ -211,6 +215,105 @@
           </div>
         </div>
       </footer>
+
+      <dialog
+        class="w-[min(92vw,42rem)] rounded-[2rem] border border-[#DDD7CC] bg-[#FFFDF8] p-0 text-gray-900 shadow-2xl backdrop:bg-[#2F3E46]/55"
+        data-rss-dialog
+        aria-labelledby="rss-dialog-title"
+      >
+        <div class="relative overflow-hidden rounded-[2rem]">
+          <button
+            type="button"
+            class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-[#F3EEE3] hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
+            data-rss-close
+            aria-label="Cerrar"
+          >
+            <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+          </button>
+
+          <div class="px-5 pb-6 pt-8 sm:px-8 sm:pb-8">
+            <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#334B8C] text-white shadow-sm">
+              <i class="fa-solid fa-rss text-[2rem]" aria-hidden="true"></i>
+            </div>
+
+            <div class="mt-6 text-center">
+              <h2 id="rss-dialog-title" class="font-serif text-[2rem] font-semibold leading-tight tracking-tight text-[#334B8C] sm:text-[2.4rem]">
+                Suscríbete al RSS
+              </h2>
+              <p class="mt-4 text-base leading-[1.6] text-gray-600 sm:text-[1.15rem]">
+                Recibe las nuevas publicaciones en tu lector favorito. Puedes copiar la URL del feed o abrirla directamente en algunas apps populares.
+              </p>
+            </div>
+
+            <section class="mt-8 border-t border-[#E7E0D3] pt-8">
+              <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#334B8C]">
+                <i class="fa-regular fa-copy text-[1.2rem]" aria-hidden="true"></i>
+                <span>Copiar la URL del feed</span>
+              </h3>
+              <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                <input
+                  type="text"
+                  readonly
+                  class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm leading-[1.5] text-gray-800 outline-none ring-0 sm:text-base"
+                  data-rss-feed-input
+                >
+                <button
+                  type="button"
+                  class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#334B8C] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#2B4079] focus:outline-none focus:ring-2 focus:ring-[#334B8C]/30"
+                  data-rss-copy
+                >
+                  <i class="fa-regular fa-copy text-base" aria-hidden="true"></i>
+                  <span data-rss-copy-label>Copiar</span>
+                </button>
+              </div>
+              <p class="mt-4 text-sm leading-[1.6] text-gray-500 sm:text-base">
+                Copia esta dirección y pégala en tu lector RSS para seguir las novedades de La Otra Pucela.
+              </p>
+            </section>
+
+            <section class="mt-8 border-t border-[#E7E0D3] pt-8">
+              <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#334B8C]">
+                <i class="fa-solid fa-arrow-up-right-from-square text-[1.05rem]" aria-hidden="true"></i>
+                <span>Suscripción rápida</span>
+              </h3>
+              <p class="mt-4 text-sm leading-[1.6] text-gray-500 sm:text-base">
+                Abre el feed directamente en uno de estos lectores:
+              </p>
+              <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="feedly" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                  <span>Feedly</span>
+                </a>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="inoreader" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                  <span>Inoreader</span>
+                </a>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="newsblur" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                  <span>NewsBlur</span>
+                </a>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="theoldreader" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                  <span>The Old Reader</span>
+                </a>
+              </div>
+            </section>
+
+            <section class="mt-8 rounded-[1.75rem] bg-[#F5F1E7] px-5 py-6 sm:px-6">
+              <h3 class="flex items-center gap-3 text-[1.4rem] font-semibold tracking-tight text-[#334B8C]">
+                <i class="fa-solid fa-circle-info text-[1.1rem]" aria-hidden="true"></i>
+                <span>Cómo añadirlo manualmente</span>
+              </h3>
+              <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 sm:text-base">
+                <li>1. Abre tu aplicación o servicio de lectura RSS.</li>
+                <li>2. Busca una opción como “Añadir feed”, “Suscribirse” o el icono +.</li>
+                <li>3. Pega la URL del feed que has copiado.</li>
+                <li>4. Confirma la suscripción y listo.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+      </dialog>
     </div>
 
     <script src="{{ assetManifest['assets/js/main.js'] or '/assets/js/main.js' }}" defer></script>

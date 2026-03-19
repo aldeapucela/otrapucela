@@ -690,6 +690,112 @@ function setupShareButtons() {
   });
 }
 
+function setupRssDialog() {
+  const triggerElement = document.querySelector("[data-rss-trigger]");
+  const dialogElement = document.querySelector("[data-rss-dialog]");
+
+  if (!triggerElement || !dialogElement) {
+    return;
+  }
+
+  const closeButton = dialogElement.querySelector("[data-rss-close]");
+  const copyButton = dialogElement.querySelector("[data-rss-copy]");
+  const copyLabel = dialogElement.querySelector("[data-rss-copy-label]");
+  const inputElement = dialogElement.querySelector("[data-rss-feed-input]");
+  const readerLinks = dialogElement.querySelectorAll("[data-rss-reader]");
+  const feedUrl = triggerElement.dataset.feedUrl || triggerElement.href;
+
+  if (!feedUrl || !inputElement) {
+    return;
+  }
+
+  inputElement.value = feedUrl;
+
+  const readerUrls = {
+    feedly: `https://feedly.com/i/subscription/feed/${encodeURIComponent(feedUrl)}`,
+    inoreader: `https://www.inoreader.com/?add_feed=${encodeURIComponent(feedUrl)}`,
+    newsblur: `https://www.newsblur.com/?url=${encodeURIComponent(feedUrl)}`,
+    theoldreader: `https://theoldreader.com/feeds/subscribe?url=${encodeURIComponent(feedUrl)}`
+  };
+
+  readerLinks.forEach((linkElement) => {
+    const readerName = linkElement.dataset.rssReader;
+    const readerUrl = readerUrls[readerName];
+
+    if (!readerUrl) {
+      return;
+    }
+
+    linkElement.href = readerUrl;
+  });
+
+  function openDialog() {
+    if (typeof dialogElement.showModal !== "function") {
+      window.location.href = feedUrl;
+      return;
+    }
+
+    dialogElement.showModal();
+    document.body.classList.add("overflow-hidden");
+    window.setTimeout(() => {
+      inputElement.focus();
+      inputElement.select();
+    }, 30);
+  }
+
+  function closeDialog() {
+    if (dialogElement.open) {
+      dialogElement.close();
+    }
+
+    document.body.classList.remove("overflow-hidden");
+    triggerElement.focus();
+  }
+
+  async function copyFeedUrl() {
+    try {
+      await navigator.clipboard.writeText(feedUrl);
+      copyLabel.textContent = "Copiada";
+      window.setTimeout(() => {
+        copyLabel.textContent = "Copiar";
+      }, 2200);
+    } catch {
+      inputElement.focus();
+      inputElement.select();
+      copyLabel.textContent = "Seleccionada";
+      window.setTimeout(() => {
+        copyLabel.textContent = "Copiar";
+      }, 2200);
+    }
+  }
+
+  triggerElement.addEventListener("click", (event) => {
+    event.preventDefault();
+    openDialog();
+  });
+
+  closeButton?.addEventListener("click", closeDialog);
+  copyButton?.addEventListener("click", copyFeedUrl);
+
+  dialogElement.addEventListener("click", (event) => {
+    const dialogBounds = dialogElement.getBoundingClientRect();
+    const isBackdropClick =
+      event.clientX < dialogBounds.left
+      || event.clientX > dialogBounds.right
+      || event.clientY < dialogBounds.top
+      || event.clientY > dialogBounds.bottom;
+
+    if (isBackdropClick) {
+      closeDialog();
+    }
+  });
+
+  dialogElement.addEventListener("close", () => {
+    document.body.classList.remove("overflow-hidden");
+    triggerElement.focus();
+  });
+}
+
 function setupRelatedCarousel() {
   const viewportElement = document.querySelector(".js-related-viewport");
   const trackElement = document.querySelector(".js-related-track");
@@ -929,6 +1035,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupHeaderMenu();
   setupSearchPage();
   setupShareButtons();
+  setupRssDialog();
   setupRelatedCarousel();
   setupScrollTopButton();
   setupCommentsSection();
