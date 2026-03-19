@@ -29,6 +29,21 @@ function throttle(callback, waitMs) {
   };
 }
 
+function debounce(callback, waitMs) {
+  let timeoutId = null;
+
+  return function debounced(...args) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = window.setTimeout(() => {
+      timeoutId = null;
+      callback(...args);
+    }, waitMs);
+  };
+}
+
 function setupHeaderAutoHide() {
   const headerElement = document.querySelector("#js-header");
 
@@ -124,6 +139,19 @@ function tokenizeSearchValue(value = "") {
   return normalizedValue.split(" ").filter(Boolean);
 }
 
+function escapeRegExp(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasWholeWordMatch(value = "", token = "") {
+  if (!value || !token) {
+    return false;
+  }
+
+  const pattern = new RegExp(`(^|\\s)${escapeRegExp(token)}(?=\\s|$)`);
+  return pattern.test(value);
+}
+
 function stripHtmlTags(value = "") {
   return String(value).replace(/<[^>]+>/g, " ");
 }
@@ -166,23 +194,23 @@ function scoreSearchMatch(searchDocument, tokens) {
   for (const token of tokens) {
     let tokenScore = 0;
 
-    if (searchDocument.title.includes(token)) {
+    if (hasWholeWordMatch(searchDocument.title, token)) {
       tokenScore = Math.max(tokenScore, 12);
     }
 
-    if (searchDocument.tags.includes(token)) {
+    if (hasWholeWordMatch(searchDocument.tags, token)) {
       tokenScore = Math.max(tokenScore, 8);
     }
 
-    if (searchDocument.author.includes(token)) {
+    if (hasWholeWordMatch(searchDocument.author, token)) {
       tokenScore = Math.max(tokenScore, 6);
     }
 
-    if (searchDocument.description.includes(token) || searchDocument.excerpt.includes(token)) {
+    if (hasWholeWordMatch(searchDocument.description, token) || hasWholeWordMatch(searchDocument.excerpt, token)) {
       tokenScore = Math.max(tokenScore, 4);
     }
 
-    if (searchDocument.content.includes(token)) {
+    if (hasWholeWordMatch(searchDocument.content, token)) {
       tokenScore = Math.max(tokenScore, 2);
     }
 
@@ -248,23 +276,17 @@ function highlightSearchTerms(value = "", tokens = []) {
       continue;
     }
 
-    let searchStartIndex = 0;
+    const pattern = new RegExp(`(^|\\s)(${escapeRegExp(token)})(?=\\s|$)`, "g");
+    let match;
 
-    while (searchStartIndex < normalizedValue.length) {
-      const matchIndex = normalizedValue.indexOf(token, searchStartIndex);
-
-      if (matchIndex === -1) {
-        break;
-      }
-
+    while ((match = pattern.exec(normalizedValue)) !== null) {
+      const matchIndex = match.index + match[1].length;
       const start = indexMap[matchIndex];
       const end = indexMap[Math.min(matchIndex + token.length - 1, indexMap.length - 1)] + 1;
 
       if (typeof start === "number" && typeof end === "number" && end > start) {
         ranges.push({ start, end });
       }
-
-      searchStartIndex = matchIndex + token.length;
     }
   }
 
@@ -338,7 +360,7 @@ function buildHighlightedSnippet(article, tokens) {
     let score = 0;
 
     for (const token of tokens) {
-      if (normalizedSegment.includes(token)) {
+      if (hasWholeWordMatch(normalizedSegment, token)) {
         score += token.length;
       }
     }
@@ -419,7 +441,7 @@ function createSearchResultMarkup(article, tokens) {
 
   const imageMarkup = article.image
     ? `
-      <a href="${publicPath}" class="block overflow-hidden rounded-[1rem] bg-gray-100 shadow-sm">
+      <a href="${publicPath}" class="block overflow-hidden bg-gray-100 shadow-sm">
         <img
           src="${escapeHtml(article.image)}"
           alt="${title}"
@@ -460,6 +482,7 @@ async function setupSearchPage() {
   }
 
   const searchEndpoint = searchRoot.dataset.searchEndpoint;
+  const formElement = document.querySelector('form[action="/buscar/"]');
   const inputElement = document.querySelector(".js-search-input");
   const loadingElement = searchRoot.querySelector(".js-search-loading");
   const summaryElement = searchRoot.querySelector(".js-search-summary");
@@ -469,10 +492,12 @@ async function setupSearchPage() {
   const emptyElement = searchRoot.querySelector(".js-search-empty");
   const errorElement = searchRoot.querySelector(".js-search-error");
   const resultsElement = searchRoot.querySelector(".js-search-results");
-  const currentQuery = new URLSearchParams(window.location.search).get("q") ?? "";
+  const initialQuery = new URLSearchParams(window.location.search).get("q") ?? "";
+  let currentRequestId = 0;
+  let articleItems = null;
 
   if (inputElement) {
-    inputElement.value = currentQuery;
+    inputElement.value = initialQuery;
   }
 
   function setState(stateName) {
@@ -484,16 +509,11 @@ async function setupSearchPage() {
     resultsElement?.classList.toggle("hidden", stateName !== "results");
   }
 
-  const tokens = tokenizeSearchValue(currentQuery);
+  async function loadSearchItems() {
+    if (articleItems) {
+      return articleItems;
+    }
 
-  if (!tokens.length) {
-    setState("idle");
-    return;
-  }
-
-  setState("loading");
-
-  try {
     const response = await fetch(searchEndpoint, {
       headers: {
         Accept: "application/json"
@@ -505,8 +525,47 @@ async function setupSearchPage() {
     }
 
     const payload = await response.json();
-    const items = Array.isArray(payload?.items) ? payload.items : [];
-    const results = items
+    articleItems = Array.isArray(payload?.items) ? payload.items : [];
+    return articleItems;
+  }
+
+  function updateSearchUrl(query) {
+    const nextUrl = new URL(window.location.href);
+
+    if (query) {
+      nextUrl.searchParams.set("q", query);
+    } else {
+      nextUrl.searchParams.delete("q");
+    }
+
+    window.history.replaceState({}, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+  }
+
+  async function renderSearchResults(rawQuery = "") {
+    const requestId = currentRequestId + 1;
+    currentRequestId = requestId;
+
+    const trimmedQuery = rawQuery.trim();
+    const tokens = tokenizeSearchValue(trimmedQuery);
+
+    updateSearchUrl(trimmedQuery);
+
+    if (!tokens.length) {
+      resultsElement.innerHTML = "";
+      setState("idle");
+      return;
+    }
+
+    setState("loading");
+
+    try {
+      const items = await loadSearchItems();
+
+      if (requestId !== currentRequestId) {
+        return;
+      }
+
+      const results = items
       .map((article) => ({
         article,
         score: scoreSearchMatch(buildSearchDocument(article), tokens)
@@ -521,25 +580,66 @@ async function setupSearchPage() {
       })
       .map((entry) => entry.article);
 
-    if (!results.length) {
-      setState("empty");
-      return;
+      if (requestId !== currentRequestId) {
+        return;
+      }
+
+      if (!results.length) {
+        resultsElement.innerHTML = "";
+        if (queryElement) {
+          queryElement.textContent = `“${trimmedQuery}”`;
+        }
+        if (countElement) {
+          countElement.textContent = "0";
+        }
+        setState("empty");
+        return;
+      }
+
+      resultsElement.innerHTML = results.map((article) => createSearchResultMarkup(article, tokens)).join("");
+
+      if (countElement) {
+        countElement.textContent = String(results.length);
+      }
+
+      if (queryElement) {
+        queryElement.textContent = `“${trimmedQuery}”`;
+      }
+
+      setState("results");
+    } catch {
+      if (requestId !== currentRequestId) {
+        return;
+      }
+
+      setState("error");
     }
-
-    resultsElement.innerHTML = results.map((article) => createSearchResultMarkup(article, tokens)).join("");
-
-    if (countElement) {
-      countElement.textContent = String(results.length);
-    }
-
-    if (queryElement) {
-      queryElement.textContent = `“${currentQuery.trim()}”`;
-    }
-
-    setState("results");
-  } catch {
-    setState("error");
   }
+
+  const debouncedRenderSearchResults = debounce((nextQuery) => {
+    renderSearchResults(nextQuery);
+  }, 220);
+
+  formElement?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    renderSearchResults(inputElement?.value ?? "");
+  });
+
+  inputElement?.addEventListener("input", (event) => {
+    debouncedRenderSearchResults(event.currentTarget.value);
+  });
+
+  window.addEventListener("popstate", () => {
+    const nextQuery = new URLSearchParams(window.location.search).get("q") ?? "";
+
+    if (inputElement) {
+      inputElement.value = nextQuery;
+    }
+
+    renderSearchResults(nextQuery);
+  });
+
+  await renderSearchResults(initialQuery);
 }
 
 function setShareButtonFeedback(buttonElement, labelText, iconClass) {
