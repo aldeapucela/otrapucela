@@ -19,6 +19,18 @@ function stripHtml(html = "") {
     .trim();
 }
 
+function normalizeExcerptText(text = "") {
+  return text.replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
+}
+
+function ensureExcerptEnding(text = "") {
+  if (!text) {
+    return "";
+  }
+
+  return /[.!?…]$/.test(text) ? text : `${text}.`;
+}
+
 function sanitizeDiscourseHtml(html = "") {
   if (!html) {
     return "";
@@ -130,7 +142,7 @@ function sanitizeDiscourseHtml(html = "") {
 
   $("p").each((_, element) => {
     const paragraph = $(element);
-    const cleanText = paragraph.text().replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
+    const cleanText = normalizeExcerptText(paragraph.text());
     const isDimensionCaption = /^\d+\s*[×x]\s*\d+(\s+\d+([.,]\d+)?\s*(KB|MB|GB))?$/i.test(cleanText)
       || /^\d+\s*[×x]\s*\d+\s+\d+([.,]\d+)?\s*(KB|MB|GB)$/i.test(cleanText);
 
@@ -156,7 +168,40 @@ function excerptFromText(text = "", maxLength = 220) {
     return "";
   }
 
-  const sentences = normalizedText.match(/[^.!?…]+[.!?…]+/g)?.map((sentence) => sentence.trim()) ?? [];
+  const sentences = [];
+  let sentenceStart = 0;
+
+  for (let index = 0; index < normalizedText.length; index += 1) {
+    const character = normalizedText[index];
+
+    if (!".!?…".includes(character)) {
+      continue;
+    }
+
+    const previousCharacter = normalizedText[index - 1] ?? "";
+    const nextCharacter = normalizedText[index + 1] ?? "";
+    const isNumericSeparator = /\d/.test(previousCharacter) && /\d/.test(nextCharacter);
+
+    if (isNumericSeparator) {
+      continue;
+    }
+
+    const sentence = normalizedText.slice(sentenceStart, index + 1).trim();
+
+    if (sentence) {
+      sentences.push(sentence);
+    }
+
+    sentenceStart = index + 1;
+  }
+
+  if (sentenceStart < normalizedText.length) {
+    const trailingSentence = normalizedText.slice(sentenceStart).trim();
+
+    if (trailingSentence) {
+      sentences.push(trailingSentence);
+    }
+  }
 
   if (sentences.length) {
     let excerpt = "";
@@ -179,6 +224,57 @@ function excerptFromText(text = "", maxLength = 220) {
   }
 
   return normalizedText;
+}
+
+function excerptFromHtml(html = "", maxLength = 220) {
+  if (!html) {
+    return "";
+  }
+
+  const $ = cheerio.load(html);
+  const firstParagraph = $("p").toArray().find((element) => {
+    const text = normalizeExcerptText($(element).text());
+
+    return text && !/^compartir en redes y grupos$/i.test(text);
+  });
+
+  if (firstParagraph) {
+    const paragraphText = normalizeExcerptText($(firstParagraph).text());
+
+    if (paragraphText.length <= maxLength) {
+      return ensureExcerptEnding(paragraphText);
+    }
+
+    return ensureExcerptEnding(excerptFromText(paragraphText, maxLength));
+  }
+
+  return ensureExcerptEnding(excerptFromText(stripHtml(html), maxLength));
+}
+
+function bodyHtmlFromContent(html = "", excerpt = "") {
+  if (!html) {
+    return "";
+  }
+
+  const $ = cheerio.load(html);
+  const normalizedExcerpt = normalizeExcerptText(excerpt).replace(/[.!?…]+$/, "");
+  const firstParagraph = $("p").first();
+
+  if (firstParagraph.length) {
+    const firstParagraphText = normalizeExcerptText(firstParagraph.text()).replace(/[.!?…]+$/, "");
+
+    if (normalizedExcerpt && firstParagraphText === normalizedExcerpt) {
+      firstParagraph.remove();
+
+      const nextElement = $("body").children().first();
+
+      if (nextElement.length && nextElement.is("hr")) {
+        nextElement.remove();
+      }
+    }
+  }
+
+  return $.root().html() || "";
 }
 
 function normalizeCommentCount(topic) {
@@ -393,12 +489,12 @@ async function fetchTopicDetail(topic) {
     const topicPayload = await fetchJson(topicUrl);
     const firstPost = topicPayload.post_stream?.posts?.[0];
     const cooked = sanitizeDiscourseHtml(firstPost?.cooked ?? "");
-    const plainText = stripHtml(cooked);
 
     return {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
       html: cooked,
-      excerpt: excerptFromText(plainText),
+      excerpt: excerptFromHtml(cooked),
+      bodyHtml: bodyHtmlFromContent(cooked, excerptFromHtml(cooked)),
       image: topicPayload.image_url ?? null,
       author: normalizeAuthor(firstPost ?? topicPayload.details?.created_by ?? {}),
       postNumber: firstPost?.post_number ?? 1,
@@ -480,8 +576,7 @@ export default async function articulos() {
 
       if (canReuseCachedItem) {
         const sanitizedCachedHtml = sanitizeDiscourseHtml(cachedItem.contentHtml ?? "");
-        const cachedPlainText = stripHtml(sanitizedCachedHtml);
-        const normalizedExcerpt = excerptFromText(cachedPlainText);
+        const normalizedExcerpt = excerptFromHtml(sanitizedCachedHtml);
 
         return {
           ...cachedItem,
@@ -497,6 +592,7 @@ export default async function articulos() {
           author: cachedAuthor,
           excerpt: normalizedExcerpt,
           description: normalizedExcerpt || excerptFromText(topic.excerpt ?? ""),
+          bodyHtml: bodyHtmlFromContent(sanitizedCachedHtml, normalizedExcerpt),
           contentHtml: sanitizedCachedHtml,
           image: cachedItem.image ?? topic.image_url ?? null,
           source: {
@@ -526,6 +622,7 @@ export default async function articulos() {
         author: detail.author,
         excerpt: detail.excerpt,
         description: detail.excerpt || excerptFromText(topic.excerpt ?? ""),
+        bodyHtml: bodyHtmlFromContent(detail.html, detail.excerpt),
         contentHtml: detail.html,
         discourseTopicUrl: detail.canonicalUrl,
         publicPath: `/p/${topic.id}/${topic.slug}/`,
