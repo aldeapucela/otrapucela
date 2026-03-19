@@ -482,7 +482,7 @@ async function setupSearchPage() {
   }
 
   const searchEndpoint = searchRoot.dataset.searchEndpoint;
-  const formElement = document.querySelector('form[action="/buscar/"]');
+  const formElement = document.querySelector(".js-search-form");
   const inputElement = document.querySelector(".js-search-input");
   const loadingElement = searchRoot.querySelector(".js-search-loading");
   const summaryElement = searchRoot.querySelector(".js-search-summary");
