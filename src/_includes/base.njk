@@ -68,9 +68,11 @@
             </button>
           </div>
 
-          {% if page.url == '/' and articulos and articulos.tags and articulos.tags.length %}
+          {% set desktopThemes = articulos.tags | topThemes(6) if articulos and articulos.tags else [] %}
+
+          {% if page.url == '/' and desktopThemes.length %}
           <nav class="absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
-            {% for tag in articulos.tags %}
+            {% for tag in desktopThemes %}
             <a
               href="/tema/{{ tag.slug }}/"
               class="whitespace-nowrap text-sm font-semibold text-gray-700 transition-colors duration-200 hover:text-gray-900"
@@ -78,6 +80,12 @@
               {{ tag.name | themeName }}
             </a>
             {% endfor %}
+            <a
+              href="/temas/"
+              class="whitespace-nowrap text-sm font-semibold text-gray-500 transition-colors duration-200 hover:text-gray-900"
+            >
+              Más temas
+            </a>
             <a
               href="/boletin/"
               class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
@@ -88,10 +96,10 @@
           {% endif %}
         </div>
 
-        {% if page.url != '/' and articulos and articulos.tags and articulos.tags.length %}
+        {% if page.url != '/' and desktopThemes.length %}
         <div class="border-t border-gray-200">
           <div class="mx-auto hidden max-w-7xl items-center gap-8 overflow-x-auto px-6 py-4 lg:flex">
-            {% for tag in articulos.tags %}
+            {% for tag in desktopThemes %}
             <a
               href="/tema/{{ tag.slug }}/"
               class="whitespace-nowrap text-sm font-semibold text-gray-700 transition-colors duration-200 hover:text-gray-900"
@@ -99,6 +107,12 @@
               {{ tag.name | themeName }}
             </a>
             {% endfor %}
+            <a
+              href="/temas/"
+              class="whitespace-nowrap text-sm font-semibold text-gray-500 transition-colors duration-200 hover:text-gray-900"
+            >
+              Más temas
+            </a>
             <a
               href="/boletin/"
               class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
@@ -145,6 +159,12 @@
                 class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/quienes-somos/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
               >
                 Quiénes somos
+              </a>
+              <a
+                href="/temas/"
+                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/temas/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+              >
+                Temas
               </a>
               <a
                 href="https://foro.aldeapucela.org/t/acerca-de-la-otra-pucela/966"

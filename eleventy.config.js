@@ -122,6 +122,22 @@ export default function eleventyConfig(config) {
     );
   });
 
+  config.addFilter("topThemes", (tags = [], limit = 6) => {
+    if (!Array.isArray(tags)) {
+      return [];
+    }
+
+    return [...tags]
+      .sort((a, b) => {
+        if ((b.count ?? 0) !== (a.count ?? 0)) {
+          return (b.count ?? 0) - (a.count ?? 0);
+        }
+
+        return String(a.name ?? "").localeCompare(String(b.name ?? ""), "es");
+      })
+      .slice(0, limit);
+  });
+
   config.addFilter("articlesForAuthor", (items = [], username = "") => {
     if (!Array.isArray(items) || !username) {
       return [];
