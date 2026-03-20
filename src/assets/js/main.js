@@ -809,7 +809,7 @@ function restoreShareButton(buttonElement) {
 }
 
 function trackMatomoEvent(category, action, name, value) {
-  if (!Array.isArray(window._paq)) {
+  if (typeof window._paq?.push !== "function") {
     return;
   }
 
