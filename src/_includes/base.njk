@@ -8,10 +8,16 @@
     <title>{{ title or "La Otra Pucela" }}</title>
     <meta name="description" content="{{ description or 'Medio digital estático con artículos publicados desde Discourse.' }}">
     <meta name="theme-color" content="#1F2937">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="La Otra Pucela">
     <link rel="canonical" href="{{ resolvedCanonicalUrl }}">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
 
     <meta property="og:type" content="{{ ogType or 'website' }}">
     <meta property="og:site_name" content="La Otra Pucela">
@@ -180,6 +186,23 @@
                 <i class="fa-regular fa-envelope text-[0.95rem]" aria-hidden="true"></i>
                 <span>Recibir por correo</span>
               </a>
+
+              <button
+                type="button"
+                class="js-install-app-trigger hidden min-h-12 w-full items-center justify-between gap-4 rounded-2xl border border-[#DDD7CC] bg-[#FFFDF8] px-4 py-3 text-left text-sm text-gray-800 shadow-sm transition-colors duration-200 hover:bg-[#F8F4EC]"
+                aria-haspopup="dialog"
+              >
+                <span class="flex items-center gap-3">
+                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F1E7] text-[#2F3E46]">
+                    <i class="fa-solid fa-mobile-screen-button text-base" aria-hidden="true"></i>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block font-semibold uppercase tracking-[0.08em] text-gray-900">Añadir a pantalla de inicio</span>
+                    <span class="mt-1 block text-sm leading-[1.55] text-gray-500 js-install-app-description">Ten La Otra Pucela más a mano en tu móvil.</span>
+                  </span>
+                </span>
+                <i class="fa-solid fa-chevron-right text-sm text-gray-400" aria-hidden="true"></i>
+              </button>
 
               {% if articulos and articulos.tags and articulos.tags.length %}
               <div class="border-t border-gray-200 pt-5 lg:hidden">
@@ -366,6 +389,67 @@
                 <li>4. Confirma la suscripción y listo.</li>
               </ol>
             </section>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog
+        class="w-[min(92vw,32rem)] rounded-[2rem] border border-[#DDD7CC] bg-[#FFFDF8] p-0 text-gray-900 shadow-2xl backdrop:bg-[#2F3E46]/55"
+        data-install-dialog
+        aria-labelledby="install-dialog-title"
+      >
+        <div class="relative overflow-hidden rounded-[2rem]">
+          <button
+            type="button"
+            class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-[#F3EEE3] hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
+            data-install-close
+            aria-label="Cerrar"
+          >
+            <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+          </button>
+
+          <div class="px-5 pb-6 pt-8 sm:px-8 sm:pb-8">
+            <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#2F3E46] text-white shadow-sm">
+              <i class="fa-solid fa-mobile-screen-button text-[2rem]" aria-hidden="true"></i>
+            </div>
+
+            <div class="mt-6 text-center">
+              <h2 id="install-dialog-title" class="font-serif text-[1.9rem] font-semibold leading-tight tracking-tight text-[#2F3E46] sm:text-[2.2rem]">
+                Añádelo a tu pantalla de inicio
+              </h2>
+              <p class="mt-4 text-base leading-[1.6] text-gray-600 sm:text-[1.08rem] js-install-dialog-copy">
+                Sigue estos pasos para tener La Otra Pucela más a mano en tu móvil o tablet.
+              </p>
+            </div>
+
+            <section class="mt-8 rounded-[1.75rem] bg-[#F5F1E7] px-5 py-6 sm:px-6">
+              <h3 class="flex items-center gap-3 text-[1.35rem] font-semibold tracking-tight text-[#2F3E46]">
+                <i class="fa-solid fa-circle-info text-[1.1rem]" aria-hidden="true"></i>
+                <span>Pasos</span>
+              </h3>
+              <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 sm:text-base js-install-steps">
+                <li>1. Abre el menú de compartir de tu navegador.</li>
+                <li>2. Busca la opción “Añadir a pantalla de inicio”.</li>
+                <li>3. Confirma el nombre y pulsa “Añadir”.</li>
+              </ol>
+            </section>
+
+            <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                class="js-install-app-confirm inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#2F3E46] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#253138] focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/30"
+              >
+                <i class="fa-solid fa-download text-base" aria-hidden="true"></i>
+                <span class="js-install-app-confirm-label">Continuar</span>
+              </button>
+              <button
+                type="button"
+                class="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[#DDD7CC] bg-white px-5 py-3 text-base font-semibold text-gray-700 transition-colors duration-200 hover:bg-[#F8F4EC] focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/15"
+                data-install-close
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       </dialog>

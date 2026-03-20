@@ -4,8 +4,12 @@ import path from "node:path";
 export default function eleventyConfig(config) {
   config.addPassthroughCopy({ "src/assets/favicon.ico": "favicon.ico" });
   config.addPassthroughCopy({ "src/assets/favicon.svg": "favicon.svg" });
+  config.addPassthroughCopy({ "src/assets/apple-touch-icon.png": "apple-touch-icon.png" });
+  config.addPassthroughCopy({ "src/assets/icon-192.png": "assets/icon-192.png" });
+  config.addPassthroughCopy({ "src/assets/icon-512.png": "assets/icon-512.png" });
   config.addPassthroughCopy({ "src/assets/logo-wordmark.svg": "assets/logo-wordmark.svg" });
   config.addPassthroughCopy({ "src/assets/social-preview.png": "assets/social-preview.png" });
+  config.addPassthroughCopy({ "src/service-worker.js": "service-worker.js" });
 
   config.addWatchTarget("./src/assets/js");
   config.addWatchTarget("./src/assets/styles");

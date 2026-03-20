@@ -70,6 +70,151 @@ function setupHeaderAutoHide() {
   window.addEventListener("scroll", handleScroll, { passive: true });
 }
 
+function setupPwaRegistration() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+  });
+}
+
+function setupInstallPrompt() {
+  const triggerElement = document.querySelector(".js-install-app-trigger");
+  const descriptionElement = document.querySelector(".js-install-app-description");
+  const dialogElement = document.querySelector("[data-install-dialog]");
+
+  if (!triggerElement || !dialogElement) {
+    return;
+  }
+
+  const closeButtons = dialogElement.querySelectorAll("[data-install-close]");
+  const copyElement = dialogElement.querySelector(".js-install-dialog-copy");
+  const stepsElement = dialogElement.querySelector(".js-install-steps");
+  const confirmButton = dialogElement.querySelector(".js-install-app-confirm");
+  const confirmLabel = dialogElement.querySelector(".js-install-app-confirm-label");
+  const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent)
+    || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone === true;
+  let deferredPrompt = null;
+  let mode = null;
+
+  function closeDialog() {
+    if (dialogElement.open) {
+      dialogElement.close();
+    }
+
+    document.body.classList.remove("overflow-hidden");
+    triggerElement.focus();
+  }
+
+  function openDialog() {
+    if (typeof dialogElement.showModal !== "function") {
+      return;
+    }
+
+    dialogElement.showModal();
+    document.body.classList.add("overflow-hidden");
+  }
+
+  function applyMode(nextMode) {
+    mode = nextMode;
+
+    if (mode === "ios") {
+      triggerElement.classList.remove("hidden");
+      triggerElement.classList.add("inline-flex");
+      descriptionElement.textContent = "Guarda el medio como acceso directo desde Safari.";
+      copyElement.textContent = "En iPhone y iPad debes hacerlo manualmente desde el menú de compartir de Safari.";
+      stepsElement.innerHTML = `
+        <li>1. Abre esta web en Safari.</li>
+        <li>2. Pulsa el botón Compartir (cuadrado con flecha hacia arriba).</li>
+        <li>3. Desplázate y toca “Añadir a pantalla de inicio”.</li>
+        <li>4. Confirma el nombre y pulsa “Añadir”.</li>
+      `;
+      confirmLabel.textContent = "Entendido";
+      return;
+    }
+
+    if (mode === "install") {
+      triggerElement.classList.remove("hidden");
+      triggerElement.classList.add("inline-flex");
+      descriptionElement.textContent = "Instálala en tu móvil para abrirla con un toque.";
+      copyElement.textContent = "Tu navegador puede añadir La Otra Pucela a la pantalla de inicio como acceso directo instalable.";
+      stepsElement.innerHTML = `
+        <li>1. Pulsa el botón de abajo.</li>
+        <li>2. Revisa el diálogo de instalación de tu navegador.</li>
+        <li>3. Confirma la instalación para añadirla a tu pantalla de inicio.</li>
+      `;
+      confirmLabel.textContent = "Añadir ahora";
+      return;
+    }
+
+    triggerElement.classList.add("hidden");
+    triggerElement.classList.remove("inline-flex");
+  }
+
+  async function handleConfirm() {
+    if (mode === "install" && deferredPrompt) {
+      deferredPrompt.prompt();
+
+      try {
+        await deferredPrompt.userChoice;
+      } catch {
+        // Ignore prompt dismissal and keep the menu action available.
+      }
+
+      deferredPrompt = null;
+      closeDialog();
+      applyMode(null);
+      return;
+    }
+
+    closeDialog();
+  }
+
+  triggerElement.addEventListener("click", openDialog);
+  confirmButton?.addEventListener("click", handleConfirm);
+
+  closeButtons.forEach((button) => {
+    button.addEventListener("click", closeDialog);
+  });
+
+  dialogElement.addEventListener("click", (event) => {
+    const dialogBounds = dialogElement.getBoundingClientRect();
+    const isBackdropClick =
+      event.clientX < dialogBounds.left
+      || event.clientX > dialogBounds.right
+      || event.clientY < dialogBounds.top
+      || event.clientY > dialogBounds.bottom;
+
+    if (isBackdropClick) {
+      closeDialog();
+    }
+  });
+
+  dialogElement.addEventListener("close", () => {
+    document.body.classList.remove("overflow-hidden");
+    triggerElement.focus();
+  });
+
+  if (isStandalone) {
+    applyMode(null);
+    return;
+  }
+
+  if (isIos) {
+    applyMode("ios");
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    applyMode("install");
+  });
+}
+
 function setupHeaderMenu() {
   const menuToggleButton = document.querySelector(".js-menu-toggle");
   const menuPanel = document.querySelector(".js-menu-panel");
@@ -1262,6 +1407,8 @@ async function setupCommentsSection() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  setupPwaRegistration();
+  setupInstallPrompt();
   setupHeaderAutoHide();
   setupHeaderMenu();
   setupSearchPage();
