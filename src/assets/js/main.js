@@ -1060,6 +1060,52 @@ function normalizeCommentCount(topicPayload) {
   return visibleReplies.length;
 }
 
+function normalizeLatestTopicPostNumber(topicPayload) {
+  const highestPostNumber = Number(topicPayload?.highest_post_number ?? 0);
+
+  if (highestPostNumber > 1) {
+    return highestPostNumber;
+  }
+
+  const streamPostNumbers = Array.isArray(topicPayload?.post_stream?.stream)
+    ? topicPayload.post_stream.stream
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value) && value > 1)
+    : [];
+
+  if (streamPostNumbers.length) {
+    return Math.max(...streamPostNumbers);
+  }
+
+  const posts = Array.isArray(topicPayload?.post_stream?.posts)
+    ? topicPayload.post_stream.posts
+    : [];
+  const visiblePostNumbers = posts
+    .map((post) => Number(post?.post_number ?? 0))
+    .filter((value) => Number.isFinite(value) && value > 1);
+
+  if (visiblePostNumbers.length) {
+    return Math.max(...visiblePostNumbers);
+  }
+
+  return 2;
+}
+
+function buildTopicPostUrl(topicUrl, postNumber = 2) {
+  if (!topicUrl) {
+    return "";
+  }
+
+  const normalizedTopicUrl = String(topicUrl).replace(/\/+$/, "");
+  const normalizedPostNumber = Number(postNumber);
+
+  if (!Number.isFinite(normalizedPostNumber) || normalizedPostNumber < 2) {
+    return `${normalizedTopicUrl}/2`;
+  }
+
+  return `${normalizedTopicUrl}/${normalizedPostNumber}`;
+}
+
 function updateCommentCount(commentCount) {
   const commentCountElements = document.querySelectorAll(".js-comment-count");
 
@@ -1104,9 +1150,12 @@ function refreshDiscourseEmbed() {
   embedFrame.src = embedFrame.src;
 }
 
-async function fetchCommentCount(topicJsonUrl, fallbackCount) {
+async function fetchTopicMetadata(topicJsonUrl, fallbackCount, fallbackLatestPostNumber = 2) {
   if (!topicJsonUrl) {
-    return fallbackCount;
+    return {
+      commentCount: fallbackCount,
+      latestPostNumber: fallbackLatestPostNumber
+    };
   }
 
   try {
@@ -1118,13 +1167,22 @@ async function fetchCommentCount(topicJsonUrl, fallbackCount) {
     });
 
     if (!response.ok) {
-      return fallbackCount;
+      return {
+        commentCount: fallbackCount,
+        latestPostNumber: fallbackLatestPostNumber
+      };
     }
 
     const topicPayload = await response.json();
-    return normalizeCommentCount(topicPayload);
+    return {
+      commentCount: normalizeCommentCount(topicPayload),
+      latestPostNumber: normalizeLatestTopicPostNumber(topicPayload)
+    };
   } catch {
-    return fallbackCount;
+    return {
+      commentCount: fallbackCount,
+      latestPostNumber: fallbackLatestPostNumber
+    };
   }
 }
 
@@ -1140,16 +1198,22 @@ async function setupCommentsSection() {
   const embedContainer = commentsRoot.querySelector(".js-comments-embed");
   const discourseUrl = commentsRoot.dataset.discourseUrl;
   const topicId = commentsRoot.dataset.topicId;
+  const topicUrl = commentsRoot.dataset.topicUrl;
   const topicJsonUrl = commentsRoot.dataset.topicJsonUrl;
   const initialReplies = Number(commentsRoot.dataset.initialReplies ?? 0);
 
   let commentCount = initialReplies;
+  let latestPostNumber = 2;
   let hasLoadedEmbed = false;
 
   function renderCommentsSection(nextCommentCount, previousCommentCount = commentCount) {
     updateCommentCount(nextCommentCount);
 
     if (nextCommentCount > 0) {
+      if (addCommentLink) {
+        addCommentLink.href = buildTopicPostUrl(topicUrl, latestPostNumber);
+      }
+
       addCommentLink?.classList.remove("hidden");
       emptyState?.classList.add("hidden");
       embedContainer?.classList.remove("hidden");
@@ -1170,11 +1234,12 @@ async function setupCommentsSection() {
   }
 
   async function syncCommentsSection() {
-    const nextCommentCount = await fetchCommentCount(topicJsonUrl, commentCount);
+    const topicMetadata = await fetchTopicMetadata(topicJsonUrl, commentCount, latestPostNumber);
     const previousCommentCount = commentCount;
 
-    commentCount = nextCommentCount;
-    renderCommentsSection(nextCommentCount, previousCommentCount);
+    commentCount = topicMetadata.commentCount;
+    latestPostNumber = topicMetadata.latestPostNumber;
+    renderCommentsSection(commentCount, previousCommentCount);
   }
 
   await syncCommentsSection();
