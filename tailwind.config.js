@@ -14,6 +14,18 @@ export default {
           css: {
             color: "#1f2937",
             maxWidth: "65ch",
+            a: {
+              color: "#5c7785",
+              textDecoration: "underline",
+              textUnderlineOffset: "0.18em",
+              textDecorationThickness: "0.08em",
+              textDecorationColor: "#97a9b2",
+              transition: "color 200ms ease, text-decoration-color 200ms ease"
+            },
+            "a:hover": {
+              color: "#435a66",
+              textDecorationColor: "#435a66"
+            },
             p: {
               marginTop: "1.1em",
               marginBottom: "1.1em"
