@@ -952,12 +952,27 @@ function setupSubscriptionLinks() {
     const source = linkElement.dataset.subscriptionSource || "unknown";
 
     linkElement.addEventListener("click", () => {
+      if (linkElement.dataset.subscriptionMarkSubscribed === "true") {
+        const currentState = normalizeConditionalSubscriptionState(
+          safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+        );
+
+        safelyWriteLocalStorage(conditionalSubscriptionStateStorageKey, JSON.stringify({
+          ...currentState,
+          subscribed: true
+        }));
+      }
+
       trackSubscriptionIntent(source);
     });
   });
 }
 
 const newsletterVisitedStorageKey = "newsletterPageVisited";
+const conditionalSubscriptionStateStorageKey = "conditionalSubscriptionState";
+const conditionalSubscriptionVisitThreshold = 3;
+const conditionalSubscriptionCooldownDays = 30;
+const conditionalSubscriptionScrollThreshold = 0.3;
 
 function safelyReadLocalStorage(key) {
   try {
@@ -973,6 +988,155 @@ function safelyWriteLocalStorage(key, value) {
   } catch {
     // Ignore storage errors in privacy-restricted contexts.
   }
+}
+
+function safelyReadJsonFromLocalStorage(key) {
+  const rawValue = safelyReadLocalStorage(key);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawValue);
+  } catch {
+    return null;
+  }
+}
+
+function getTodayStorageDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeConditionalSubscriptionState(state) {
+  if (!state || typeof state !== "object") {
+    return {
+      visitedDaysCount: 0
+    };
+  }
+
+  return {
+    lastVisitDate: typeof state.lastVisitDate === "string" ? state.lastVisitDate : undefined,
+    visitedDaysCount: Number.isFinite(Number(state.visitedDaysCount))
+      ? Math.max(0, Number(state.visitedDaysCount))
+      : 0,
+    dismissedUntil: typeof state.dismissedUntil === "string" ? state.dismissedUntil : undefined,
+    subscribed: state.subscribed === true
+  };
+}
+
+function updateConditionalSubscriptionVisitState() {
+  const today = getTodayStorageDate();
+  const currentState = normalizeConditionalSubscriptionState(
+    safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+  );
+
+  if (currentState.lastVisitDate === today) {
+    return currentState;
+  }
+
+  const nextState = {
+    ...currentState,
+    lastVisitDate: today,
+    visitedDaysCount: currentState.visitedDaysCount + 1
+  };
+
+  safelyWriteLocalStorage(conditionalSubscriptionStateStorageKey, JSON.stringify(nextState));
+  return nextState;
+}
+
+function setupConditionalSubscriptionVisitTracking() {
+  updateConditionalSubscriptionVisitState();
+}
+
+function setupConditionalSubscriptionModule() {
+  const moduleElement = document.querySelector("[data-conditional-subscription]");
+  const articleBody = document.querySelector(".article-body");
+
+  if (!moduleElement || !articleBody) {
+    return;
+  }
+
+  const closeButton = moduleElement.querySelector("[data-conditional-subscription-close]");
+  const currentState = normalizeConditionalSubscriptionState(
+    safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+  );
+  const today = getTodayStorageDate();
+
+  if (currentState.subscribed) {
+    return;
+  }
+
+  if (
+    currentState.dismissedUntil
+    && currentState.dismissedUntil >= today
+  ) {
+    return;
+  }
+
+  if (currentState.visitedDaysCount < conditionalSubscriptionVisitThreshold) {
+    return;
+  }
+
+  let isVisible = false;
+  let hasTriggered = false;
+
+  function setVisible(visible) {
+    isVisible = visible;
+
+    if (visible) {
+      moduleElement.dataset.ready = "true";
+      window.setTimeout(() => {
+        moduleElement.dataset.visible = "true";
+        moduleElement.setAttribute("aria-hidden", "false");
+      }, 24);
+      return;
+    }
+
+    moduleElement.dataset.visible = "false";
+    moduleElement.setAttribute("aria-hidden", "true");
+  }
+
+  function getScrollProgress() {
+    const articleRect = articleBody.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const articleHeight = articleBody.offsetHeight;
+    const totalScrollable = Math.max(articleHeight - viewportHeight, 1);
+    const consumed = Math.min(Math.max(-articleRect.top, 0), totalScrollable);
+
+    return consumed / totalScrollable;
+  }
+
+  const handleScroll = throttle(() => {
+    if (hasTriggered || isVisible) {
+      return;
+    }
+
+    if (getScrollProgress() < conditionalSubscriptionScrollThreshold) {
+      return;
+    }
+
+    hasTriggered = true;
+    setVisible(true);
+  }, 100);
+
+  closeButton?.addEventListener("click", () => {
+    const dismissedUntil = new Date(Date.now() + (conditionalSubscriptionCooldownDays * 24 * 60 * 60 * 1000))
+      .toISOString()
+      .slice(0, 10);
+
+    safelyWriteLocalStorage(conditionalSubscriptionStateStorageKey, JSON.stringify({
+      ...normalizeConditionalSubscriptionState(
+        safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+      ),
+      dismissedUntil
+    }));
+
+    setVisible(false);
+  });
+
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  handleScroll();
 }
 
 function setupNewsletterHeaderState() {
@@ -1414,6 +1578,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearchPage();
   setupShareButtons();
   setupSubscriptionLinks();
+  setupConditionalSubscriptionVisitTracking();
+  setupConditionalSubscriptionModule();
   setupNewsletterHeaderState();
   setupRssDialog();
   setupRelatedCarousel();

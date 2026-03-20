@@ -55,6 +55,28 @@
     @apply h-full justify-between;
   }
 
+  .js-conditional-subscription {
+    visibility: hidden;
+    transition:
+      transform 0.4s ease-out,
+      opacity 0.28s ease-out;
+    will-change: transform, opacity;
+  }
+
+  .js-conditional-subscription[data-ready="true"] {
+    visibility: visible;
+  }
+
+  .js-conditional-subscription[data-visible="true"] {
+    @apply pointer-events-auto opacity-100 translate-y-0;
+  }
+
+  @media (min-width: 768px) {
+    .js-conditional-subscription[data-visible="true"] {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
   .article-body img {
     border-radius: 0;
   }

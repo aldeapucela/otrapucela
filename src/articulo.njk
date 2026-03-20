@@ -120,6 +120,7 @@ eleventyComputed:
     {% set subscriptionDescription = 'Recibe gratis por correo los próximos artículos de La Otra Pucela, el único medio vecinal e independiente de la ciudad' %}
     {% set subscriptionButton = 'Apuntarme' %}
     {% set subscriptionSource = 'article-end' %}
+    {% set subscriptionMarkSubscribed = true %}
     {% include "partials/subscription-module.njk" %}
   </div>
 
@@ -179,6 +180,44 @@ eleventyComputed:
     </div>
   </section>
   {% endif %}
+
+  <section
+    class="js-conditional-subscription pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-3 opacity-0 translate-y-6 md:inset-x-auto md:right-6 md:top-24 md:bottom-auto md:w-[24rem] md:px-0 md:pb-0 md:translate-x-4 md:translate-y-0 lg:right-8"
+    data-conditional-subscription
+    data-article-scroll-root
+    aria-hidden="true"
+  >
+    <div class="mx-auto max-w-prose rounded-[1.75rem] bg-[#F4F1E9] shadow-[0_10px_30px_rgba(0,0,0,0.1)]">
+      <div class="flex items-start gap-4 px-5 pb-5 pt-6">
+        <div class="min-w-0 flex-1">
+          <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#6B6253]">Boletín</p>
+          <p class="mt-2 pr-2 text-left text-[1rem] leading-[1.45] text-[#1F2937] sm:text-[1.0625rem]">
+            ¡Gracias por volver!<br>
+            ¿Te avisamos de lo nuevo?
+          </p>
+        </div>
+        <button
+          type="button"
+          class="js-conditional-subscription-close inline-flex min-h-[3.25rem] min-w-[3.25rem] shrink-0 items-center justify-center rounded-full p-[0.95rem] text-[#6B6253] transition-colors duration-200 hover:bg-[#EAE3D7] hover:text-[#1F2937]"
+          data-conditional-subscription-close
+          aria-label="Cerrar suscripción"
+        >
+          <i class="fa-solid fa-xmark text-base" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="mb-4 px-5 pb-5">
+        <a
+          href="/boletin/"
+          class="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-200 hover:bg-[#1A1A1A]"
+          data-subscription-link
+          data-subscription-source="article-conditional-slideup"
+          data-subscription-mark-subscribed="true"
+        >
+          Sí, avisadme
+        </a>
+      </div>
+    </div>
+  </section>
 
   <div class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white p-3 md:hidden">
     <div class="mx-auto flex max-w-prose items-center gap-3">

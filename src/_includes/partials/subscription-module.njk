@@ -23,6 +23,7 @@
       class="subscription-module__button"
       data-subscription-link
       data-subscription-source="{{ subscriptionSource }}"
+      {% if subscriptionMarkSubscribed %}data-subscription-mark-subscribed="true"{% endif %}
     >
       {{ subscriptionButton }}
     </a>
