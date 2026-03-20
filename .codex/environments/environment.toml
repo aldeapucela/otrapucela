@@ -9,3 +9,8 @@ script = ""
 name = "Ejecutar"
 icon = "run"
 command = "npm run build"
+
+[[actions]]
+name = "Iniciar server"
+icon = "run"
+command = "npm run start"

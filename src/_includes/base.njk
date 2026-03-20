@@ -47,20 +47,26 @@
         id="js-header"
         class="relative sticky top-0 z-50 border-b border-gray-200 bg-white transition-transform duration-300 shadow-sm"
       >
-        <div class="relative mx-auto flex min-h-16 max-w-6xl items-center justify-center px-4 py-4 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            class="js-menu-toggle absolute right-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 sm:right-4 lg:right-6"
-            aria-expanded="false"
-            aria-controls="js-menu-panel"
-            aria-label="Abrir menú de secciones"
-          >
-            <i class="fa-solid fa-bars text-lg" aria-hidden="true"></i>
-          </button>
-
-          <a href="/" class="text-center text-gray-900 {% if page.url == '/' %}lg:hidden{% endif %}">
+        <div class="relative mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:justify-center sm:px-6 lg:px-8">
+          <a href="/" class="min-w-0 flex-1 pr-20 text-left text-gray-900 sm:flex-none sm:pr-0 sm:text-center {% if page.url == '/' %}lg:hidden{% endif %}">
             <span class="block font-serif text-[1.2rem] font-extrabold uppercase tracking-[0.035em] sm:text-[1.35rem]">La Otra Pucela</span>
           </a>
+
+          <div class="absolute right-2 flex items-center gap-1 sm:right-4 lg:right-6">
+            <a href="/boletin/" class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors duration-200 hover:bg-[#F7F4EE] hover:text-gray-700 sm:hidden" aria-label="Ir al boletín">
+              <i class="fa-regular fa-envelope text-base" aria-hidden="true"></i>
+            </a>
+
+            <button
+              type="button"
+              class="js-menu-toggle inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              aria-expanded="false"
+              aria-controls="js-menu-panel"
+              aria-label="Abrir menú de secciones"
+            >
+              <i class="fa-solid fa-bars text-lg" aria-hidden="true"></i>
+            </button>
+          </div>
 
           {% if page.url == '/' and articulos and articulos.tags and articulos.tags.length %}
           <nav class="absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
@@ -192,10 +198,10 @@
 
       {% if page.url == '/' %}
       <section
-        class="border-y border-[#DDD7CC] bg-[#F6F1E7] px-5 py-4 text-center sm:px-6 sm:py-[18px] lg:hidden"
+        class="border-y border-[#DDD7CC] bg-[#F6F1E7] px-4 py-4 sm:px-6 sm:py-[18px] lg:hidden"
         aria-label="Identidad editorial"
       >
-        <div class="mx-auto flex max-w-7xl flex-col items-center">
+        <div class="mx-auto flex max-w-7xl flex-col items-start text-left">
           <span class="mb-2 h-px w-10 bg-[#B8AA8A]" aria-hidden="true"></span>
           <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#5F5645] sm:text-[0.78rem] sm:tracking-[0.28em]">
             Información vecinal, útil e independiente sobre Valladolid
