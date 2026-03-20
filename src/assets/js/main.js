@@ -812,6 +812,50 @@ function setupSubscriptionLinks() {
   });
 }
 
+const newsletterVisitedStorageKey = "newsletterPageVisited";
+
+function safelyReadLocalStorage(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safelyWriteLocalStorage(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors in privacy-restricted contexts.
+  }
+}
+
+function setupNewsletterHeaderState() {
+  const newsletterHeaderLabel = document.querySelector("[data-newsletter-header-label]");
+  const newsletterHeaderLink = document.querySelector("[data-newsletter-header-link]");
+
+  if (!newsletterHeaderLabel || !newsletterHeaderLink) {
+    return;
+  }
+
+  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  const hasVisitedNewsletter = safelyReadLocalStorage(newsletterVisitedStorageKey) === "true";
+
+  if (currentPath === "/boletin") {
+    safelyWriteLocalStorage(newsletterVisitedStorageKey, "true");
+    newsletterHeaderLabel.classList.add("hidden");
+    return;
+  }
+
+  if (hasVisitedNewsletter) {
+    newsletterHeaderLabel.classList.add("hidden");
+  }
+
+  newsletterHeaderLink.addEventListener("click", () => {
+    safelyWriteLocalStorage(newsletterVisitedStorageKey, "true");
+  });
+}
+
 function setupRssDialog() {
   const triggerElement = document.querySelector("[data-rss-trigger]");
   const dialogElement = document.querySelector("[data-rss-dialog]");
@@ -1158,6 +1202,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearchPage();
   setupShareButtons();
   setupSubscriptionLinks();
+  setupNewsletterHeaderState();
   setupRssDialog();
   setupRelatedCarousel();
   setupScrollTopButton();
