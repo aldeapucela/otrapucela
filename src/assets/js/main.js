@@ -952,17 +952,6 @@ function setupSubscriptionLinks() {
     const source = linkElement.dataset.subscriptionSource || "unknown";
 
     linkElement.addEventListener("click", () => {
-      if (linkElement.dataset.subscriptionMarkSubscribed === "true") {
-        const currentState = normalizeConditionalSubscriptionState(
-          safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
-        );
-
-        safelyWriteLocalStorage(conditionalSubscriptionStateStorageKey, JSON.stringify({
-          ...currentState,
-          subscribed: true
-        }));
-      }
-
       trackSubscriptionIntent(source);
     });
   });
