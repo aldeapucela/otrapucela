@@ -7,9 +7,27 @@ ogDescription: Únete al boletín de La Otra Pucela para recibir historias, info
 canonicalUrl: /boletin/
 bodyClass: bg-[#eff2f7]
 ---
-<section class="w-full mt-6 px-0 pb-14 sm:pb-16 lg:pb-20">
+<section class="newsletter-page w-full">
+  <div
+    class="newsletter-page__status"
+    data-newsletter-status
+    aria-live="polite"
+  >
+    <p class="newsletter-confirmation__eyebrow">Boletín de La Otra Pucela</p>
+    <h1 class="newsletter-page__status-title">Ya estás suscrito</h1>
+    <p class="newsletter-page__status-copy">
+      Si no te llegó el email, revisa también la bandeja de <strong>Spam</strong> o <strong>Promociones</strong>. A veces el primer mensaje se queda allí unos minutos.
+    </p>
+    <button
+      type="button"
+      class="newsletter-page__status-link"
+      data-newsletter-reset
+    >
+      Volverme a suscribir
+    </button>
+  </div>
 
-  <div class="mt-0 w-full">
+  <div class="newsletter-page__iframe" data-newsletter-form>
     <iframe
       title="Formulario de suscripción al boletín de La Otra Pucela"
       width="540"
@@ -23,7 +41,7 @@ bodyClass: bg-[#eff2f7]
     ></iframe>
   </div>
 
-  <div class="mx-auto mt-8 flex max-w-5xl justify-center px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto mt-8 flex max-w-5xl justify-center px-4 sm:px-6 lg:px-8" data-newsletter-form>
     <button
       type="button"
       class="js-share-btn inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-800 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-950"

@@ -5,7 +5,7 @@
 {% set subscriptionSource = subscriptionSource or 'site-module' %}
 {% set subscriptionHref = subscriptionHref or '/boletin/' %}
 
-<section class="subscription-module subscription-module--{{ subscriptionVariant }}{% if subscriptionArticleCard %} subscription-module--article-card{% endif %}" data-subscription-module>
+<section class="subscription-module subscription-module--{{ subscriptionVariant }}{% if subscriptionArticleCard %} subscription-module--article-card{% endif %}" data-subscription-module data-newsletter-cta>
   {% if subscriptionEyebrow %}
   <p class="subscription-module__eyebrow">{{ subscriptionEyebrow }}</p>
   {% endif %}

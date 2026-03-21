@@ -970,6 +970,7 @@ function setupSubscriptionLinks() {
 
 const newsletterVisitedStorageKey = "newsletterPageVisited";
 const conditionalSubscriptionStateStorageKey = "conditionalSubscriptionState";
+const newsletterSubscribedStorageKey = "newsletterSubscribed";
 const conditionalSubscriptionVisitThreshold = 3;
 const conditionalSubscriptionCooldownDays = 30;
 const conditionalSubscriptionScrollThreshold = 0.3;
@@ -985,6 +986,14 @@ function safelyReadLocalStorage(key) {
 function safelyWriteLocalStorage(key, value) {
   try {
     window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors in privacy-restricted contexts.
+  }
+}
+
+function safelyRemoveLocalStorage(key) {
+  try {
+    window.localStorage.removeItem(key);
   } catch {
     // Ignore storage errors in privacy-restricted contexts.
   }
@@ -1023,6 +1032,41 @@ function normalizeConditionalSubscriptionState(state) {
     dismissedUntil: typeof state.dismissedUntil === "string" ? state.dismissedUntil : undefined,
     subscribed: state.subscribed === true
   };
+}
+
+function hasSubscribedToNewsletter() {
+  const storedSubscriptionFlag = safelyReadLocalStorage(newsletterSubscribedStorageKey) === "true";
+  const conditionalState = normalizeConditionalSubscriptionState(
+    safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+  );
+
+  return storedSubscriptionFlag || conditionalState.subscribed === true;
+}
+
+function setNewsletterSubscribed(subscribed) {
+  if (subscribed) {
+    safelyWriteLocalStorage(newsletterSubscribedStorageKey, "true");
+  } else {
+    safelyRemoveLocalStorage(newsletterSubscribedStorageKey);
+  }
+
+  const currentState = normalizeConditionalSubscriptionState(
+    safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+  );
+
+  safelyWriteLocalStorage(conditionalSubscriptionStateStorageKey, JSON.stringify({
+    ...currentState,
+    subscribed
+  }));
+}
+
+function syncNewsletterCtasVisibility() {
+  const shouldHideNewsletterCtas = hasSubscribedToNewsletter();
+  const newsletterCtas = document.querySelectorAll("[data-newsletter-cta]");
+
+  newsletterCtas.forEach((element) => {
+    element.classList.toggle("hidden", shouldHideNewsletterCtas);
+  });
 }
 
 function updateConditionalSubscriptionVisitState() {
@@ -1162,6 +1206,53 @@ function setupNewsletterHeaderState() {
 
   newsletterHeaderLink.addEventListener("click", () => {
     safelyWriteLocalStorage(newsletterVisitedStorageKey, "true");
+  });
+}
+
+function setupNewsletterConfirmationState() {
+  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+
+  if (currentPath !== "/boletin/gracias") {
+    return;
+  }
+
+  setNewsletterSubscribed(true);
+  syncNewsletterCtasVisibility();
+}
+
+function setupNewsletterPageState() {
+  const statusCard = document.querySelector("[data-newsletter-status]");
+  const formSections = document.querySelectorAll("[data-newsletter-form]");
+  const resetButton = document.querySelector("[data-newsletter-reset]");
+
+  if (!statusCard || !formSections.length) {
+    return;
+  }
+
+  function showSubscribedState() {
+    statusCard.dataset.visible = "true";
+    formSections.forEach((element) => {
+      element.classList.add("hidden");
+    });
+  }
+
+  function showSignupState() {
+    delete statusCard.dataset.visible;
+    formSections.forEach((element) => {
+      element.classList.remove("hidden");
+    });
+  }
+
+  if (hasSubscribedToNewsletter()) {
+    showSubscribedState();
+  } else {
+    showSignupState();
+  }
+
+  resetButton?.addEventListener("click", () => {
+    setNewsletterSubscribed(false);
+    syncNewsletterCtasVisibility();
+    showSignupState();
   });
 }
 
@@ -1581,6 +1672,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setupConditionalSubscriptionVisitTracking();
   setupConditionalSubscriptionModule();
   setupNewsletterHeaderState();
+  setupNewsletterConfirmationState();
+  syncNewsletterCtasVisibility();
+  setupNewsletterPageState();
   setupRssDialog();
   setupRelatedCarousel();
   setupScrollTopButton();

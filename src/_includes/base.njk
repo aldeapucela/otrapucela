@@ -54,14 +54,14 @@
         class="relative sticky top-0 z-50 border-b border-gray-200 bg-white transition-transform duration-300 shadow-sm"
       >
         <div class="relative mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:justify-center sm:px-6 lg:px-8">
-          <a href="/" class="min-w-0 flex-1 pr-20 text-left text-gray-900 sm:flex-none sm:pr-0 sm:text-center {% if page.url == '/' %}lg:hidden{% endif %}">
+          <a href="/" class="min-w-0 flex-1 pr-24 text-left text-gray-900 sm:flex-none sm:pr-0 sm:text-center {% if page.url == '/' %}lg:hidden{% endif %}">
             <span class="block font-serif text-[1.2rem] font-extrabold uppercase tracking-[0.035em] sm:text-[1.35rem]">La Otra Pucela</span>
           </a>
 
-          <div class="absolute right-2 flex items-center gap-1 sm:right-4 lg:right-6">
-            <a href="/boletin/" class="inline-flex min-h-11 items-center gap-2 rounded-full px-2 text-gray-500 sm:hidden" aria-label="Ir al boletín" data-newsletter-header-link>
+          <div class="absolute right-0 flex items-center gap-0 sm:right-4 lg:right-6">
+            <a href="/boletin/" class="inline-flex min-h-11 items-center gap-1 rounded-full px-0.5 text-gray-500 sm:hidden" aria-label="Ir al boletín" data-newsletter-header-link data-newsletter-cta>
               <i class="fa-regular fa-envelope text-base" aria-hidden="true"></i>
-              <span class="inline-block font-['Montserrat',sans-serif] text-[12px] leading-none font-normal uppercase tracking-[0.06em] text-gray-400" data-newsletter-header-label>Boletín</span>
+              <span class="inline-block font-['Montserrat',sans-serif] text-[11px] leading-none font-normal uppercase tracking-[0.04em] text-gray-400" data-newsletter-header-label>Boletín</span>
             </a>
 
             <button
@@ -96,6 +96,7 @@
             <a
               href="/boletin/"
               class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
+              data-newsletter-cta
             >
               <span>Boletín</span>
             </a>
@@ -123,6 +124,7 @@
             <a
               href="/boletin/"
               class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
+              data-newsletter-cta
             >
               <span>Boletín</span>
             </a>
@@ -182,6 +184,7 @@
               <a
                 href="/boletin/"
                 class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
+                data-newsletter-cta
               >
                 <i class="fa-regular fa-envelope text-[0.95rem]" aria-hidden="true"></i>
                 <span>Recibir por correo</span>
