@@ -121,7 +121,7 @@ canonicalUrl: /
     {% endif %}
     <div class="mt-10 grid grid-cols-3 gap-6">
       {% for articulo in articulos.items %}
-      {% if loop.index > 1 and loop.index < 5 %}
+      {% if loop.index > 1 %}
       <article class="border-b border-[#EEE] pb-8">
         <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
           {% if articulo.image %}
