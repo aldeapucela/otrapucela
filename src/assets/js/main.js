@@ -971,6 +971,7 @@ function setupSubscriptionLinks() {
 const newsletterVisitedStorageKey = "newsletterPageVisited";
 const conditionalSubscriptionStateStorageKey = "conditionalSubscriptionState";
 const newsletterSubscribedStorageKey = "newsletterSubscribed";
+const newsletterEmailVerifiedStorageKey = "newsletterEmailVerified";
 const conditionalSubscriptionVisitThreshold = 3;
 const conditionalSubscriptionCooldownDays = 30;
 const conditionalSubscriptionScrollThreshold = 0.3;
@@ -1058,6 +1059,19 @@ function setNewsletterSubscribed(subscribed) {
     ...currentState,
     subscribed
   }));
+}
+
+function hasVerifiedNewsletterEmail() {
+  return safelyReadLocalStorage(newsletterEmailVerifiedStorageKey) === "true";
+}
+
+function setNewsletterEmailVerified(verified) {
+  if (verified) {
+    safelyWriteLocalStorage(newsletterEmailVerifiedStorageKey, "true");
+    return;
+  }
+
+  safelyRemoveLocalStorage(newsletterEmailVerifiedStorageKey);
 }
 
 function syncNewsletterCtasVisibility() {
@@ -1212,12 +1226,17 @@ function setupNewsletterHeaderState() {
 function setupNewsletterConfirmationState() {
   const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
 
-  if (currentPath !== "/boletin/gracias") {
+  if (currentPath === "/boletin/gracias") {
+    setNewsletterSubscribed(true);
+    syncNewsletterCtasVisibility();
     return;
   }
 
-  setNewsletterSubscribed(true);
-  syncNewsletterCtasVisibility();
+  if (currentPath === "/boletin/confirmacion") {
+    setNewsletterSubscribed(true);
+    setNewsletterEmailVerified(true);
+    syncNewsletterCtasVisibility();
+  }
 }
 
 function setupNewsletterPageState() {
@@ -1251,6 +1270,7 @@ function setupNewsletterPageState() {
 
   resetButton?.addEventListener("click", () => {
     setNewsletterSubscribed(false);
+    setNewsletterEmailVerified(false);
     syncNewsletterCtasVisibility();
     showSignupState();
   });
