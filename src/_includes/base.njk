@@ -176,6 +176,12 @@
                 Temas
               </a>
               <a
+                href="/contacto/"
+                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/contacto/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+              >
+                Contacto
+              </a>
+              <a
                 href="https://foro.aldeapucela.org/t/acerca-de-la-otra-pucela/966"
                 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 transition-colors duration-200 hover:text-gray-900"
               >
@@ -209,7 +215,7 @@
 
               {% if articulos and articulos.tags and articulos.tags.length %}
               <div class="border-t border-gray-200 pt-5 lg:hidden">
-                <p class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500">Secciones</p>
+                <p class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500">Temas</p>
                 <div class="mt-4 flex flex-wrap gap-3">
                   {% for tag in articulos.tags %}
                   <a
