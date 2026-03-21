@@ -31,6 +31,36 @@ function ensureExcerptEnding(text = "") {
   return /[.!?…]$/.test(text) ? text : `${text}.`;
 }
 
+function normalizeExcerptComparisonText(text = "") {
+  return normalizeExcerptText(text)
+    .replace(/[.!?…:;,]+$/g, "")
+    .replace(/[“”"'"'«»]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function removeExcerptPrefix(paragraphText = "", excerpt = "") {
+  const normalizedParagraph = normalizeExcerptText(paragraphText);
+  const normalizedExcerpt = normalizeExcerptText(excerpt);
+
+  if (!normalizedParagraph || !normalizedExcerpt) {
+    return normalizedParagraph;
+  }
+
+  if (normalizedParagraph === normalizedExcerpt) {
+    return "";
+  }
+
+  if (!normalizedParagraph.startsWith(normalizedExcerpt)) {
+    return normalizedParagraph;
+  }
+
+  return normalizedParagraph
+    .slice(normalizedExcerpt.length)
+    .replace(/^[\s.!?…:;,"'“”«»\-–—]+/, "")
+    .trim();
+}
+
 function sanitizeDiscourseHtml(html = "") {
   if (!html) {
     return "";
@@ -257,14 +287,28 @@ function bodyHtmlFromContent(html = "", excerpt = "") {
   }
 
   const $ = cheerio.load(html);
-  const normalizedExcerpt = normalizeExcerptText(excerpt).replace(/[.!?…]+$/, "");
+  const normalizedExcerpt = normalizeExcerptComparisonText(excerpt);
   const firstParagraph = $("p").first();
 
   if (firstParagraph.length) {
-    const firstParagraphText = normalizeExcerptText(firstParagraph.text()).replace(/[.!?…]+$/, "");
+    const rawFirstParagraphText = firstParagraph.text();
+    const firstParagraphText = normalizeExcerptComparisonText(rawFirstParagraphText);
 
-    if (normalizedExcerpt && firstParagraphText === normalizedExcerpt) {
-      firstParagraph.remove();
+    const excerptMatchesFirstParagraph = normalizedExcerpt
+      && firstParagraphText
+      && (
+        firstParagraphText === normalizedExcerpt
+        || firstParagraphText.startsWith(normalizedExcerpt)
+      );
+
+    if (excerptMatchesFirstParagraph) {
+      const remainingParagraphText = removeExcerptPrefix(rawFirstParagraphText, excerpt);
+
+      if (remainingParagraphText) {
+        firstParagraph.text(remainingParagraphText);
+      } else {
+        firstParagraph.remove();
+      }
 
       const nextElement = $("body").children().first();
 
