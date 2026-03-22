@@ -232,7 +232,7 @@
   }
 
   .article-mobile-sticky__side-actions {
-    @apply relative z-[1] flex w-[5.9rem] items-center gap-1 justify-start pr-4;
+    @apply relative z-[1] -ml-2 flex w-[4.7rem] items-center gap-0.5 justify-start pr-6;
   }
 
   .article-mobile-sticky__side-actions .article-mobile-sticky__action:last-child,
@@ -241,7 +241,7 @@
   }
 
   .article-mobile-sticky__side-actions .article-mobile-sticky__action:last-child {
-    margin-right: 0.35rem;
+    margin-right: 0.15rem;
   }
 
   .article-mobile-sticky__side-actions .article-mobile-sticky__action:last-child:hover,
