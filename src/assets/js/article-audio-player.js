@@ -35,9 +35,19 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   let audioDisabled = false;
   let isBuffering = false;
   let audioSourcesLoaded = false;
+  const articleId = audioElement.dataset.articleId?.trim() || "unknown";
 
   function isDesktopViewport() {
     return window.matchMedia("(min-width: 768px)").matches;
+  }
+
+  function trackAudioPlay() {
+    if (typeof window._paq?.push !== "function") {
+      return;
+    }
+
+    const deviceType = isDesktopViewport() ? "desktop" : "mobile";
+    window._paq.push(["trackEvent", "audio", `play_${deviceType}`, articleId]);
   }
 
   function syncStickyVisibility() {
@@ -243,6 +253,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
       try {
         await audioElement.play();
+        trackAudioPlay();
       } catch {
         setBufferingState(false);
         disableAudioUi();

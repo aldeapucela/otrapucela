@@ -238,6 +238,7 @@ eleventyComputed:
         id="article-audio-element"
         class="js-article-audio sr-only"
         preload="none"
+        data-article-id="{{ articulo.id }}"
       >
         {% for source in articulo.audio.sources %}
         <source data-src="{{ source.src }}" type="{{ source.type }}">
