@@ -65,7 +65,42 @@ jobs:
           cp .cache/workflow/current-category.json .cache/workflow/last-category.json
 
           if [ "$current_hash" = "$previous_hash" ]; then
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            python3 <<'PY'
+import os
+import pathlib
+import urllib.request
+import urllib.error
+
+pending_path = pathlib.Path(".cache/workflow/pending-audio-ids.txt")
+base_url = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E"
+should_build = False
+
+if pending_path.exists():
+    pending_ids = [
+        line.strip()
+        for line in pending_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+    for article_id in pending_ids:
+        request = urllib.request.Request(
+            f"{base_url}/{article_id}.mp3",
+            method="HEAD"
+        )
+
+        try:
+            with urllib.request.urlopen(request, timeout=10) as response:
+                if 200 <= response.status < 400:
+                    should_build = True
+                    break
+        except urllib.error.HTTPError:
+            continue
+        except Exception:
+            continue
+
+with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output_file:
+    output_file.write(f"should_build={'true' if should_build else 'false'}\n")
+PY
             exit 0
           fi
 
@@ -96,6 +131,30 @@ jobs:
       - name: Build site
         if: steps.detect-forum-changes.outputs.should_build == 'true'
         run: npm run build
+
+      - name: Refresh pending audio cache
+        if: steps.detect-forum-changes.outputs.should_build == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cache/workflow
+
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+
+          const articlesPath = path.join(process.cwd(), "dist", "api", "articulos.json");
+          const outputPath = path.join(process.cwd(), ".cache", "workflow", "pending-audio-ids.txt");
+          const payload = JSON.parse(fs.readFileSync(articlesPath, "utf8"));
+          const items = Array.isArray(payload?.items) ? payload.items : [];
+          const pendingIds = items
+            .filter((item) => !item?.audio)
+            .map((item) => String(item.id))
+            .filter(Boolean);
+
+          fs.writeFileSync(outputPath, `${pendingIds.join("\n")}${pendingIds.length ? "\n" : ""}`, "utf8");
+          NODE
 
       - name: Upload Pages artifact
         if: steps.detect-forum-changes.outputs.should_build == 'true'
