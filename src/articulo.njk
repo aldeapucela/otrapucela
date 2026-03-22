@@ -239,6 +239,9 @@ eleventyComputed:
         class="js-article-audio sr-only"
         preload="none"
         data-article-id="{{ articulo.id }}"
+        data-article-title="{{ articulo.title }}"
+        data-article-author="{{ articulo.author.name }}"
+        data-article-url="{{ articulo.publicPath }}"
       >
         {% for source in articulo.audio.sources %}
         <source data-src="{{ source.src }}" type="{{ source.type }}">

@@ -29,6 +29,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   const currentTimeElement = document.querySelector(".js-audio-time-current");
   const durationTimeElement = document.querySelector(".js-audio-time-duration");
   const skipButtons = document.querySelectorAll("[data-skip-seconds]");
+  const storageKey = "audioProgress";
   let isSeeking = false;
   let touchStartY = null;
   let touchDeltaY = 0;
@@ -42,6 +43,79 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   let lastTrackedProgressBucket = 0;
   let maxProgressPercent = 0;
   let lastTrackedExitPercent = 0;
+  let shouldRestoreSavedTime = false;
+  const articleTitle = audioElement.dataset.articleTitle?.trim() || "";
+  const articleAuthor = audioElement.dataset.articleAuthor?.trim() || "";
+  const articleUrl = audioElement.dataset.articleUrl?.trim() || "";
+
+  function readAudioProgressStore() {
+    try {
+      return JSON.parse(window.localStorage.getItem(storageKey) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  function writeAudioProgressStore(nextStore) {
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(nextStore));
+    } catch {
+      // Ignore storage quota or privacy errors.
+    }
+  }
+
+  function getSavedAudioState() {
+    const store = readAudioProgressStore();
+    return store[articleId] ?? null;
+  }
+
+  function saveAudioState(overrides = {}) {
+    const duration = Number.isFinite(audioElement.duration) ? audioElement.duration : 0;
+    const currentTime = Number.isFinite(audioElement.currentTime) ? audioElement.currentTime : 0;
+    const progressPercent = duration > 0 ? Math.min(100, Math.round((currentTime / duration) * 100)) : 0;
+    const store = readAudioProgressStore();
+
+    store[articleId] = {
+      id: articleId,
+      title: articleTitle,
+      author: articleAuthor,
+      url: articleUrl,
+      currentTime,
+      duration,
+      progressPercent: Math.max(progressPercent, maxProgressPercent),
+      completed: false,
+      updatedAt: new Date().toISOString(),
+      ...overrides
+    };
+
+    writeAudioProgressStore(store);
+  }
+
+  function markAudioCompleted() {
+    saveAudioState({
+      currentTime: 0,
+      progressPercent: 100,
+      completed: true
+    });
+  }
+
+  function resetSavedCompletionState() {
+    const savedState = getSavedAudioState();
+
+    if (!savedState?.completed) {
+      return;
+    }
+
+    const store = readAudioProgressStore();
+    store[articleId] = {
+      ...savedState,
+      currentTime: 0,
+      progressPercent: 0,
+      completed: false,
+      updatedAt: new Date().toISOString()
+    };
+    writeAudioProgressStore(store);
+  }
 
   function isDesktopViewport() {
     return window.matchMedia("(min-width: 768px)").matches;
@@ -64,6 +138,14 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
     const deviceType = isDesktopViewport() ? "desktop" : "mobile";
     window._paq.push(["trackEvent", "audio", `${action}_${deviceType}`, articleId, value]);
+  }
+
+  function resetPlaybackMetrics() {
+    hasTrackedPlay = false;
+    hasTrackedComplete = false;
+    lastTrackedProgressBucket = 0;
+    maxProgressPercent = 0;
+    lastTrackedExitPercent = 0;
   }
 
   function syncStickyVisibility() {
@@ -124,6 +206,33 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
     audioElement.load();
     audioSourcesLoaded = true;
+  }
+
+  function restoreSavedProgress() {
+    if (!shouldRestoreSavedTime) {
+      return;
+    }
+
+    const savedState = getSavedAudioState();
+    const duration = Number.isFinite(audioElement.duration) ? audioElement.duration : 0;
+
+    if (!savedState || savedState.completed || savedState.currentTime <= 0) {
+      shouldRestoreSavedTime = false;
+      return;
+    }
+
+    if (duration <= 0) {
+      return;
+    }
+
+    const resumeTime = Math.min(savedState.currentTime, Math.max(duration - 1, 0));
+
+    if (resumeTime > 0) {
+      audioElement.currentTime = resumeTime;
+      updateProgress();
+    }
+
+    shouldRestoreSavedTime = false;
   }
 
   function syncPlayerControlsPosition() {
@@ -255,6 +364,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
     hasTrackedComplete = true;
     maxProgressPercent = 100;
     trackAudioMetric("complete", 100);
+    markAudioCompleted();
   }
 
   function setBufferingState(nextIsBuffering) {
@@ -304,7 +414,18 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
     if (audioElement.paused || audioElement.ended) {
       setBufferingState(true);
+
+      if (audioElement.ended || getSavedAudioState()?.completed) {
+        resetPlaybackMetrics();
+      }
+
+      resetSavedCompletionState();
+      shouldRestoreSavedTime = !audioSourcesLoaded;
       ensureAudioSourcesLoaded();
+
+      if (audioSourcesLoaded) {
+        restoreSavedProgress();
+      }
 
       try {
         await audioElement.play();
@@ -425,6 +546,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
       const nextTime = Math.min(Math.max(audioElement.currentTime + skipAmount, 0), duration || 0);
       audioElement.currentTime = nextTime;
       updateProgress();
+      saveAudioState();
     });
   });
 
@@ -447,11 +569,13 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
     isSeeking = false;
     updateProgress();
+    saveAudioState();
   });
 
   audioElement.addEventListener("play", updatePlaybackState);
   audioElement.addEventListener("pause", () => {
     updatePlaybackState();
+    saveAudioState();
     trackAudioExit();
   });
   audioElement.addEventListener("ended", () => {
@@ -482,7 +606,11 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
     }
   });
   audioElement.addEventListener("loadedmetadata", updateProgress);
+  audioElement.addEventListener("loadedmetadata", restoreSavedProgress);
   audioElement.addEventListener("timeupdate", updateProgress);
+  audioElement.addEventListener("timeupdate", () => {
+    saveAudioState();
+  });
   audioElement.addEventListener("error", () => {
     setBufferingState(false);
     disableAudioUi();
