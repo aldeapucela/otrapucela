@@ -32,6 +32,7 @@
     <meta name="twitter:image" content="{{ resolvedOgImage }}">
 
     <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS" href="{{ site.feedPath }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.podcast.title }} Podcast" href="{{ site.podcastPath }}">
     <link rel="stylesheet" href="{{ assetManifest['assets/styles/main.css'] or '/assets/styles/main.css' }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -97,6 +98,13 @@
               Más temas
             </a>
             <a
+              href="/audios/"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              aria-label="Ir a audios y podcast"
+            >
+              <i class="fa-solid fa-headphones-simple text-[0.95rem]" aria-hidden="true"></i>
+            </a>
+            <a
               href="/boletin/"
               class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
               data-newsletter-cta
@@ -123,6 +131,13 @@
               class="whitespace-nowrap text-sm font-semibold text-gray-500 transition-colors duration-200 hover:text-gray-900"
             >
               Más temas
+            </a>
+            <a
+              href="/audios/"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              aria-label="Ir a audios y podcast"
+            >
+              <i class="fa-solid fa-headphones-simple text-[0.95rem]" aria-hidden="true"></i>
             </a>
             <a
               href="/boletin/"
@@ -177,6 +192,12 @@
                 class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/temas/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
               >
                 Temas
+              </a>
+              <a
+                href="/audios/"
+                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+              >
+                Audios
               </a>
               <a
                 href="/contacto/"
@@ -290,11 +311,21 @@
           <p>Proyecto comunitario e independiente sobre Valladolid</p>
           <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             {% set absoluteFeedUrl = site.siteUrl + site.feedPath %}
+            {% set absolutePodcastUrl = site.siteUrl + site.podcastPath %}
+            <a
+              href="/audios/"
+              class="inline-flex min-h-11 items-center gap-2 font-medium text-gray-800 transition-colors duration-200 hover:text-gray-950"
+            >
+              <i class="fa-solid fa-headphones-simple text-[0.95rem] text-[#2F3E46]" aria-hidden="true"></i>
+              <span>Audios y podcast</span>
+            </a>
             <a
               href="{{ site.feedPath }}"
               class="inline-flex min-h-11 items-center gap-2 self-start py-2 font-medium text-gray-700 transition-colors duration-200 hover:text-gray-950"
               data-rss-trigger
               data-feed-url="{{ absoluteFeedUrl }}"
+              data-podcast-url="{{ absolutePodcastUrl }}"
+              data-default-feed="rss"
               aria-haspopup="dialog"
             >
               <i class="fa-solid fa-rss text-[0.95rem] text-[#8A5A2B]" aria-hidden="true"></i>
@@ -344,26 +375,101 @@
             <section class="mt-8 border-t border-[#E7E0D3] pt-8">
               <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#2F3E46]">
                 <i class="fa-regular fa-copy text-[1.2rem]" aria-hidden="true"></i>
-                <span>Copiar la URL del feed</span>
+                <span>Feeds disponibles</span>
               </h3>
-              <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-stretch">
-                <input
-                  type="text"
-                  readonly
-                  class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm leading-[1.5] text-gray-800 outline-none ring-0 sm:text-base"
-                  data-rss-feed-input
-                >
-                <button
-                  type="button"
-                  class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#2F3E46] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#253138] focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/30"
-                  data-rss-copy
-                >
-                  <i class="fa-regular fa-copy text-base" aria-hidden="true"></i>
-                  <span data-rss-copy-label>Copiar</span>
-                </button>
+              <div class="mt-5 space-y-4">
+                <div class="rounded-[1.5rem] border border-[#DDD7CC] bg-white p-4 sm:p-5">
+                  <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-newspaper text-[1.35rem] text-[#8A5A2B]" aria-hidden="true"></i>
+                    <div>
+                      <p class="text-base font-semibold leading-tight text-[#2F3E46]">RSS general</p>
+                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 sm:text-base">
+                        Todas las publicaciones para lectores RSS como Feedly o Inoreader.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                    <input
+                      type="text"
+                      readonly
+                      class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm leading-[1.5] text-gray-800 outline-none ring-0 sm:text-base"
+                      data-rss-feed-input="rss"
+                    >
+                    <button
+                      type="button"
+                      class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#2F3E46] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#253138] focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/30"
+                      data-rss-copy="rss"
+                    >
+                      <i class="fa-regular fa-copy text-base" aria-hidden="true"></i>
+                      <span data-rss-copy-label="rss">Copiar</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="rounded-[1.5rem] border border-[#DDD7CC] bg-white p-4 sm:p-5">
+                  <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-podcast text-[1.35rem] text-[#2F3E46]" aria-hidden="true"></i>
+                    <div>
+                      <p class="text-base font-semibold leading-tight text-[#2F3E46]">Feed de podcast</p>
+                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 sm:text-base">
+                        Solo los artículos con audio, preparado para apps de podcast.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                    <input
+                      type="text"
+                      readonly
+                      class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm leading-[1.5] text-gray-800 outline-none ring-0 sm:text-base"
+                      data-rss-feed-input="podcast"
+                    >
+                    <button
+                      type="button"
+                      class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#8A5A2B] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#74491F] focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
+                      data-rss-copy="podcast"
+                    >
+                      <i class="fa-regular fa-copy text-base" aria-hidden="true"></i>
+                      <span data-rss-copy-label="podcast">Copiar</span>
+                    </button>
+                  </div>
+                  <div class="mt-5 rounded-[1.25rem] border border-[#E7E0D3] bg-[#FCFAF5] p-4">
+                    <p class="text-sm font-semibold tracking-tight text-[#2F3E46] sm:text-base">
+                      Abrir en apps compatibles
+                    </p>
+                    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                      <a
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm font-medium text-gray-800 transition-colors duration-200 hover:border-[#BFD3D8] hover:bg-[#F6FAFB] sm:text-base"
+                        data-podcast-service="antennapod"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <i class="fa-solid fa-mobile-screen-button text-[0.95rem] text-[#2F3E46]" aria-hidden="true"></i>
+                        <span>AntennaPod</span>
+                      </a>
+                      <a
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm font-medium text-gray-800 transition-colors duration-200 hover:border-[#BFD3D8] hover:bg-[#F6FAFB] sm:text-base"
+                        data-podcast-service="overcast"
+                        rel="noreferrer"
+                      >
+                        <i class="fa-solid fa-headphones-simple text-[0.95rem] text-[#2F3E46]" aria-hidden="true"></i>
+                        <span>Overcast</span>
+                      </a>
+                    </div>
+                    <div class="mt-4 space-y-2 text-sm leading-[1.6] text-gray-600 sm:text-[0.95rem]">
+                      <p>
+                        <strong class="font-semibold text-[#2F3E46]">Apple Podcasts:</strong>
+                        abre Biblioteca, toca <strong class="font-semibold">...</strong> y elige <strong class="font-semibold">Añadir un programa por URL</strong>.
+                      </p>
+                      <p>
+                        <strong class="font-semibold text-[#2F3E46]">Pocket Casts:</strong>
+                        pega la URL del feed en la búsqueda de <strong class="font-semibold">Discover</strong> para seguirlo.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
               <p class="mt-4 text-sm leading-[1.6] text-gray-500 sm:text-base">
-                Copia esta dirección y pégala en tu lector RSS para seguir las novedades de La Otra Pucela.
+                Usa el RSS general para lectura y el feed de podcast si quieres escuchar los artículos en una app de podcasts.
               </p>
             </section>
 
@@ -403,7 +509,7 @@
               <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 sm:text-base">
                 <li>1. Abre tu aplicación o servicio de lectura RSS.</li>
                 <li>2. Busca una opción como “Añadir feed”, “Suscribirse” o el icono +.</li>
-                <li>3. Pega la URL del feed que has copiado.</li>
+                <li>3. Si es una app de podcast, usa el feed de podcast; si es un lector RSS, usa el general.</li>
                 <li>4. Confirma la suscripción y listo.</li>
               </ol>
             </section>
@@ -474,6 +580,7 @@
     </div>
 
     <script src="{{ assetManifest['assets/js/article-audio-player.js'] or '/assets/js/article-audio-player.js' }}" defer></script>
+    <script src="{{ assetManifest['assets/js/audio-playlist.js'] or '/assets/js/audio-playlist.js' }}" defer></script>
     <script src="{{ assetManifest['assets/js/main.js'] or '/assets/js/main.js' }}" defer></script>
   </body>
 </html>

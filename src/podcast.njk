@@ -1,0 +1,67 @@
+---
+permalink: /podcast.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+  {% set podcastImageUrl = site.siteUrl + site.defaultSocialImage %}
+  {% set podcastItems = articulos.items | feedItems %}
+  <channel>
+    <title>{{ site.podcast.title | escape }}</title>
+    <link>{{ site.siteUrl }}/</link>
+    <description>{{ site.podcast.description | escape }}</description>
+    <language>es-ES</language>
+    <lastBuildDate>{{ articulos.generatedAt | date("rfc2822") }}</lastBuildDate>
+    <atom:link href="{{ site.siteUrl }}{{ site.podcastPath }}" rel="self" type="application/rss+xml" />
+    <image>
+      <url>{{ podcastImageUrl | escape }}</url>
+      <title>{{ site.podcast.title | escape }}</title>
+      <link>{{ site.siteUrl }}/</link>
+    </image>
+    <itunes:author>{{ site.podcast.author | escape }}</itunes:author>
+    <itunes:summary>{{ site.podcast.description | escape }}</itunes:summary>
+    <itunes:type>episodic</itunes:type>
+    <itunes:explicit>{{ site.podcast.explicit | escape }}</itunes:explicit>
+    <itunes:image href="{{ podcastImageUrl | escape }}" />
+    <itunes:category text="{{ site.podcast.category | escape }}" />
+    <podcast:locked>no</podcast:locked>
+    <podcast:medium>podcast</podcast:medium>
+    {% for articulo in podcastItems %}
+    {% if articulo.audio and articulo.audio.downloadUrl %}
+    {% set articleUrl = site.siteUrl + articulo.publicPath %}
+    {% set articleImageUrl = articulo.image %}
+    {% if articleImageUrl and articleImageUrl[0] == "/" %}
+    {% set articleImageUrl = site.siteUrl + articleImageUrl %}
+    {% endif %}
+    <item>
+      <title>{{ articulo.title | escape }}</title>
+      <link>{{ articleUrl }}</link>
+      <guid isPermaLink="true">{{ articleUrl }}</guid>
+      <pubDate>{{ articulo.createdAt | date("rfc2822") }}</pubDate>
+      <description><![CDATA[{{ articulo.description | escape }}]]></description>
+      <content:encoded><![CDATA[{{ articulo.contentHtml | safe }}<p><a href="{{ articleUrl }}">Leer artículo completo en La Otra Pucela</a>.</p>]]></content:encoded>
+      <enclosure
+        url="{{ articulo.audio.downloadUrl | escape }}"
+        length="{{ articulo.audio.sizeBytes or 0 }}"
+        type="{{ articulo.audio.mimeType | escape }}"
+      />
+      <itunes:author>{{ (articulo.author and articulo.author.name) or site.podcast.author | escape }}</itunes:author>
+      <itunes:summary>{{ articulo.description | escape }}</itunes:summary>
+      <itunes:explicit>{{ site.podcast.explicit | escape }}</itunes:explicit>
+      <itunes:episodeType>full</itunes:episodeType>
+      {% if articleImageUrl %}
+      <itunes:image href="{{ articleImageUrl | escape }}" />
+      <media:content url="{{ articleImageUrl | escape }}" medium="image" />
+      <media:thumbnail url="{{ articleImageUrl | escape }}" />
+      {% endif %}
+      {% if articulo.audio.duration %}
+      <itunes:duration>{{ articulo.audio.duration | escape }}</itunes:duration>
+      {% endif %}
+      {% for tag in articulo.tags %}
+      <category>{{ tag.name | themeName | escape }}</category>
+      {% endfor %}
+    </item>
+    {% endif %}
+    {% endfor %}
+  </channel>
+</rss>

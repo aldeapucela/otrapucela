@@ -70,6 +70,24 @@ canonicalUrl: /
       </a>
     </article>
 
+    {% if loop.index == 3 %}
+    <section class="border border-[#E3DDD1] bg-[#F8F5EE] px-5 py-6 text-left">
+      <h2 class="font-serif text-[1.28rem] font-semibold leading-[1.08] tracking-tight text-[#243746]">
+        ¿Quieres escuchar nuestros artículos como audios?
+      </h2>
+      <p class="mt-3 text-[0.98rem] leading-[1.6] text-[#556270]">
+        Entra en la sección de audios y escucha los artículos a tu ritmo, uno detrás de otro, o añádelo a tu aplicación de podcast.
+      </p>
+      <a
+        href="/audios/"
+        class="mt-5 flex min-h-12 w-fit items-center gap-2 rounded-full bg-[#2F3E46] px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#253138] mx-auto"
+      >
+        <i class="fa-solid fa-headphones-simple text-[0.95rem]" aria-hidden="true"></i>
+        <span>Ir a audios</span>
+      </a>
+    </section>
+    {% endif %}
+
     {% endfor %}
   </div>
 

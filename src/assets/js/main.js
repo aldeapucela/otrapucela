@@ -1266,25 +1266,41 @@ function setupNewsletterPageState() {
 }
 
 function setupRssDialog() {
-  const triggerElement = document.querySelector("[data-rss-trigger]");
+  const triggerElements = document.querySelectorAll("[data-rss-trigger]");
   const dialogElement = document.querySelector("[data-rss-dialog]");
 
-  if (!triggerElement || !dialogElement) {
+  if (!triggerElements.length || !dialogElement) {
     return;
   }
+
+  const [primaryTriggerElement] = triggerElements;
 
   const closeButton = dialogElement.querySelector("[data-rss-close]");
-  const copyButton = dialogElement.querySelector("[data-rss-copy]");
-  const copyLabel = dialogElement.querySelector("[data-rss-copy-label]");
-  const inputElement = dialogElement.querySelector("[data-rss-feed-input]");
+  const copyButtons = dialogElement.querySelectorAll("[data-rss-copy]");
+  const feedInputs = dialogElement.querySelectorAll("[data-rss-feed-input]");
   const readerLinks = dialogElement.querySelectorAll("[data-rss-reader]");
-  const feedUrl = triggerElement.dataset.feedUrl || triggerElement.href;
+  const podcastServiceLinks = dialogElement.querySelectorAll("[data-podcast-service]");
+  const feedUrl = primaryTriggerElement.dataset.feedUrl || primaryTriggerElement.href;
+  const podcastUrl = primaryTriggerElement.dataset.podcastUrl || "";
+  let lastTriggerElement = primaryTriggerElement;
 
-  if (!feedUrl || !inputElement) {
+  if (!feedUrl || !feedInputs.length) {
     return;
   }
 
-  inputElement.value = feedUrl;
+  const feedUrls = {
+    rss: feedUrl,
+    podcast: podcastUrl
+  };
+
+  feedInputs.forEach((inputElement) => {
+    const inputType = inputElement.dataset.rssFeedInput;
+    const url = feedUrls[inputType];
+
+    if (url) {
+      inputElement.value = url;
+    }
+  });
 
   const readerUrls = {
     feedly: `https://feedly.com/i/subscription/feed/${encodeURIComponent(feedUrl)}`,
@@ -1304,17 +1320,36 @@ function setupRssDialog() {
     linkElement.href = readerUrl;
   });
 
-  function openDialog() {
+  const podcastServiceUrls = {
+    antennapod: `https://antennapod.org/deeplink/subscribe?url=${encodeURIComponent(podcastUrl)}&title=${encodeURIComponent("La Otra Pucela en audio")}`,
+    overcast: `overcast://x-callback-url/add?url=${encodeURIComponent(podcastUrl)}`
+  };
+
+  podcastServiceLinks.forEach((linkElement) => {
+    const serviceName = linkElement.dataset.podcastService;
+    const serviceUrl = podcastServiceUrls[serviceName];
+
+    if (!serviceUrl) {
+      return;
+    }
+
+    linkElement.href = serviceUrl;
+  });
+
+  function openDialog(defaultFeedType = "rss") {
     if (typeof dialogElement.showModal !== "function") {
-      window.location.href = feedUrl;
+      window.location.href = feedUrls[defaultFeedType] || feedUrl;
       return;
     }
 
     dialogElement.showModal();
     document.body.classList.add("overflow-hidden");
     window.setTimeout(() => {
-      inputElement.focus();
-      inputElement.select();
+      const defaultInputElement = dialogElement.querySelector(`[data-rss-feed-input="${defaultFeedType}"]`)
+        || dialogElement.querySelector('[data-rss-feed-input="rss"]');
+
+      defaultInputElement?.focus();
+      defaultInputElement?.select();
     }, 30);
   }
 
@@ -1324,12 +1359,20 @@ function setupRssDialog() {
     }
 
     document.body.classList.remove("overflow-hidden");
-    triggerElement.focus();
+    lastTriggerElement?.focus();
   }
 
-  async function copyFeedUrl() {
+  async function copyFeedUrl(feedType) {
+    const nextFeedUrl = feedUrls[feedType];
+    const inputElement = dialogElement.querySelector(`[data-rss-feed-input="${feedType}"]`);
+    const copyLabel = dialogElement.querySelector(`[data-rss-copy-label="${feedType}"]`);
+
+    if (!nextFeedUrl || !inputElement || !copyLabel) {
+      return;
+    }
+
     try {
-      await navigator.clipboard.writeText(feedUrl);
+      await navigator.clipboard.writeText(nextFeedUrl);
       copyLabel.textContent = "Copiada";
       window.setTimeout(() => {
         copyLabel.textContent = "Copiar";
@@ -1344,13 +1387,20 @@ function setupRssDialog() {
     }
   }
 
-  triggerElement.addEventListener("click", (event) => {
-    event.preventDefault();
-    openDialog();
+  triggerElements.forEach((triggerElement) => {
+    triggerElement.addEventListener("click", (event) => {
+      event.preventDefault();
+      lastTriggerElement = triggerElement;
+      openDialog(triggerElement.dataset.defaultFeed || "rss");
+    });
   });
 
   closeButton?.addEventListener("click", closeDialog);
-  copyButton?.addEventListener("click", copyFeedUrl);
+  copyButtons.forEach((buttonElement) => {
+    buttonElement.addEventListener("click", () => {
+      copyFeedUrl(buttonElement.dataset.rssCopy);
+    });
+  });
 
   dialogElement.addEventListener("click", (event) => {
     const dialogBounds = dialogElement.getBoundingClientRect();
@@ -1687,6 +1737,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupRssDialog();
   setupRelatedCarousel();
   window.setupArticleAudioPlayer?.();
+  window.setupAudioPlaylistPage?.();
   setupScrollTopButton();
   setupCommentsSection();
 });

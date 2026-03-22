@@ -25,6 +25,7 @@ export default function eleventyConfig(config) {
       return {
         "assets/styles/main.css": "/assets/styles/main.css",
         "assets/js/article-audio-player.js": "/assets/js/article-audio-player.js",
+        "assets/js/audio-playlist.js": "/assets/js/audio-playlist.js",
         "assets/js/main.js": "/assets/js/main.js",
         "assets/js/matomo.js": "/assets/js/matomo.js"
       };
@@ -38,6 +39,14 @@ export default function eleventyConfig(config) {
 
     if (format === "rfc2822") {
       return new Date(value).toUTCString();
+    }
+
+    if (format === "dd/MM/yyyy") {
+      return new Intl.DateTimeFormat("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(new Date(value));
     }
 
     const normalizedFormat = String(format).trim();
@@ -176,6 +185,14 @@ export default function eleventyConfig(config) {
     return items
       .filter((item) => item?.slug !== "acerca-de-la-categoria-plataforma-integracion-ferroviaria")
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  });
+
+  config.addFilter("withAudio", (items = []) => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    return items.filter((item) => item?.audio?.sources?.length);
   });
 
   return {

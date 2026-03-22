@@ -381,20 +381,30 @@ function normalizeAuthor(author = {}) {
 
 function buildArticleAudio(id, isAvailable = true) {
   const articleId = String(id ?? "").trim();
+  const audioIsAvailable = typeof isAvailable === "object"
+    ? isAvailable?.isAvailable === true
+    : isAvailable === true;
 
-  if (!articleId || !isAvailable) {
+  if (!articleId || !audioIsAvailable) {
     return null;
   }
   const audioUrl = `${remoteAudioBaseUrl}/${encodeURIComponent(articleId)}.mp3`;
+  const audioSizeBytes = Number.isFinite(isAvailable?.sizeBytes) ? isAvailable.sizeBytes : null;
+  const audioMimeType = typeof isAvailable?.mimeType === "string" && isAvailable.mimeType.trim()
+    ? isAvailable.mimeType.trim()
+    : "audio/mpeg";
 
   return {
     sources: [
       {
         src: audioUrl,
-        type: "audio/mpeg"
+        type: audioMimeType
       }
     ],
-    downloadUrl: audioUrl
+    downloadUrl: audioUrl,
+    sizeBytes: audioSizeBytes,
+    mimeType: audioMimeType,
+    duration: typeof isAvailable?.duration === "string" ? isAvailable.duration : null
   };
 }
 
@@ -412,9 +422,25 @@ async function remoteAudioExists(id) {
       method: "HEAD"
     });
 
-    return response.ok;
+    if (!response.ok) {
+      return {
+        isAvailable: false
+      };
+    }
+
+    const contentLengthHeader = response.headers.get("content-length");
+    const parsedSize = Number.parseInt(contentLengthHeader ?? "", 10);
+    const contentType = response.headers.get("content-type") || "audio/mpeg";
+
+    return {
+      isAvailable: true,
+      sizeBytes: Number.isFinite(parsedSize) ? parsedSize : null,
+      mimeType: contentType.split(";")[0]?.trim() || "audio/mpeg"
+    };
   } catch {
-    return false;
+    return {
+      isAvailable: false
+    };
   }
 }
 
@@ -734,7 +760,7 @@ export default async function articulos() {
   const audioAvailabilityMap = new Map(audioAvailabilityEntries);
 
   items.forEach((item) => {
-    item.audio = buildArticleAudio(item.id, audioAvailabilityMap.get(String(item.id)) === true);
+    item.audio = buildArticleAudio(item.id, audioAvailabilityMap.get(String(item.id)));
   });
 
   items.sort((a, b) => {

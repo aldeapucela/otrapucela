@@ -30,6 +30,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   const durationTimeElement = document.querySelector(".js-audio-time-duration");
   const skipButtons = document.querySelectorAll("[data-skip-seconds]");
   const storageKey = "audioProgress";
+  const playbackRateStorageKey = "audioPlaybackRate";
   let isSeeking = false;
   let touchStartY = null;
   let touchDeltaY = 0;
@@ -47,6 +48,23 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   const articleTitle = audioElement.dataset.articleTitle?.trim() || "";
   const articleAuthor = audioElement.dataset.articleAuthor?.trim() || "";
   const articleUrl = audioElement.dataset.articleUrl?.trim() || "";
+
+  function readSavedPlaybackRate() {
+    try {
+      const savedRate = Number(window.localStorage.getItem(playbackRateStorageKey) || "1");
+      return Number.isFinite(savedRate) && savedRate > 0 ? savedRate : 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  function savePlaybackRate(nextRate) {
+    try {
+      window.localStorage.setItem(playbackRateStorageKey, String(nextRate));
+    } catch {
+      // Ignore storage quota or privacy errors.
+    }
+  }
 
   function readAudioProgressStore() {
     try {
@@ -285,6 +303,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   function updatePlaybackRate(nextRate) {
     currentPlaybackRate = nextRate;
     audioElement.playbackRate = nextRate;
+    savePlaybackRate(nextRate);
 
     if (speedLabelElement) {
       speedLabelElement.textContent = `${nextRate}x`;
@@ -624,7 +643,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
   updateProgress();
   updatePlaybackState();
-  updatePlaybackRate(1);
+  updatePlaybackRate(readSavedPlaybackRate());
   showDefaultActions();
   syncStickyVisibility();
 };

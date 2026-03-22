@@ -1,0 +1,203 @@
+---
+layout: base.njk
+title: Audios - La Otra Pucela
+description: Una lista de todos nuestros artículos para escuchar cómodamente en audio.
+canonicalUrl: /audios/
+permalink: /audios/index.html
+---
+{% set audioItems = articulos.items | withAudio %}
+<section class="audio-hub-page" data-audio-hub-page>
+  <div class="mx-auto max-w-5xl px-4 pt-7 pb-32 sm:px-6 sm:pt-10 sm:pb-36 lg:px-8 lg:pb-40">
+    <header class="audio-hub-page__hero">
+      <p class="audio-hub-page__eyebrow">Escuchar</p>
+      <div class="audio-hub-page__hero-row">
+        <div class="min-w-0 flex-1">
+          <h1 class="audio-hub-page__title">Audios</h1>
+          <p class="audio-hub-page__description">
+            Una lista de todos nuestros artículos para escuchar cómodamente en audio.
+          </p>
+          <div class="audio-hub-page__hero-actions">
+            {% set absoluteFeedUrl = site.siteUrl + site.feedPath %}
+            {% set absolutePodcastUrl = site.siteUrl + site.podcastPath %}
+            <a
+              href="{{ site.podcastPath }}"
+              class="audio-hub-page__podcast-link"
+              data-rss-trigger
+              data-feed-url="{{ absoluteFeedUrl }}"
+              data-podcast-url="{{ absolutePodcastUrl }}"
+              data-default-feed="podcast"
+              aria-haspopup="dialog"
+            >
+              <i class="fa-solid fa-podcast text-[0.9rem]" aria-hidden="true"></i>
+              <span>Añadir a tu app de podcast</span>
+            </a>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="audio-hub-page__continue hidden"
+          data-audio-hub-continue
+        >
+          <i class="fa-solid fa-play text-xs" aria-hidden="true"></i>
+          <span>Continuar</span>
+        </button>
+      </div>
+      <div class="audio-hub-page__toolbar">
+        <p class="audio-hub-page__meta" data-audio-hub-pending-copy>
+          {{ audioItems.length }} artículos pendientes por escuchar
+        </p>
+        <button
+          type="button"
+          class="audio-hub-page__filter-toggle"
+          data-audio-hub-hide-completed
+          data-filter-state="showing"
+          aria-pressed="false"
+        >
+          Ocultar escuchados
+        </button>
+      </div>
+    </header>
+
+    {% if audioItems.length %}
+    <ol class="audio-hub-list" data-audio-hub-list>
+      {% for articulo in audioItems %}
+      <li
+        class="audio-hub-list__item"
+        data-audio-hub-item
+        data-index="{{ loop.index0 }}"
+        data-id="{{ articulo.id }}"
+        data-src="{{ articulo.audio.sources[0].src }}"
+        data-download-url="{{ articulo.audio.downloadUrl }}"
+        data-title="{{ articulo.title }}"
+        data-author="{{ articulo.author.name }}"
+        data-url="{{ articulo.publicPath }}"
+        data-date="{{ articulo.createdAt | date('dd/MM/yyyy') }}"
+      >
+        <button
+          type="button"
+          class="audio-hub-list__play"
+          data-audio-hub-start
+          aria-label="Reproducir {{ articulo.title }}"
+        >
+          <i class="fa-solid fa-play" aria-hidden="true"></i>
+        </button>
+
+        <div class="audio-hub-list__body">
+          <div class="audio-hub-list__row">
+            <div class="min-w-0">
+              <a href="{{ articulo.publicPath }}" class="audio-hub-list__title">
+                {{ articulo.title }}
+              </a>
+              <p class="audio-hub-list__byline">
+                <span>{{ articulo.author.name }}</span>
+                <span aria-hidden="true">·</span>
+                <span>{{ articulo.createdAt | date('dd/MM/yyyy') }}</span>
+              </p>
+            </div>
+            <div class="audio-hub-list__aside">
+              <span class="audio-hub-list__status-wrap">
+                <i class="fa-solid fa-circle-check audio-hub-list__status-icon" data-audio-hub-status-icon aria-hidden="true"></i>
+                <span class="audio-hub-list__status" data-audio-hub-status>Sin empezar</span>
+              </span>
+              <a href="{{ articulo.publicPath }}" class="audio-hub-list__link" aria-label="Abrir artículo {{ articulo.title }}">
+                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+          <div class="audio-hub-list__progress">
+            <span class="audio-hub-list__progress-fill" data-audio-hub-progress-fill></span>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+
+    <div class="audio-hub-player-shell hidden" data-audio-hub-player-shell>
+      <div class="audio-hub-player">
+        <audio class="js-audio-hub-element" preload="none"></audio>
+
+        <div class="audio-hub-player__meta">
+          <div class="audio-hub-player__title-marquee">
+            <p class="audio-hub-player__title">
+              <a href="/" class="audio-hub-player__title-link js-audio-hub-player-link">
+                <span class="audio-hub-player__title-text js-audio-hub-player-title">Selecciona un artículo</span>
+              </a>
+              <span class="audio-hub-player__title-separator" aria-hidden="true"> • </span>
+              <span class="audio-hub-player__title-text js-audio-hub-player-title-clone" aria-hidden="true">Selecciona un artículo</span>
+            </p>
+          </div>
+          <p class="audio-hub-player__byline js-audio-hub-player-author">La Otra Pucela</p>
+        </div>
+
+        <div class="audio-hub-player__seek-row">
+          <span class="audio-hub-player__time js-audio-hub-time-current">0:00</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="0.1"
+            value="0"
+            class="audio-hub-player__seek js-audio-hub-seek"
+            aria-label="Barra de progreso del audio"
+          >
+          <span class="audio-hub-player__time js-audio-hub-time-duration">0:00</span>
+        </div>
+
+        <div class="audio-hub-player__controls-row">
+          <div class="audio-hub-player__playlist-nav">
+            <button type="button" class="audio-hub-player__icon-button js-audio-hub-prev-item" aria-label="Artículo anterior">
+              <i class="fa-solid fa-backward-step" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="audio-hub-player__icon-button js-audio-hub-next-item" aria-label="Artículo siguiente">
+              <i class="fa-solid fa-forward-step" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="audio-hub-player__transport">
+            <button type="button" class="audio-hub-player__control js-audio-hub-skip" data-skip-seconds="-10" aria-label="Retroceder 10 segundos">
+              <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+              <span class="audio-hub-player__control-label">10</span>
+            </button>
+            <button type="button" class="audio-hub-player__play js-audio-hub-play-toggle" data-audio-state="paused" aria-label="Reproducir audio">
+              <i class="fa-solid fa-play js-audio-hub-play-icon" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="audio-hub-player__control js-audio-hub-skip" data-skip-seconds="10" aria-label="Avanzar 10 segundos">
+              <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+              <span class="audio-hub-player__control-label">10</span>
+            </button>
+          </div>
+
+          <div class="audio-hub-player__utilities">
+            <div class="audio-hub-player__speed-wrap">
+              <button
+                type="button"
+                class="audio-hub-player__speed-toggle js-audio-hub-speed-toggle"
+                aria-expanded="false"
+                aria-label="Cambiar velocidad"
+              >
+                <span class="js-audio-hub-speed-label">1x</span>
+              </button>
+              <div class="audio-hub-player__speed-menu hidden" data-audio-hub-speed-menu>
+                <button type="button" class="audio-hub-player__speed-option js-audio-hub-speed-option" data-speed="0.9">0.9x</button>
+                <button type="button" class="audio-hub-player__speed-option js-audio-hub-speed-option" data-speed="1">1x</button>
+                <button type="button" class="audio-hub-player__speed-option js-audio-hub-speed-option" data-speed="1.1">1.1x</button>
+                <button type="button" class="audio-hub-player__speed-option js-audio-hub-speed-option" data-speed="1.2">1.2x</button>
+                <button type="button" class="audio-hub-player__speed-option js-audio-hub-speed-option" data-speed="1.5">1.5x</button>
+                <button type="button" class="audio-hub-player__speed-option js-audio-hub-speed-option" data-speed="2">2x</button>
+              </div>
+            </div>
+            <a href="#" class="audio-hub-player__icon-button js-audio-hub-download" aria-label="Descargar audio">
+              <i class="fa-regular fa-circle-down" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="audio-hub-page__empty">
+      <p class="audio-hub-page__empty-title">Todavía no hay audios disponibles</p>
+      <p class="audio-hub-page__empty-copy">Cuando lleguen nuevas locuciones, aparecerán aquí automáticamente.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
