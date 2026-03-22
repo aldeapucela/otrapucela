@@ -1686,6 +1686,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupNewsletterPageState();
   setupRssDialog();
   setupRelatedCarousel();
+  window.setupArticleAudioPlayer?.();
   setupScrollTopButton();
   setupCommentsSection();
 });

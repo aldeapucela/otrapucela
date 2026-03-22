@@ -15,6 +15,7 @@ eleventyComputed:
   canonicalUrl: "{{ articulo.publicPath }}"
 ---
 {% set relatedItems = articulos.items | relatedArticles(articulo, 5) %}
+{% set audioDownloadName = articulo.title ~ ' (' ~ articulo.author.name ~ ' - La Otra Pucela).mp3' %}
 
 <section class="mx-auto max-w-6xl px-4 pb-40 pt-8 sm:px-6 md:pb-28 lg:px-8 lg:pt-12">
   <article class="mx-auto mb-12 w-full max-w-6xl">
@@ -68,6 +69,17 @@ eleventyComputed:
           </div>
 
           <div class="mt-5 flex items-center gap-6 pl-[0.7rem] text-sm text-gray-700 sm:pl-[0.85rem]">
+            {% if articulo.audio and articulo.audio.sources and articulo.audio.sources.length %}
+            <button
+              type="button"
+              class="js-audio-start hidden min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900 md:inline-flex"
+              data-audio-only
+              aria-label="Escuchar artículo"
+            >
+              <i class="fa-solid fa-play w-4 text-center text-sm" aria-hidden="true"></i>
+              <span>Escuchar</span>
+            </button>
+            {% endif %}
             <a
               href="#comentarios"
               class="inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900"
@@ -90,6 +102,7 @@ eleventyComputed:
             </button>
           </div>
         </div>
+
       </header>
     </div>
 
@@ -218,19 +231,157 @@ eleventyComputed:
     </div>
   </section>
 
-  <div class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white p-3 md:hidden">
-    <div class="mx-auto flex max-w-prose items-center gap-3">
+  <div class="article-mobile-sticky fixed bottom-0 z-40 border-t border-gray-200 bg-white" data-mobile-article-bar>
+    <div class="article-mobile-sticky__inner mx-auto flex max-w-prose items-center gap-3">
+      {% if articulo.audio and articulo.audio.sources and articulo.audio.sources.length %}
+      <audio
+        id="article-audio-element"
+        class="js-article-audio sr-only"
+        preload="none"
+      >
+        {% for source in articulo.audio.sources %}
+        <source data-src="{{ source.src }}" type="{{ source.type }}">
+        {% endfor %}
+        Tu navegador no puede reproducir este audio.
+      </audio>
+      <div class="article-mobile-sticky__player hidden" data-mobile-audio-player data-audio-only>
+        <button
+          type="button"
+          class="article-mobile-sticky__collapse-handle js-audio-collapse"
+          aria-label="Minimizar reproductor"
+        >
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+        <div class="article-mobile-sticky__meta" data-audio-drag-handle>
+          <div class="article-mobile-sticky__title-marquee">
+            <p class="article-mobile-sticky__title">
+              <span class="article-mobile-sticky__title-text">{{ articulo.title }}</span>
+              <span class="article-mobile-sticky__title-separator" aria-hidden="true"> • </span>
+              <span class="article-mobile-sticky__title-text" aria-hidden="true">{{ articulo.title }}</span>
+            </p>
+          </div>
+          <p class="article-mobile-sticky__byline">{{ articulo.author.name }}</p>
+        </div>
+        <div class="article-mobile-sticky__seek-wrap">
+          <span class="article-mobile-sticky__time article-mobile-sticky__time--start js-audio-time-current" aria-live="off">0:00</span>
+          <input
+            type="range"
+            class="article-mobile-sticky__seek js-audio-seek"
+            min="0"
+            max="100"
+            value="0"
+            step="0.1"
+            aria-label="Barra de progreso del audio"
+          >
+          <span class="article-mobile-sticky__time article-mobile-sticky__time--end js-audio-time-duration" aria-live="off">0:00</span>
+        </div>
+        <div class="article-mobile-sticky__player-row">
+          <div class="article-mobile-sticky__side-actions">
+            <button
+              type="button"
+              class="js-share-btn article-mobile-sticky__action"
+              data-share-source="article-mobile-sticky-player"
+              data-share-content-type="article"
+              data-share-content-id="{{ articulo.id }}"
+              data-url="{{ articulo.publicPath }}"
+              data-title="{{ articulo.title }}"
+              aria-label="Compartir artículo"
+            >
+              <i class="fa-solid fa-share-nodes js-share-btn-icon text-base" aria-hidden="true"></i>
+              <span class="sr-only js-share-btn-label">Compartir</span>
+            </button>
+            <a
+              href="#comentarios"
+              class="article-mobile-sticky__action"
+              aria-label="Ir a comentarios"
+            >
+              <i class="fa-regular fa-comment text-base" aria-hidden="true"></i>
+              <span class="js-comment-count article-mobile-sticky__count hidden" aria-live="polite"></span>
+            </a>
+          </div>
+          <div class="article-mobile-sticky__audio-controls">
+            <button
+              type="button"
+              class="article-mobile-sticky__control js-audio-skip-back"
+              data-skip-seconds="-10"
+              aria-label="Retroceder 10 segundos"
+            >
+              <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+              <span class="article-mobile-sticky__control-label">10</span>
+            </button>
+            <button
+              type="button"
+              class="article-mobile-sticky__play js-audio-play-toggle"
+              aria-label="Reproducir artículo"
+              data-audio-state="paused"
+            >
+              <i class="fa-solid fa-play js-audio-play-icon" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="article-mobile-sticky__control js-audio-skip-forward"
+              data-skip-seconds="10"
+              aria-label="Avanzar 10 segundos"
+            >
+              <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+              <span class="article-mobile-sticky__control-label">10</span>
+            </button>
+          </div>
+          <div class="article-mobile-sticky__right-actions">
+            <div class="article-mobile-sticky__speed-wrap">
+              <button
+                type="button"
+                class="article-mobile-sticky__speed-button js-audio-speed-toggle"
+                aria-label="Cambiar velocidad de reproducción"
+                aria-expanded="false"
+              >
+                <span class="js-audio-speed-label">1x</span>
+              </button>
+              <div class="article-mobile-sticky__speed-menu hidden" data-audio-speed-menu>
+                <button type="button" class="article-mobile-sticky__speed-option js-audio-speed-option" data-speed="0.9">0.9x</button>
+                <button type="button" class="article-mobile-sticky__speed-option js-audio-speed-option" data-speed="1">1x</button>
+                <button type="button" class="article-mobile-sticky__speed-option js-audio-speed-option" data-speed="1.1">1.1x</button>
+                <button type="button" class="article-mobile-sticky__speed-option js-audio-speed-option" data-speed="1.2">1.2x</button>
+                <button type="button" class="article-mobile-sticky__speed-option js-audio-speed-option" data-speed="1.5">1.5x</button>
+                <button type="button" class="article-mobile-sticky__speed-option js-audio-speed-option" data-speed="2">2x</button>
+              </div>
+            </div>
+            <a
+              href="{{ articulo.audio.downloadUrl }}"
+              class="article-mobile-sticky__action"
+              download="{{ audioDownloadName }}"
+              aria-label="Descargar audio"
+            >
+              <i class="fa-regular fa-circle-down text-base" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="article-mobile-sticky__actions md:hidden" data-mobile-default-actions>
+      {% if articulo.audio and articulo.audio.sources and articulo.audio.sources.length %}
+      <button
+        type="button"
+        class="article-mobile-sticky__play-entry js-audio-start"
+        data-audio-only
+        aria-controls="article-audio-element"
+        aria-label="Reproducir artículo"
+      >
+        <i class="fa-solid fa-play text-sm" aria-hidden="true"></i>
+      </button>
+      {% endif %}
       <a
         href="#comentarios"
-        class="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors duration-200 hover:bg-gray-100"
+        class="article-mobile-sticky__comment-link"
+        aria-label="Ir a comentarios"
       >
         <i class="fa-regular fa-comment text-base" aria-hidden="true"></i>
-        <span>Comentar</span>
-        <span class="js-comment-count hidden" aria-live="polite"></span>
+        <span class="{% if articulo.audio and articulo.audio.sources and articulo.audio.sources.length %}hidden {% endif %}" data-no-audio-label>Comentar</span>
+        <span class="js-comment-count article-mobile-sticky__count hidden" aria-live="polite"></span>
       </a>
       <button
         type="button"
-        class="js-share-btn inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#2F3E46] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#253138]"
+        class="js-share-btn article-mobile-sticky__share"
         data-share-source="article-mobile-sticky"
         data-share-content-type="article"
         data-share-content-id="{{ articulo.id }}"
@@ -241,10 +392,11 @@ eleventyComputed:
         <i class="fa-solid fa-share-nodes js-share-btn-icon text-base" aria-hidden="true"></i>
         <span class="js-share-btn-label">Compartir</span>
       </button>
+      </div>
     </div>
   </div>
 
-  <div class="fixed bottom-24 right-4 z-40 flex flex-col gap-3 lg:bottom-8 lg:right-[max(1.5rem,calc(50vw-32rem-4.5rem))]">
+  <div class="js-floating-actions fixed bottom-24 right-4 z-40 flex flex-col gap-3 lg:bottom-8 lg:right-[max(1.5rem,calc(50vw-32rem-4.5rem))]">
     <button
       type="button"
       class="js-scroll-top pointer-events-none inline-flex h-12 w-12 translate-y-3 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-800 opacity-0 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-gray-950"

@@ -6,11 +6,13 @@ const discourseBaseUrl = "https://foro.aldeapucela.org";
 const categoryUrl = `${discourseBaseUrl}/c/9.json`;
 const topicRequestConcurrency = 2;
 const authorRequestConcurrency = 2;
+const audioRequestConcurrency = 4;
 const maxFetchAttempts = 4;
 const baseRetryDelayMs = 1200;
 const cacheDirectory = path.resolve(process.cwd(), ".cache");
 const cacheFilePath = path.join(cacheDirectory, "articulos.json");
 const authorsCacheFilePath = path.join(cacheDirectory, "autores.json");
+const remoteAudioBaseUrl = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E";
 
 function stripHtml(html = "") {
   return html
@@ -377,6 +379,45 @@ function normalizeAuthor(author = {}) {
   };
 }
 
+function buildArticleAudio(id, isAvailable = true) {
+  const articleId = String(id ?? "").trim();
+
+  if (!articleId || !isAvailable) {
+    return null;
+  }
+  const audioUrl = `${remoteAudioBaseUrl}/${encodeURIComponent(articleId)}.mp3`;
+
+  return {
+    sources: [
+      {
+        src: audioUrl,
+        type: "audio/mpeg"
+      }
+    ],
+    downloadUrl: audioUrl
+  };
+}
+
+async function remoteAudioExists(id) {
+  const articleId = String(id ?? "").trim();
+
+  if (!articleId) {
+    return false;
+  }
+
+  const audioUrl = `${remoteAudioBaseUrl}/${encodeURIComponent(articleId)}.mp3`;
+
+  try {
+    const response = await fetch(audioUrl, {
+      method: "HEAD"
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 function readCache() {
   if (!existsSync(cacheFilePath)) {
     return {
@@ -639,6 +680,7 @@ export default async function articulos() {
           bodyHtml: bodyHtmlFromContent(sanitizedCachedHtml, normalizedExcerpt),
           contentHtml: sanitizedCachedHtml,
           image: cachedItem.image ?? topic.image_url ?? null,
+          audio: buildArticleAudio(topic.id),
           source: {
             categoryUrl,
             topicJsonUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}.json`
@@ -671,6 +713,7 @@ export default async function articulos() {
         discourseTopicUrl: detail.canonicalUrl,
         publicPath: `/p/${topic.id}/${topic.slug}/`,
         image: detail.image ?? topic.image_url ?? null,
+        audio: buildArticleAudio(topic.id),
         postNumber: detail.postNumber,
         source: {
           categoryUrl,
@@ -681,6 +724,18 @@ export default async function articulos() {
       };
     }
   );
+
+  const audioAvailabilityEntries = await mapWithConcurrency(
+    items,
+    audioRequestConcurrency,
+    async (item) => [String(item.id), await remoteAudioExists(item.id)]
+  );
+
+  const audioAvailabilityMap = new Map(audioAvailabilityEntries);
+
+  items.forEach((item) => {
+    item.audio = buildArticleAudio(item.id, audioAvailabilityMap.get(String(item.id)) === true);
+  });
 
   items.sort((a, b) => {
     if (a.featured !== b.featured) {

@@ -24,6 +24,7 @@ export default function eleventyConfig(config) {
     } catch {
       return {
         "assets/styles/main.css": "/assets/styles/main.css",
+        "assets/js/article-audio-player.js": "/assets/js/article-audio-player.js",
         "assets/js/main.js": "/assets/js/main.js",
         "assets/js/matomo.js": "/assets/js/matomo.js"
       };
