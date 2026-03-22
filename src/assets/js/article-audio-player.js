@@ -23,6 +23,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   const speedLabelElement = document.querySelector(".js-audio-speed-label");
   const speedMenuElement = document.querySelector("[data-audio-speed-menu]");
   const speedOptionButtons = document.querySelectorAll(".js-audio-speed-option");
+  const downloadLinks = document.querySelectorAll(".js-audio-download");
   const playToggleButton = document.querySelector(".js-audio-play-toggle");
   const playIcon = document.querySelector(".js-audio-play-icon");
   const currentTimeElement = document.querySelector(".js-audio-time-current");
@@ -360,6 +361,12 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
       updatePlaybackRate(speed);
       closeSpeedMenu();
+    });
+  });
+
+  downloadLinks.forEach((linkElement) => {
+    linkElement.addEventListener("click", () => {
+      trackAudioMetric("download", 1);
     });
   });
 
