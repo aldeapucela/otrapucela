@@ -36,18 +36,33 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   let isBuffering = false;
   let audioSourcesLoaded = false;
   const articleId = audioElement.dataset.articleId?.trim() || "unknown";
+  let hasTrackedPlay = false;
+  let hasTrackedComplete = false;
+  let lastTrackedProgressBucket = 0;
+  let maxProgressPercent = 0;
+  let lastTrackedExitPercent = 0;
 
   function isDesktopViewport() {
     return window.matchMedia("(min-width: 768px)").matches;
   }
 
   function trackAudioPlay() {
+    if (hasTrackedPlay || typeof window._paq?.push !== "function") {
+      return;
+    }
+
+    hasTrackedPlay = true;
+    const deviceType = isDesktopViewport() ? "desktop" : "mobile";
+    window._paq.push(["trackEvent", "audio", `play_${deviceType}`, articleId]);
+  }
+
+  function trackAudioMetric(action, value) {
     if (typeof window._paq?.push !== "function") {
       return;
     }
 
     const deviceType = isDesktopViewport() ? "desktop" : "mobile";
-    window._paq.push(["trackEvent", "audio", `play_${deviceType}`, articleId]);
+    window._paq.push(["trackEvent", "audio", `${action}_${deviceType}`, articleId, value]);
   }
 
   function syncStickyVisibility() {
@@ -200,6 +215,45 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
 
     currentTimeElement.textContent = formatTime(currentTime);
     durationTimeElement.textContent = formatTime(duration);
+
+    const roundedProgress = Math.min(100, Math.max(0, Math.round(progress)));
+    maxProgressPercent = Math.max(maxProgressPercent, roundedProgress);
+
+    const progressBucket = Math.floor(roundedProgress / 25) * 25;
+
+    if (
+      hasTrackedPlay
+      && progressBucket >= 25
+      && progressBucket < 100
+      && progressBucket > lastTrackedProgressBucket
+    ) {
+      lastTrackedProgressBucket = progressBucket;
+      trackAudioMetric("progress", progressBucket);
+    }
+  }
+
+  function trackAudioExit() {
+    if (
+      !hasTrackedPlay
+      || hasTrackedComplete
+      || maxProgressPercent <= 0
+      || maxProgressPercent <= lastTrackedExitPercent
+    ) {
+      return;
+    }
+
+    lastTrackedExitPercent = maxProgressPercent;
+    trackAudioMetric("exit", maxProgressPercent);
+  }
+
+  function trackAudioComplete() {
+    if (hasTrackedComplete) {
+      return;
+    }
+
+    hasTrackedComplete = true;
+    maxProgressPercent = 100;
+    trackAudioMetric("complete", 100);
   }
 
   function setBufferingState(nextIsBuffering) {
@@ -389,8 +443,14 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   });
 
   audioElement.addEventListener("play", updatePlaybackState);
-  audioElement.addEventListener("pause", updatePlaybackState);
-  audioElement.addEventListener("ended", updatePlaybackState);
+  audioElement.addEventListener("pause", () => {
+    updatePlaybackState();
+    trackAudioExit();
+  });
+  audioElement.addEventListener("ended", () => {
+    trackAudioComplete();
+    updatePlaybackState();
+  });
   audioElement.addEventListener("playing", () => {
     setBufferingState(false);
   });
@@ -419,6 +479,12 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   audioElement.addEventListener("error", () => {
     setBufferingState(false);
     disableAudioUi();
+  });
+  window.addEventListener("pagehide", trackAudioExit);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      trackAudioExit();
+    }
   });
 
   updateProgress();
