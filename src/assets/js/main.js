@@ -1692,6 +1692,7 @@ function normalizeConditionalSubscriptionState(state) {
 
   return {
     lastVisitDate: typeof state.lastVisitDate === "string" ? state.lastVisitDate : undefined,
+    previousVisitDate: typeof state.previousVisitDate === "string" ? state.previousVisitDate : undefined,
     visitedDaysCount: Number.isFinite(Number(state.visitedDaysCount))
       ? Math.max(0, Number(state.visitedDaysCount))
       : 0,
@@ -1760,6 +1761,7 @@ function updateConditionalSubscriptionVisitState() {
 
   const nextState = {
     ...currentState,
+    previousVisitDate: currentState.lastVisitDate,
     lastVisitDate: today,
     visitedDaysCount: currentState.visitedDaysCount + 1
   };
