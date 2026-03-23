@@ -59,9 +59,6 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
   let currentPlaybackRate = 1;
   let hasTrackedPlay = false;
   let hasTrackedComplete = false;
-  let lastTrackedProgressBucket = 0;
-  let maxProgressPercent = 0;
-  let lastTrackedExitPercent = 0;
   let shouldRestoreSavedTime = false;
   let pendingResumeState = null;
 
@@ -165,7 +162,7 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
       url: currentItem.url,
       currentTime,
       duration,
-      progressPercent: Math.max(progressPercent, maxProgressPercent),
+      progressPercent,
       completed: didCompletePlayback,
       updatedAt: new Date().toISOString(),
       ...overrides
@@ -266,9 +263,6 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
   function resetPlaybackMetrics() {
     hasTrackedPlay = false;
     hasTrackedComplete = false;
-    lastTrackedProgressBucket = 0;
-    maxProgressPercent = 0;
-    lastTrackedExitPercent = 0;
   }
 
   function updateNavButtons() {
@@ -403,34 +397,6 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
       durationTimeElement.textContent = formatTime(duration);
     }
 
-    const roundedProgress = Math.min(100, Math.max(0, Math.round(progress)));
-    maxProgressPercent = Math.max(maxProgressPercent, roundedProgress);
-
-    const progressBucket = Math.floor(roundedProgress / 25) * 25;
-
-    if (
-      hasTrackedPlay
-      && progressBucket >= 25
-      && progressBucket < 100
-      && progressBucket > lastTrackedProgressBucket
-    ) {
-      lastTrackedProgressBucket = progressBucket;
-      trackAudioMetric("progress", progressBucket);
-    }
-  }
-
-  function trackAudioExit() {
-    if (
-      !hasTrackedPlay
-      || hasTrackedComplete
-      || maxProgressPercent <= 0
-      || maxProgressPercent <= lastTrackedExitPercent
-    ) {
-      return;
-    }
-
-    lastTrackedExitPercent = maxProgressPercent;
-    trackAudioMetric("exit", maxProgressPercent);
   }
 
   function trackAudioComplete() {
@@ -439,7 +405,6 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
     }
 
     hasTrackedComplete = true;
-    maxProgressPercent = 100;
     trackAudioMetric("complete", 100);
     markAudioCompleted();
   }
@@ -634,9 +599,7 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
     const previousItem = getCurrentItem();
 
     if (previousItem?.id !== nextItem.id) {
-      trackAudioExit();
-
-      if (!audioElement.paused || maxProgressPercent > 0) {
+      if (!audioElement.paused || audioElement.currentTime > 0) {
         saveAudioState();
       }
 
@@ -914,18 +877,15 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
   });
 
   window.addEventListener("pagehide", () => {
-    trackAudioExit();
     saveAudioState();
   });
 
   window.addEventListener("beforeunload", () => {
-    trackAudioExit();
     saveAudioState();
   });
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      trackAudioExit();
       saveAudioState();
     }
   });

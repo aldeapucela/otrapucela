@@ -41,9 +41,6 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   const articleId = audioElement.dataset.articleId?.trim() || "unknown";
   let hasTrackedPlay = false;
   let hasTrackedComplete = false;
-  let lastTrackedProgressBucket = 0;
-  let maxProgressPercent = 0;
-  let lastTrackedExitPercent = 0;
   let shouldRestoreSavedTime = false;
   const articleTitle = audioElement.dataset.articleTitle?.trim() || "";
   const articleAuthor = audioElement.dataset.articleAuthor?.trim() || "";
@@ -100,7 +97,7 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
       url: articleUrl,
       currentTime,
       duration,
-      progressPercent: Math.max(progressPercent, maxProgressPercent),
+      progressPercent,
       completed: false,
       updatedAt: new Date().toISOString(),
       ...overrides
@@ -161,9 +158,6 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   function resetPlaybackMetrics() {
     hasTrackedPlay = false;
     hasTrackedComplete = false;
-    lastTrackedProgressBucket = 0;
-    maxProgressPercent = 0;
-    lastTrackedExitPercent = 0;
   }
 
   function syncStickyVisibility() {
@@ -345,34 +339,6 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
     currentTimeElement.textContent = formatTime(currentTime);
     durationTimeElement.textContent = formatTime(duration);
 
-    const roundedProgress = Math.min(100, Math.max(0, Math.round(progress)));
-    maxProgressPercent = Math.max(maxProgressPercent, roundedProgress);
-
-    const progressBucket = Math.floor(roundedProgress / 25) * 25;
-
-    if (
-      hasTrackedPlay
-      && progressBucket >= 25
-      && progressBucket < 100
-      && progressBucket > lastTrackedProgressBucket
-    ) {
-      lastTrackedProgressBucket = progressBucket;
-      trackAudioMetric("progress", progressBucket);
-    }
-  }
-
-  function trackAudioExit() {
-    if (
-      !hasTrackedPlay
-      || hasTrackedComplete
-      || maxProgressPercent <= 0
-      || maxProgressPercent <= lastTrackedExitPercent
-    ) {
-      return;
-    }
-
-    lastTrackedExitPercent = maxProgressPercent;
-    trackAudioMetric("exit", maxProgressPercent);
   }
 
   function trackAudioComplete() {
@@ -381,7 +347,6 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
     }
 
     hasTrackedComplete = true;
-    maxProgressPercent = 100;
     trackAudioMetric("complete", 100);
     markAudioCompleted();
   }
@@ -595,7 +560,6 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   audioElement.addEventListener("pause", () => {
     updatePlaybackState();
     saveAudioState();
-    trackAudioExit();
   });
   audioElement.addEventListener("ended", () => {
     trackAudioComplete();
@@ -633,12 +597,6 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   audioElement.addEventListener("error", () => {
     setBufferingState(false);
     disableAudioUi();
-  });
-  window.addEventListener("pagehide", trackAudioExit);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-      trackAudioExit();
-    }
   });
 
   updateProgress();
