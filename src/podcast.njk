@@ -12,7 +12,7 @@ eleventyExcludeFromCollections: true
     <description>{{ site.podcast.description | escape }}</description>
     <language>es-ES</language>
     <lastBuildDate>{{ articulos.generatedAt | date("rfc2822") }}</lastBuildDate>
-    <atom:link href="{{ site.siteUrl }}{{ site.podcastPath }}" rel="self" type="application/rss+xml" />
+    <atom:link href="{{ site.podcastFeedUrl }}" rel="self" type="application/rss+xml" />
     <image>
       <url>{{ podcastImageUrl | escape }}</url>
       <title>{{ site.podcast.title | escape }}</title>

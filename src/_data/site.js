@@ -1,4 +1,5 @@
 const defaultSiteUrl = "https://otrapucela.org";
+const defaultPodcastFeedUrl = "https://feeds.otrapucela.org/podcast.xml";
 
 export default {
   name: "La Otra Pucela",
@@ -13,5 +14,6 @@ export default {
     category: "News",
     explicit: "false"
   },
-  siteUrl: (process.env.SITE_URL || defaultSiteUrl).replace(/\/+$/, "")
+  siteUrl: (process.env.SITE_URL || defaultSiteUrl).replace(/\/+$/, ""),
+  podcastFeedUrl: (process.env.PODCAST_FEED_URL || defaultPodcastFeedUrl).replace(/\/+$/, "")
 };
