@@ -509,7 +509,14 @@
   }
 
   .audio-hub-page__podcast-link {
-    @apply inline-flex min-h-12 items-center gap-2 rounded-full border border-[#D9D2C6] bg-white px-4 py-3 text-sm font-semibold text-[#2F3E46] transition-colors duration-200 hover:bg-[#F8F5EE];
+    @apply inline-flex min-h-12 items-center gap-2 rounded-full border px-4 py-3 text-sm font-semibold text-[#554B73] transition-colors duration-200;
+    border-color: rgba(185, 172, 213, 0.7);
+    background: linear-gradient(180deg, rgba(248, 246, 253, 0.98) 0%, rgba(243, 239, 251, 0.98) 100%);
+  }
+
+  .audio-hub-page__podcast-link:hover {
+    background: linear-gradient(180deg, rgba(242, 238, 251, 1) 0%, rgba(236, 231, 248, 1) 100%);
+    border-color: rgba(173, 158, 205, 0.82);
   }
 
   .audio-hub-page__empty {
