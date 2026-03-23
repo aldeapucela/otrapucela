@@ -231,7 +231,7 @@ eleventyComputed:
     </div>
   </section>
 
-  <div class="article-mobile-sticky fixed bottom-0 z-40 border-t border-gray-200 bg-white" data-mobile-article-bar>
+  <div class="article-mobile-sticky fixed bottom-0 z-40 border-t border-gray-200 bg-white{% if not (articulo.audio and articulo.audio.sources and articulo.audio.sources.length) %} md:hidden{% endif %}" data-mobile-article-bar>
     <div class="article-mobile-sticky__inner mx-auto flex max-w-prose items-center gap-3">
       {% if articulo.audio and articulo.audio.sources and articulo.audio.sources.length %}
       <audio
