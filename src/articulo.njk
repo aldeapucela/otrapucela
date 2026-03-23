@@ -18,7 +18,7 @@ eleventyComputed:
 {% set audioDownloadName = articulo.title ~ ' (' ~ articulo.author.name ~ ' - La Otra Pucela).mp3' %}
 
 <section class="mx-auto max-w-6xl px-4 pb-40 pt-8 sm:px-6 md:pb-28 lg:px-8 lg:pt-12">
-  <article class="mx-auto mb-12 w-full max-w-6xl">
+  <article class="mx-auto mb-12 w-full max-w-6xl" data-article-id="{{ articulo.id }}">
     <div class="mx-auto max-w-4xl">
       <header class="border-b border-[#EEE] pb-8">
         {% if articulo.tags.length %}
@@ -230,6 +230,15 @@ eleventyComputed:
       </div>
     </div>
   </section>
+
+  <button
+    type="button"
+    class="reading-resume-pill hidden"
+    data-reading-resume-link
+    aria-hidden="true"
+  >
+    Volver donde lo dejaste
+  </button>
 
   <div class="article-mobile-sticky fixed bottom-0 z-40 border-t border-gray-200 bg-white{% if not (articulo.audio and articulo.audio.sources and articulo.audio.sources.length) %} md:hidden{% endif %}" data-mobile-article-bar>
     <div class="article-mobile-sticky__inner mx-auto flex max-w-prose items-center gap-3">
