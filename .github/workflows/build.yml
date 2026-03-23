@@ -65,42 +65,42 @@ jobs:
           cp .cache/workflow/current-category.json .cache/workflow/last-category.json
 
           if [ "$current_hash" = "$previous_hash" ]; then
-            python3 <<'PY'
-            import os
-            import pathlib
-            import urllib.request
-            import urllib.error
+          python3 <<'PY'
+          import os
+          import pathlib
+          import urllib.error
+          import urllib.request
 
-            pending_path = pathlib.Path(".cache/workflow/pending-audio-ids.txt")
-            base_url = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E"
-            should_build = False
+          pending_path = pathlib.Path(".cache/workflow/pending-audio-ids.txt")
+          base_url = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E"
+          should_build = False
 
-            if pending_path.exists():
-                pending_ids = [
-                    line.strip()
-                    for line in pending_path.read_text(encoding="utf-8").splitlines()
-                    if line.strip()
-                ]
+          if pending_path.exists():
+              pending_ids = [
+                  line.strip()
+                  for line in pending_path.read_text(encoding="utf-8").splitlines()
+                  if line.strip()
+              ]
 
-                for article_id in pending_ids:
-                    request = urllib.request.Request(
-                        f"{base_url}/{article_id}.mp3",
-                        method="HEAD"
-                    )
+              for article_id in pending_ids:
+                  request = urllib.request.Request(
+                      f"{base_url}/{article_id}.mp3",
+                      method="HEAD",
+                  )
 
-                    try:
-                        with urllib.request.urlopen(request, timeout=10) as response:
-                            if 200 <= response.status < 400:
-                                should_build = True
-                                break
-                    except urllib.error.HTTPError:
-                        continue
-                    except Exception:
-                        continue
+                  try:
+                      with urllib.request.urlopen(request, timeout=10) as response:
+                          if 200 <= response.status < 400:
+                              should_build = True
+                              break
+                  except urllib.error.HTTPError:
+                      continue
+                  except Exception:
+                      continue
 
-            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output_file:
-                output_file.write(f"should_build={'true' if should_build else 'false'}\n")
-            PY
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output_file:
+              output_file.write(f"should_build={'true' if should_build else 'false'}\n")
+          PY
             exit 0
           fi
 
