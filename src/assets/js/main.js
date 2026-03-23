@@ -630,6 +630,42 @@ function createSearchResultMarkup(article, tokens) {
   `;
 }
 
+function createHomepageCatchupItemMarkup(article, compact = false) {
+  const title = escapeHtml(article.title ?? "");
+  const publicPath = escapeHtml(article.publicPath ?? "#");
+  const metaParts = [];
+
+  if (article.createdAt) {
+    metaParts.push(formatReadingListDate(article.createdAt));
+  }
+
+  if (article.author?.name) {
+    metaParts.push(escapeHtml(article.author.name));
+  }
+
+  const meta = metaParts.join(" · ");
+
+  if (compact) {
+    return `
+      <article class="border-b border-[#E8E0D2] py-3 last:border-b-0 last:pb-0">
+        <h3 class="font-serif text-[1.15rem] font-semibold leading-[1.1] tracking-tight text-[#243746]">
+          <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827]">${title}</a>
+        </h3>
+        ${meta ? `<p class="mt-2 text-[0.78rem] leading-[1.5] text-[#6B7280]">${meta}</p>` : ""}
+      </article>
+    `;
+  }
+
+  return `
+    <article class="border-l border-[#E8E0D2] pl-5 first:border-l-0 first:pl-0">
+      <h3 class="font-serif text-[1.25rem] font-semibold leading-[1.1] tracking-tight text-[#243746]">
+        <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827]">${title}</a>
+      </h3>
+      ${meta ? `<p class="mt-2 text-[0.8rem] leading-[1.5] text-[#6B7280]">${meta}</p>` : ""}
+    </article>
+  `;
+}
+
 async function setupSearchPage() {
   const searchRoot = document.querySelector(".js-search-page");
 
@@ -796,6 +832,70 @@ async function setupSearchPage() {
   });
 
   await renderSearchResults(initialQuery);
+}
+
+function isArticlePublishedWithinLastDays(value, days = 15) {
+  if (!value) {
+    return false;
+  }
+
+  const publishedAt = new Date(value);
+
+  if (Number.isNaN(publishedAt.getTime())) {
+    return false;
+  }
+
+  const now = new Date();
+  const threshold = new Date(now);
+  threshold.setDate(threshold.getDate() - days);
+
+  return publishedAt >= threshold && publishedAt <= now;
+}
+
+async function setupHomepageCatchup() {
+  const sections = document.querySelectorAll("[data-home-catchup]");
+
+  if (!sections.length) {
+    return;
+  }
+
+  const visitedArticleIds = new Set(getVisitedArticleIds());
+
+  if (!visitedArticleIds.size) {
+    return;
+  }
+
+  try {
+    const articles = await loadArticlesIndex();
+    const unreadRecentArticles = articles
+      .filter((article) => article?.id)
+      .filter((article) => !visitedArticleIds.has(String(article.id)))
+      .filter((article) => isArticlePublishedWithinLastDays(article.createdAt, 15))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
+
+    if (!unreadRecentArticles.length) {
+      return;
+    }
+
+    const isCompact = !window.matchMedia("(min-width: 1024px)").matches;
+
+    sections.forEach((section) => {
+      const itemsElement = section.querySelector("[data-home-catchup-items]");
+
+      if (!itemsElement) {
+        return;
+      }
+
+      itemsElement.innerHTML = unreadRecentArticles
+        .map((article) => createHomepageCatchupItemMarkup(article, isCompact))
+        .join("");
+
+      section.classList.remove("hidden");
+    });
+  } catch {
+    // Keep the homepage stable if personalization fails.
+  }
 }
 
 function setShareButtonFeedback(buttonElement, labelText, iconClass) {
@@ -2404,6 +2504,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupHeaderAutoHide();
   setupHeaderMenu();
   setupSearchPage();
+  setupHomepageCatchup();
   setupShareButtons();
   setupReadingListButtons();
   syncReadingListCountBadges();

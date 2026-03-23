@@ -24,7 +24,7 @@ canonicalUrl: /
     </div>
   </div>
 
-  <div class="mt-10 grid grid-cols-1 gap-x-10 gap-y-12 lg:hidden">
+  <div class="mt-4 grid grid-cols-1 gap-x-10 gap-y-12 lg:hidden">
     {% for articulo in articulos.items %}
     <article class="border-b border-[#EEE] pb-5 last:border-b-0 last:pb-0">
       <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
@@ -69,6 +69,20 @@ canonicalUrl: /
         </div>
       </a>
     </article>
+
+    {% if loop.index == 2 %}
+    <section
+      class="js-home-catchup hidden -mt-5 rounded-[1.5rem] border border-[#E3DDD1] bg-[#FBF8F2] px-5 py-5 text-left"
+      data-home-catchup
+    >
+      <div class="border-b border-[#E8E0D2] pb-3">
+        <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8A7F6B]">
+          Nuevo para ti
+        </p>
+      </div>
+      <div class="mt-3 space-y-0" data-home-catchup-items></div>
+    </section>
+    {% endif %}
 
     {% if loop.index == 3 %}
     <section class="border border-[#E3DDD1] bg-[#F8F5EE] px-5 py-6 text-left">
@@ -146,6 +160,24 @@ canonicalUrl: /
     <div class="mt-10 grid grid-cols-3 gap-6">
       {% for articulo in articulos.items %}
       {% if loop.index > 1 %}
+      {% if loop.index == 5 %}
+      <section
+        class="js-home-catchup hidden col-span-3 rounded-[1.75rem] border border-[#E3DDD1] bg-[#FBF8F2] px-7 py-7 text-left"
+        data-home-catchup
+      >
+        <div class="flex items-end justify-between gap-6 border-b border-[#E8E0D2] pb-4">
+          <div>
+            <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8A7F6B]">
+              Nuevo para ti
+            </p>
+          </div>
+          <p class="max-w-md text-sm leading-[1.6] text-[#6B7280]">
+            Las últimas piezas que aún no has leído.
+          </p>
+        </div>
+        <div class="mt-5 grid grid-cols-3 gap-5" data-home-catchup-items></div>
+      </section>
+      {% endif %}
       <article class="border-b border-[#EEE] pb-8">
         <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
           {% if articulo.image %}
