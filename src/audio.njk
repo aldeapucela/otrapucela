@@ -18,9 +18,9 @@ permalink: /audios/index.html
           </p>
           <div class="audio-hub-page__hero-actions">
             {% set absoluteFeedUrl = site.siteUrl + site.feedPath %}
-            {% set absolutePodcastUrl = site.siteUrl + site.podcastPath %}
+            {% set absolutePodcastUrl = site.podcastFeedUrl %}
             <a
-              href="{{ site.podcastPath }}"
+              href="{{ site.podcastFeedUrl }}"
               class="audio-hub-page__podcast-link"
               data-rss-trigger
               data-feed-url="{{ absoluteFeedUrl }}"
