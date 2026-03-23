@@ -70,12 +70,17 @@
 
             <button
               type="button"
-              class="js-menu-toggle inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              class="js-menu-toggle relative inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
               aria-expanded="false"
               aria-controls="js-menu-panel"
               aria-label="Abrir menú de secciones"
             >
               <i class="fa-solid fa-bars text-lg" aria-hidden="true"></i>
+              <span
+                class="hidden absolute right-0.5 top-0.5 min-h-4 min-w-4 items-center justify-center rounded-full bg-[#E7D7B8] px-1 text-[0.58rem] font-['Montserrat',sans-serif] font-semibold leading-none text-[#3F3424] ring-2 ring-white sm:right-0 sm:top-0 sm:min-h-[1.15rem] sm:min-w-[1.15rem] sm:px-1.5 sm:text-[0.62rem]"
+                data-reading-list-menu-dot
+                aria-hidden="true"
+              ></span>
             </button>
           </div>
 
@@ -198,6 +203,16 @@
                 class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
               >
                 Audios
+              </a>
+              <a
+                href="/lista-de-lectura/"
+                class="inline-flex min-h-11 items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/lista-de-lectura/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+              >
+                <span>Lista de lectura</span>
+                <span
+                  class="hidden rounded-full border border-[#DDD4C5] bg-[#F8F5EE] px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#6B6253]"
+                  data-reading-list-count-badge
+                ></span>
               </a>
               <a
                 href="/contacto/"

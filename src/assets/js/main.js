@@ -974,6 +974,7 @@ const newsletterSubscribedStorageKey = "newsletterSubscribed";
 const newsletterEmailVerifiedStorageKey = "newsletterEmailVerified";
 const visitedArticlesStorageKey = "visitedArticleIds";
 const articleReadingProgressStorageKey = "articleReadingProgress";
+const readingListStorageKey = "readingListArticles";
 const conditionalSubscriptionVisitThreshold = 3;
 const conditionalSubscriptionCooldownDays = 30;
 const conditionalSubscriptionScrollThreshold = 0.3;
@@ -983,6 +984,7 @@ const articleReadingProgressCompletedThreshold = 0.98;
 const articleReadingProgressResumeHideThreshold = 0.18;
 const articleReadingAnchorSelector = "p, h2, h3, h4, h5, h6, li, blockquote, img, figure";
 const articleReadingAnchorViewportOffset = 140;
+let cachedArticlesIndex = null;
 
 function safelyReadLocalStorage(key) {
   try {
@@ -1022,6 +1024,141 @@ function safelyReadJsonFromLocalStorage(key) {
   }
 }
 
+function normalizeReadingListEntries(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.reduce((entries, item) => {
+    const id = String(item?.id ?? "").trim();
+
+    if (!id || entries.some((entry) => entry.id === id)) {
+      return entries;
+    }
+
+    entries.push({
+      id,
+      title: String(item?.title ?? "").trim(),
+      url: String(item?.url ?? "").trim(),
+      image: String(item?.image ?? "").trim(),
+      author: String(item?.author ?? "").trim(),
+      date: String(item?.date ?? "").trim(),
+      savedAt: typeof item?.savedAt === "string" ? item.savedAt : new Date().toISOString()
+    });
+
+    return entries;
+  }, []);
+}
+
+function getReadingListEntries() {
+  return normalizeReadingListEntries(
+    safelyReadJsonFromLocalStorage(readingListStorageKey)
+  );
+}
+
+function setReadingListEntries(entries) {
+  safelyWriteLocalStorage(
+    readingListStorageKey,
+    JSON.stringify(normalizeReadingListEntries(entries))
+  );
+}
+
+function isArticleInReadingList(articleId) {
+  const normalizedArticleId = String(articleId ?? "").trim();
+  return getReadingListEntries().some((entry) => entry.id === normalizedArticleId);
+}
+
+function addArticleToReadingList(article) {
+  const entries = getReadingListEntries().filter((entry) => entry.id !== article.id);
+  entries.unshift({
+    ...article,
+    savedAt: new Date().toISOString()
+  });
+  setReadingListEntries(entries);
+}
+
+function removeArticleFromReadingList(articleId) {
+  setReadingListEntries(
+    getReadingListEntries().filter((entry) => entry.id !== String(articleId ?? "").trim())
+  );
+}
+
+function dispatchReadingListUpdated() {
+  document.dispatchEvent(new CustomEvent("reading-list-updated"));
+}
+
+function syncReadingListCountBadges() {
+  const badges = document.querySelectorAll("[data-reading-list-count-badge]");
+  const menuDots = document.querySelectorAll("[data-reading-list-menu-dot]");
+  const count = getReadingListEntries().length;
+
+  badges.forEach((badge) => {
+    badge.textContent = String(count);
+    badge.classList.toggle("hidden", count === 0);
+  });
+
+  menuDots.forEach((dot) => {
+    dot.textContent = count > 99 ? "99+" : String(count);
+    dot.classList.toggle("hidden", count === 0);
+    dot.classList.toggle("inline-flex", count > 0);
+  });
+}
+
+async function loadArticlesIndex() {
+  if (cachedArticlesIndex) {
+    return cachedArticlesIndex;
+  }
+
+  const response = await fetch("/api/articulos.json", {
+    headers: {
+      Accept: "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Articles request failed");
+  }
+
+  const payload = await response.json();
+  cachedArticlesIndex = Array.isArray(payload?.items) ? payload.items : [];
+  return cachedArticlesIndex;
+}
+
+function formatReadingListDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "short"
+  }).format(date);
+}
+
+function isArticlePublishedWithinLastMonth(value) {
+  if (!value) {
+    return false;
+  }
+
+  const publishedAt = new Date(value);
+
+  if (Number.isNaN(publishedAt.getTime())) {
+    return false;
+  }
+
+  const now = new Date();
+  const oneMonthAgo = new Date(now);
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+  return publishedAt >= oneMonthAgo && publishedAt <= now;
+}
+
 function normalizeVisitedArticleIds(value) {
   if (!Array.isArray(value)) {
     return [];
@@ -1044,6 +1181,201 @@ function setVisitedArticleIds(articleIds) {
     visitedArticlesStorageKey,
     JSON.stringify(normalizeVisitedArticleIds(articleIds))
   );
+}
+
+function syncReadingListButtons() {
+  const buttons = document.querySelectorAll("[data-reading-list-toggle]");
+
+  buttons.forEach((button) => {
+    const articleId = button.dataset.articleId?.trim();
+    const isSaved = isArticleInReadingList(articleId);
+    const icon = button.querySelector(".js-reading-list-toggle-icon");
+    const label = button.querySelector(".js-reading-list-toggle-label");
+
+    button.setAttribute("aria-pressed", isSaved ? "true" : "false");
+    button.setAttribute("aria-label", isSaved ? "Quitar de lista de lectura" : "Guardar en lista de lectura");
+
+    if (label) {
+      label.textContent = isSaved ? "Guardado" : "Leer más tarde";
+    }
+
+    if (icon) {
+      icon.className = `${isSaved ? "fa-solid" : "fa-regular"} fa-bookmark js-reading-list-toggle-icon w-4 text-center text-sm`;
+    }
+  });
+}
+
+function setupReadingListButtons() {
+  const buttons = document.querySelectorAll("[data-reading-list-toggle]");
+
+  if (!buttons.length) {
+    return;
+  }
+
+  syncReadingListButtons();
+  syncReadingListCountBadges();
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const articleId = button.dataset.articleId?.trim();
+
+      if (!articleId) {
+        return;
+      }
+
+      if (isArticleInReadingList(articleId)) {
+        removeArticleFromReadingList(articleId);
+      } else {
+        addArticleToReadingList({
+          id: articleId,
+          title: button.dataset.articleTitle?.trim() || "",
+          url: button.dataset.articleUrl?.trim() || "",
+          image: button.dataset.articleImage?.trim() || "",
+          author: button.dataset.articleAuthor?.trim() || "",
+          date: button.dataset.articleDate?.trim() || ""
+        });
+      }
+
+      syncReadingListButtons();
+      syncReadingListCountBadges();
+      dispatchReadingListUpdated();
+    });
+  });
+}
+
+function createReadingListItemMarkup(article) {
+  const title = escapeHtml(article.title || "Artículo");
+  const url = escapeHtml(article.url || "#");
+  const author = escapeHtml(article.author || "");
+  const image = article.image
+    ? `<img src="${escapeHtml(article.image)}" alt="${title}" class="h-16 w-20 shrink-0 rounded-xl object-cover">`
+    : `<div class="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl bg-[#F4F1E9] text-[#8A7F6B]"><i class="fa-regular fa-bookmark" aria-hidden="true"></i></div>`;
+  const meta = [author, formatReadingListDate(article.date)].filter(Boolean).join(" · ");
+
+  return `
+    <article class="rounded-2xl border border-[#E7E0D3] bg-[#FCFBF8] p-2.5">
+      <div class="flex items-start gap-3">
+        <a href="${url}" class="shrink-0">${image}</a>
+        <div class="min-w-0 flex-1">
+          <a href="${url}" class="block font-serif text-[1rem] font-semibold leading-[1.15] tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700">
+            ${title}
+          </a>
+          ${meta ? `<p class="mt-1 text-[0.78rem] leading-[1.5] text-gray-500">${meta}</p>` : ""}
+        </div>
+        <button
+          type="button"
+          class="inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-[#F3EBDD] hover:text-gray-700"
+          data-reading-list-remove="${escapeHtml(article.id)}"
+          aria-label="Quitar de la lista de lectura"
+        >
+          <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+async function setupReadingListPage() {
+  const loadingElement = document.querySelector("[data-reading-list-loading]");
+  const emptyElement = document.querySelector("[data-reading-list-empty]");
+  const containerElement = document.querySelector("[data-reading-list-container]");
+  const itemsElement = document.querySelector("[data-reading-list-items]");
+  const countElement = document.querySelector("[data-reading-list-count]");
+  const introElement = document.querySelector("[data-reading-list-intro]");
+  const randomLinkElement = document.querySelector("[data-reading-list-random-link]");
+
+  if (!document.querySelector("[data-reading-list-page]")) {
+    return;
+  }
+
+  if (!loadingElement || !emptyElement || !containerElement || !itemsElement || !countElement) {
+    return;
+  }
+
+  function setState(state) {
+    loadingElement.classList.toggle("hidden", state !== "loading");
+    emptyElement.classList.toggle("hidden", state !== "empty");
+    containerElement.classList.toggle("hidden", state !== "ready");
+  }
+
+  async function renderReadingList() {
+    const savedEntries = getReadingListEntries();
+    countElement.textContent = String(savedEntries.length);
+    syncReadingListCountBadges();
+    introElement?.classList.toggle("hidden", savedEntries.length === 0);
+
+    if (!savedEntries.length) {
+      itemsElement.innerHTML = "";
+      setState("empty");
+      return;
+    }
+
+    setState("loading");
+
+    try {
+      const articles = await loadArticlesIndex();
+      const articlesById = new Map(articles.map((article) => [String(article.id), article]));
+      const mergedEntries = savedEntries.map((entry) => {
+        const article = articlesById.get(entry.id);
+
+        if (!article) {
+          return entry;
+        }
+
+        return {
+          ...entry,
+          title: article.title || entry.title,
+          url: article.publicPath || entry.url,
+          image: article.image || entry.image,
+          author: article.author?.name || entry.author,
+          date: article.createdAt || entry.date
+        };
+      });
+
+      setReadingListEntries(mergedEntries);
+      itemsElement.innerHTML = mergedEntries.map(createReadingListItemMarkup).join("");
+      setState("ready");
+
+      itemsElement.querySelectorAll("[data-reading-list-remove]").forEach((button) => {
+        button.addEventListener("click", () => {
+          removeArticleFromReadingList(button.dataset.readingListRemove);
+          syncReadingListButtons();
+          renderReadingList();
+          dispatchReadingListUpdated();
+        });
+      });
+    } catch {
+      itemsElement.innerHTML = "";
+      setState("empty");
+    }
+  }
+
+  randomLinkElement?.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    try {
+      const articles = await loadArticlesIndex();
+      const recentArticles = articles.filter((article) => isArticlePublishedWithinLastMonth(article.createdAt));
+      const candidateArticles = recentArticles.length ? recentArticles : articles;
+
+      if (!candidateArticles.length) {
+        return;
+      }
+
+      const randomArticle = candidateArticles[Math.floor(Math.random() * candidateArticles.length)];
+
+      if (!randomArticle?.publicPath) {
+        return;
+      }
+
+      window.location.href = randomArticle.publicPath;
+    } catch {
+      window.location.href = "/";
+    }
+  });
+
+  document.addEventListener("reading-list-updated", renderReadingList);
+  renderReadingList();
 }
 
 function normalizeArticleReadingProgressStore(value) {
@@ -2071,6 +2403,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setupHeaderMenu();
   setupSearchPage();
   setupShareButtons();
+  setupReadingListButtons();
+  syncReadingListCountBadges();
+  setupReadingListPage();
   setupSubscriptionLinks();
   markCurrentArticleAsVisited();
   setupArticleReadingProgress();
