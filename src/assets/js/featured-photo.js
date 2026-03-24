@@ -70,31 +70,11 @@ function pickRandomPhoto(items) {
 }
 
 async function loadPhotoFeedItems(feedUrl) {
-  const feedOrigin = (() => {
-    try {
-      return new URL(feedUrl, window.location.href).origin;
-    } catch {
-      return "";
+  const response = await fetch(feedUrl, {
+    headers: {
+      Accept: "application/rss+xml, application/xml, text/xml"
     }
-  })();
-  const requestUrl = feedOrigin && feedOrigin !== window.location.origin
-    ? `https://corsproxy.io/?${encodeURIComponent(feedUrl)}`
-    : feedUrl;
-  let response;
-
-  try {
-    response = await fetch(requestUrl, {
-      headers: {
-        Accept: "application/rss+xml, application/xml, text/xml"
-      }
-    });
-  } catch {
-    response = await fetch(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`, {
-      headers: {
-        Accept: "application/rss+xml, application/xml, text/xml"
-      }
-    });
-  }
+  });
 
   if (!response.ok) {
     throw new Error("Photo feed request failed");
