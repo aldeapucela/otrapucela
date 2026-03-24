@@ -183,49 +183,57 @@
                 </div>
               </form>
 
-              <a href="/" class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-900">
-                Portada
-              </a>
-              <a
-                href="/quienes-somos/"
-                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/quienes-somos/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
-              >
-                Quiénes somos
-              </a>
-              <a
-                href="/temas/"
-                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/temas/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
-              >
-                Temas
-              </a>
-              <a
-                href="/audios/"
-                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
-              >
-                Audios
-              </a>
-              <a
-                href="/lista-de-lectura/"
-                class="inline-flex min-h-11 items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/lista-de-lectura/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
-              >
-                <span>Lista de lectura</span>
-                <span
-                  class="hidden rounded-full border border-[#DDD4C5] bg-[#F8F5EE] px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#6B6253]"
-                  data-reading-list-count-badge
-                ></span>
-              </a>
-              <a
-                href="/contacto/"
-                class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/contacto/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
-              >
-                Contacto
-              </a>
-              <a
-                href="https://foro.aldeapucela.org/t/acerca-de-la-otra-pucela/966"
-                class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 transition-colors duration-200 hover:text-gray-900"
-              >
-                Colaborar
-              </a>
+              <div class="flex flex-col gap-4">
+                <a href="/" class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-900">
+                  Portada
+                </a>
+                <a
+                  href="/temas/"
+                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/temas/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                >
+                  Temas
+                </a>
+                <a
+                  href="/audios/"
+                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                >
+                  Audios
+                </a>
+                <a
+                  href="/lista-de-lectura/"
+                  class="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/lista-de-lectura/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                >
+                  <span>Lista de lectura</span>
+                  <span
+                    class="hidden rounded-full border border-[#DDD4C5] bg-[#F8F5EE] px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#6B6253]"
+                    data-reading-list-count-badge
+                  ></span>
+                </a>
+              </div>
+
+              <div class="border-t border-gray-200 pt-5">
+                <div class="flex flex-col gap-4">
+                  <a
+                    href="/quienes-somos/"
+                    class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/quienes-somos/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                  >
+                    Quiénes somos
+                  </a>
+                  <a
+                    href="https://foro.aldeapucela.org/t/acerca-de-la-otra-pucela/966"
+                    class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 transition-colors duration-200 hover:text-gray-900"
+                  >
+                    Colaborar
+                  </a>
+                  <a
+                    href="/contacto/"
+                    class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/contacto/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                  >
+                    Contacto
+                  </a>
+                </div>
+              </div>
+
               <a
                 href="/boletin/"
                 class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
