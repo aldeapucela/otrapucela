@@ -592,10 +592,92 @@
           </div>
         </div>
       </dialog>
+
+      <dialog
+        class="featured-photo-dialog"
+        data-featured-photo-dialog
+        aria-labelledby="featured-photo-dialog-title"
+      >
+        <div class="featured-photo-dialog__surface">
+          <button
+            type="button"
+            class="featured-photo-dialog__close"
+            data-featured-photo-close
+            aria-label="Cerrar foto"
+          >
+            <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+          </button>
+
+          <div class="featured-photo-dialog__layout">
+            <img
+              class="featured-photo-dialog__image"
+              data-featured-photo-dialog-image
+              alt=""
+              loading="eager"
+            >
+
+            <div class="featured-photo-dialog__content">
+              <p class="featured-photo-dialog__description" id="featured-photo-dialog-title" data-featured-photo-dialog-description></p>
+
+              <div class="featured-photo-dialog__meta">
+                <div class="featured-photo-dialog__meta-copy">
+                  <a
+                    class="featured-photo-dialog__meta-link"
+                    data-featured-photo-dialog-author-link
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span data-featured-photo-dialog-author></span>
+                  </a>
+                  <span class="featured-photo-dialog__meta-separator" aria-hidden="true">-</span>
+                  <a
+                    class="featured-photo-dialog__meta-link"
+                    data-featured-photo-dialog-license-link
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span data-featured-photo-dialog-license></span>
+                  </a>
+                </div>
+                <div class="featured-photo-dialog__actions">
+                  <a
+                    class="featured-photo-dialog__source"
+                    data-featured-photo-dialog-source
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[0.9rem]" aria-hidden="true"></i>
+                  </a>
+                  <button
+                    type="button"
+                    class="featured-photo-dialog__source"
+                    data-featured-photo-dialog-random
+                    aria-label="Mostrar otra foto"
+                    title="Mostrar otra foto"
+                  >
+                    <i class="fa-solid fa-shuffle text-[0.82rem]" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="featured-photo-dialog__source js-share-btn"
+                    data-featured-photo-dialog-share
+                    data-share-source="featured-photo-dialog"
+                    data-share-content-type="photo"
+                  >
+                    <i class="fa-solid fa-share-nodes js-share-btn-icon text-[0.82rem]" aria-hidden="true"></i>
+                    <span class="sr-only js-share-btn-label">Compartir foto</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </dialog>
     </div>
 
     <script src="{{ assetManifest['assets/js/article-audio-player.js'] or '/assets/js/article-audio-player.js' }}" defer></script>
     <script src="{{ assetManifest['assets/js/audio-playlist.js'] or '/assets/js/audio-playlist.js' }}" defer></script>
+    <script src="{{ assetManifest['assets/js/featured-photo.js'] or '/assets/js/featured-photo.js' }}" defer></script>
     <script src="{{ assetManifest['assets/js/main.js'] or '/assets/js/main.js' }}" defer></script>
   </body>
 </html>

@@ -957,7 +957,7 @@ function getSharePayload(buttonElement) {
   const homepageTitle = "La Otra Pucela - Informacion vecinal, util e independiente sobre Valladolid";
   const rawContentUrl = buttonElement.dataset.url || currentUrl;
   const contentTitle = buttonElement.dataset.title || (pageType === "homepage" ? homepageTitle : currentTitle);
-  const contentUrl = withShareCampaign(rawContentUrl);
+  const contentUrl = pageType === "photo" ? rawContentUrl : withShareCampaign(rawContentUrl);
   const shareSource = buttonElement.dataset.shareSource || "unknown";
   const eventName = pageType === "homepage"
     ? "Home"
