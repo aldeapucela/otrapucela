@@ -1,0 +1,71 @@
+---
+layout: base.njk
+title: Nuevo para ti | La Otra Pucela
+description: Artículos que aún no has leído, ordenados por fecha y filtrables por temática.
+ogTitle: Nuevo para ti | La Otra Pucela
+ogDescription: Artículos que aún no has leído, ordenados por fecha y filtrables por temática.
+canonicalUrl: /nuevo/
+---
+{% set sortedThemes = articulos.tags | topThemes(999) %}
+<section class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+  <div class="max-w-3xl">
+    <h1 class="mt-4 font-serif text-[2.5rem] font-semibold leading-[0.98] tracking-tight text-gray-900 sm:text-[3.3rem]">
+      Nuevo para ti
+    </h1>
+    <p class="mt-5 text-[1.02rem] leading-[1.65] text-gray-600" data-unread-intro>
+      Aquí verás los artículos que todavía no has leído, ordenados de más reciente a más antiguo.
+    </p>
+  </div>
+
+  <div class="mt-10" data-unread-page>
+    <div class="hidden rounded-[1.75rem] border border-gray-200 bg-white px-6 py-7 shadow-sm" data-unread-loading>
+      <p class="text-base leading-[1.6] text-gray-600">Cargando artículos pendientes…</p>
+    </div>
+
+    <div class="hidden rounded-[1.75rem] border border-[#DDD7CC] bg-[#F6F1E7] px-6 py-7 shadow-sm" data-unread-empty>
+      <p class="text-xl font-semibold text-gray-900">No tienes nada pendiente</p>
+      <p class="mt-2 max-w-2xl text-base leading-[1.6] text-[#5F5645]" data-unread-empty-copy>
+        Cuando publiquemos algo nuevo que aún no hayas leído, aparecerá aquí.
+      </p>
+      <div class="mt-6">
+        <a
+          href="/"
+          class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#1F2937] px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-200 hover:bg-[#111827]"
+        >
+          <i class="fa-solid fa-house text-sm" aria-hidden="true"></i>
+          <span>Ir a portada</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hidden max-w-3xl" data-unread-container>
+      <div class="mb-5 flex flex-col gap-4 border-b border-[#E7E1D6] pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <p class="text-sm leading-[1.6] text-gray-600">
+          <span class="font-semibold text-gray-900" data-unread-count>0</span>
+          artículos sin leer
+        </p>
+
+        <label class="flex min-w-0 flex-col gap-2 sm:w-[18rem]">
+          <span class="text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-[#6B6253]">Filtrar por temática</span>
+          <select
+            class="min-h-12 w-full rounded-full border border-[#D9D1C4] bg-white px-4 text-[0.98rem] text-gray-900 outline-none transition-colors duration-200 focus:border-gray-900"
+            data-unread-theme-filter
+          >
+            <option value="">Todas las temáticas</option>
+            {% for tag in sortedThemes %}
+            <option value="{{ tag.slug }}">{{ tag.name | themeName }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <div class="hidden rounded-[1.5rem] border border-[#E7E0D3] bg-[#FCFBF8] px-5 py-6 text-sm leading-[1.6] text-gray-600" data-unread-filter-empty>
+        <p class="font-semibold text-gray-900">No hay artículos pendientes en esta temática.</p>
+        <p class="mt-1">Prueba con otra o vuelve a todas.</p>
+      </div>
+
+      <div data-unread-items></div>
+    </div>
+  </div>
+</section>
+<script src="{{ assetManifest['assets/js/nuevo-para-ti.js'] or '/assets/js/nuevo-para-ti.js' }}" defer></script>

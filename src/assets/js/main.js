@@ -1348,25 +1348,26 @@ function createReadingListItemMarkup(article) {
   const url = escapeHtml(article.url || "#");
   const author = escapeHtml(article.author || "");
   const image = article.image
-    ? `<img src="${escapeHtml(article.image)}" alt="${title}" class="h-16 w-20 shrink-0 rounded-xl object-cover">`
-    : `<div class="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl bg-[#F4F1E9] text-[#8A7F6B]"><i class="fa-regular fa-bookmark" aria-hidden="true"></i></div>`;
+    ? `<img src="${escapeHtml(article.image)}" alt="${title}" class="h-14 w-[4.5rem] shrink-0 rounded-lg object-cover sm:h-[4.6rem] sm:w-[5.75rem]">`
+    : `<div class="flex h-14 w-[4.5rem] shrink-0 items-center justify-center rounded-lg bg-[#F4F1E9] text-[#8A7F6B] sm:h-[4.6rem] sm:w-[5.75rem]"><i class="fa-regular fa-bookmark" aria-hidden="true"></i></div>`;
   const meta = [author, formatReadingListDate(article.date)].filter(Boolean).join(" · ");
 
   return `
-    <article class="rounded-2xl border border-[#E7E0D3] bg-[#FCFBF8] p-2.5">
-      <div class="flex items-start gap-3">
+    <article class="border-b border-[#E7E1D6] py-3 last:border-b-0 sm:py-4">
+      <div class="flex items-start gap-3 sm:gap-4">
         <a href="${url}" class="shrink-0">${image}</a>
         <div class="min-w-0 flex-1">
-          <a href="${url}" class="block font-serif text-[1rem] font-semibold leading-[1.15] tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700">
+          <a href="${url}" class="block font-serif text-[0.92rem] font-semibold leading-[1.22] tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700 sm:text-[1rem]">
             ${title}
           </a>
-          ${meta ? `<p class="mt-1 text-[0.78rem] leading-[1.5] text-gray-500">${meta}</p>` : ""}
+          ${meta ? `<p class="mt-0.5 text-[0.75rem] leading-[1.45] text-gray-500 sm:mt-1 sm:text-[0.8rem]">${meta}</p>` : ""}
         </div>
         <button
           type="button"
-          class="inline-flex min-h-10 min-w-10 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-[#F3EBDD] hover:text-gray-700"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border border-[#D9D1C4] bg-white text-gray-500 transition-colors duration-200 hover:bg-[#F3EBDD] hover:text-gray-700 sm:h-11 sm:w-11"
           data-reading-list-remove="${escapeHtml(article.id)}"
           aria-label="Quitar de la lista de lectura"
+          title="Quitar de la lista de lectura"
         >
           <i class="fa-solid fa-xmark text-sm" aria-hidden="true"></i>
         </button>
@@ -1786,11 +1787,19 @@ function getTodayStorageDate() {
 function normalizeConditionalSubscriptionState(state) {
   if (!state || typeof state !== "object") {
     return {
+      firstVisitDate: undefined,
       visitedDaysCount: 0
     };
   }
 
   return {
+    firstVisitDate: typeof state.firstVisitDate === "string"
+      ? state.firstVisitDate
+      : (
+        typeof state.previousVisitDate === "string"
+          ? state.previousVisitDate
+          : (typeof state.lastVisitDate === "string" ? state.lastVisitDate : undefined)
+      ),
     lastVisitDate: typeof state.lastVisitDate === "string" ? state.lastVisitDate : undefined,
     previousVisitDate: typeof state.previousVisitDate === "string" ? state.previousVisitDate : undefined,
     visitedDaysCount: Number.isFinite(Number(state.visitedDaysCount))
@@ -1851,16 +1860,31 @@ function syncNewsletterCtasVisibility() {
 
 function updateConditionalSubscriptionVisitState() {
   const today = getTodayStorageDate();
-  const currentState = normalizeConditionalSubscriptionState(
-    safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey)
+  const rawState = safelyReadJsonFromLocalStorage(conditionalSubscriptionStateStorageKey);
+  const currentState = normalizeConditionalSubscriptionState(rawState);
+  const hasStoredFirstVisitDate = !!(
+    rawState
+    && typeof rawState === "object"
+    && typeof rawState.firstVisitDate === "string"
   );
 
   if (currentState.lastVisitDate === today) {
+    if (!hasStoredFirstVisitDate) {
+      const patchedState = {
+        ...currentState,
+        firstVisitDate: currentState.firstVisitDate || today
+      };
+
+      safelyWriteLocalStorage(conditionalSubscriptionStateStorageKey, JSON.stringify(patchedState));
+      return patchedState;
+    }
+
     return currentState;
   }
 
   const nextState = {
     ...currentState,
+    firstVisitDate: currentState.firstVisitDate || today,
     previousVisitDate: currentState.lastVisitDate,
     lastVisitDate: today,
     visitedDaysCount: currentState.visitedDaysCount + 1
