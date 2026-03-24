@@ -2528,7 +2528,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupHeaderAutoHide();
   setupHeaderMenu();
   setupSearchPage();
-  setupHomepageCatchup();
   setupShareButtons();
   setupReadingListButtons();
   syncReadingListCountBadges();
