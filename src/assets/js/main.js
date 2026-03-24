@@ -226,6 +226,34 @@ function setupInstallPrompt() {
   });
 }
 
+function setupContactFormLoadingState() {
+  const iframeElement = document.querySelector("[data-contact-form-iframe]");
+  const loadingElement = document.querySelector("[data-contact-form-loading]");
+
+  if (!iframeElement || !loadingElement) {
+    return;
+  }
+
+  let hasCompletedLoad = false;
+
+  function revealForm() {
+    if (hasCompletedLoad) {
+      return;
+    }
+
+    hasCompletedLoad = true;
+    loadingElement.setAttribute("data-hidden", "true");
+    iframeElement.classList.remove("opacity-0");
+    iframeElement.classList.add("opacity-100");
+  }
+
+  iframeElement.addEventListener("load", revealForm, { once: true });
+
+  window.setTimeout(() => {
+    revealForm();
+  }, 5000);
+}
+
 function setupHeaderMenu() {
   const menuToggleButton = document.querySelector(".js-menu-toggle");
   const menuPanel = document.querySelector(".js-menu-panel");
@@ -2525,6 +2553,7 @@ async function setupCommentsSection() {
 document.addEventListener("DOMContentLoaded", () => {
   setupPwaRegistration();
   setupInstallPrompt();
+  setupContactFormLoadingState();
   setupHeaderAutoHide();
   setupHeaderMenu();
   setupSearchPage();

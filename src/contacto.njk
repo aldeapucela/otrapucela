@@ -21,17 +21,30 @@ bodyClass: bg-white
   </div>
 </section>
 
-<section class="w-full bg-white">
+<section class="w-full bg-white pt-8 sm:pt-10">
   <div class="mx-auto w-full max-w-[1400px]">
+    <div
+      class="contact-form-loading mx-auto w-full max-w-3xl px-4 pb-5 sm:px-6 lg:px-8"
+      data-contact-form-loading
+      aria-hidden="true"
+    >
+      <div class="contact-form-loading__shell">
+        <div class="contact-form-loading__badge"></div>
+        <div class="contact-form-loading__line contact-form-loading__line--title"></div>
+        <div class="contact-form-loading__line contact-form-loading__line--body"></div>
+        <div class="contact-form-loading__line contact-form-loading__line--body-short"></div>
+      </div>
+    </div>
     <iframe
       title="Formulario de contacto de La Otra Pucela"
       src="https://proyectos.aldeapucela.org/dashboard/#/nc/form/c3f12daf-4a0b-4d09-a8d1-791f8c8461ff?nc-theme=light"
-      class="block h-[2400px] w-full border-0 bg-white sm:h-[1850px] lg:h-[1650px]"
+      class="block h-[1960px] w-full border-0 bg-white opacity-0 transition-opacity duration-300 sm:h-[1720px] lg:h-[1560px]"
       allow="web-share"
       loading="lazy"
       scrolling="no"
       referrerpolicy="strict-origin-when-cross-origin"
       style="overflow:hidden;"
+      data-contact-form-iframe
     ></iframe>
   </div>
 </section>
