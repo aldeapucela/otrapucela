@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html.menu-open,
+body.menu-open {
+  overflow: hidden;
+}
+
 .dark a {
   color: #92a4ad;
 }
@@ -47,6 +52,19 @@
 .dark .article-mobile-sticky__seek::-moz-range-thumb {
   background: #fff;
   box-shadow: 0 0 0 2px #000;
+}
+
+.js-menu-panel {
+  max-height: calc(100dvh - var(--menu-header-height, 4rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.js-menu-panel::-webkit-scrollbar {
+  display: none;
 }
 
 @layer components {

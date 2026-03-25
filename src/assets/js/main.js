@@ -257,19 +257,35 @@ function setupContactFormLoadingState() {
 function setupHeaderMenu() {
   const menuToggleButton = document.querySelector(".js-menu-toggle");
   const menuPanel = document.querySelector(".js-menu-panel");
+  const headerElement = document.querySelector("#js-header");
 
-  if (!menuToggleButton || !menuPanel) {
+  if (!menuToggleButton || !menuPanel || !headerElement) {
     return;
+  }
+
+  function syncMenuViewport() {
+    const headerHeight = Math.round(headerElement.getBoundingClientRect().height);
+    menuPanel.style.maxHeight = `calc(100dvh - ${headerHeight}px)`;
   }
 
   function closeMenu() {
     menuPanel.classList.add("hidden");
     menuToggleButton.setAttribute("aria-expanded", "false");
+    document.documentElement.classList.remove("menu-open");
+    document.body.classList.remove("menu-open");
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
   }
 
   function openMenu() {
+    syncMenuViewport();
     menuPanel.classList.remove("hidden");
     menuToggleButton.setAttribute("aria-expanded", "true");
+    document.documentElement.classList.add("menu-open");
+    document.body.classList.add("menu-open");
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    menuPanel.scrollTop = 0;
   }
 
   menuToggleButton.addEventListener("click", () => {
@@ -282,6 +298,10 @@ function setupHeaderMenu() {
 
     openMenu();
   });
+
+  window.addEventListener("resize", syncMenuViewport, { passive: true });
+
+  window.addEventListener("orientationchange", syncMenuViewport);
 
   document.addEventListener("click", (event) => {
     if (
@@ -300,6 +320,8 @@ function setupHeaderMenu() {
       closeMenu();
     }
   });
+
+  syncMenuViewport();
 }
 
 function normalizeSearchValue(value = "") {
