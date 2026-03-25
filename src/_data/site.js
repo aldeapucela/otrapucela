@@ -1,5 +1,7 @@
 const defaultSiteUrl = "https://otrapucela.org";
 const defaultPodcastFeedUrl = "https://feeds.otrapucela.org/podcast.xml";
+const defaultPodcastOwnerName = "La Otra Pucela";
+const defaultPodcastOwnerEmail = "contacto@otrapucela.org";
 
 export default {
   name: "La Otra Pucela",
@@ -10,7 +12,11 @@ export default {
   podcast: {
     title: "La Otra Pucela en audio",
     description: "Versiones en audio de los artículos publicados en La Otra Pucela.",
-    author: "La Otra Pucela",
+    subtitle: "Podcast con las versiones narradas de los artículos de La Otra Pucela.",
+    author: defaultPodcastOwnerName,
+    ownerName: (process.env.PODCAST_OWNER_NAME || defaultPodcastOwnerName).trim(),
+    ownerEmail: (process.env.PODCAST_OWNER_EMAIL || defaultPodcastOwnerEmail).trim(),
+    artworkPath: "/assets/podcast-cover.png",
     category: "News",
     explicit: "false"
   },

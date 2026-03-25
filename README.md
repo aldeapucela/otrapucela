@@ -182,6 +182,15 @@ El sitio está preparado para funcionar sin hardcodear el dominio público en la
 - los enlaces internos usan rutas relativas
 - el embed de Discourse resuelve con la URL actual del navegador cuando hace falta
 
+Variables opcionales relevantes para feeds:
+
+- `SITE_URL`: URL pública base del sitio
+- `PODCAST_FEED_URL`: URL pública final del feed de podcast
+- `PODCAST_OWNER_NAME`: nombre público del propietario del podcast en el RSS
+- `PODCAST_OWNER_EMAIL`: email público usado por Spotify/iTunes para verificar y mostrar la titularidad del podcast
+
+Para compatibilidad con Spotify e iTunes, el feed de podcast publica el bloque `itunes:owner` con `name` y `email`, y usa una carátula cuadrada específica distinta de la imagen social general.
+
 ## Comentarios de Discourse
 
 La página de artículo integra comentarios usando `embed.js` de Discourse.

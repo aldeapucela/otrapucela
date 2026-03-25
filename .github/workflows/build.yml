@@ -130,6 +130,9 @@ jobs:
 
       - name: Build site
         if: steps.detect-forum-changes.outputs.should_build == 'true'
+        env:
+          PODCAST_OWNER_EMAIL: ${{ vars.PODCAST_OWNER_EMAIL || secrets.PODCAST_OWNER_EMAIL }}
+          PODCAST_OWNER_NAME: ${{ vars.PODCAST_OWNER_NAME || secrets.PODCAST_OWNER_NAME }}
         run: npm run build
 
       - name: Refresh pending audio cache

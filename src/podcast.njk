@@ -4,7 +4,7 @@ eleventyExcludeFromCollections: true
 ---
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
-  {% set podcastImageUrl = site.siteUrl + site.defaultSocialImage %}
+  {% set podcastImageUrl = site.siteUrl + site.podcast.artworkPath %}
   {% set podcastItems = articulos.items | feedItems %}
   <channel>
     <title>{{ site.podcast.title | escape }}</title>
@@ -13,13 +13,19 @@ eleventyExcludeFromCollections: true
     <language>es-ES</language>
     <lastBuildDate>{{ articulos.generatedAt | date("rfc2822") }}</lastBuildDate>
     <atom:link href="{{ site.podcastFeedUrl }}" rel="self" type="application/rss+xml" />
+    <managingEditor>{{ site.podcast.ownerEmail | escape }} ({{ site.podcast.ownerName | escape }})</managingEditor>
     <image>
       <url>{{ podcastImageUrl | escape }}</url>
       <title>{{ site.podcast.title | escape }}</title>
       <link>{{ site.siteUrl }}/</link>
     </image>
     <itunes:author>{{ site.podcast.author | escape }}</itunes:author>
+    <itunes:subtitle>{{ site.podcast.subtitle | escape }}</itunes:subtitle>
     <itunes:summary>{{ site.podcast.description | escape }}</itunes:summary>
+    <itunes:owner>
+      <itunes:name>{{ site.podcast.ownerName | escape }}</itunes:name>
+      <itunes:email>{{ site.podcast.ownerEmail | escape }}</itunes:email>
+    </itunes:owner>
     <itunes:type>episodic</itunes:type>
     <itunes:explicit>{{ site.podcast.explicit | escape }}</itunes:explicit>
     <itunes:image href="{{ podcastImageUrl | escape }}" />
@@ -50,7 +56,6 @@ eleventyExcludeFromCollections: true
       <itunes:explicit>{{ site.podcast.explicit | escape }}</itunes:explicit>
       <itunes:episodeType>full</itunes:episodeType>
       {% if articleImageUrl %}
-      <itunes:image href="{{ articleImageUrl | escape }}" />
       <media:content url="{{ articleImageUrl | escape }}" medium="image" />
       <media:thumbnail url="{{ articleImageUrl | escape }}" />
       {% endif %}
