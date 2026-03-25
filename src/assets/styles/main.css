@@ -714,6 +714,16 @@
     border-radius: 0;
   }
 
+  .article-card-image,
+  .article-body img {
+    transition: filter 180ms ease;
+  }
+
+  .dark .article-card-image,
+  .dark .article-body img {
+    filter: brightness(0.9);
+  }
+
   @media (max-width: 639px) {
     .article-body img {
       width: 100vw;
