@@ -8,11 +8,13 @@ export default function eleventyConfig(config) {
   config.addPassthroughCopy({ "src/assets/icon-192.png": "assets/icon-192.png" });
   config.addPassthroughCopy({ "src/assets/icon-512.png": "assets/icon-512.png" });
   config.addPassthroughCopy({ "src/assets/logo-wordmark.png": "assets/logo-wordmark.png" });
+  config.addPassthroughCopy({ "src/assets/logo-wordmark.dark.png": "assets/logo-wordmark.dark.png" });
   config.addPassthroughCopy({ "src/assets/logo-wordmark.svg": "assets/logo-wordmark.svg" });
   config.addPassthroughCopy({ "src/assets/social-preview.png": "assets/social-preview.png" });
   config.addPassthroughCopy({ "src/service-worker.js": "service-worker.js" });
+  config.addPassthroughCopy({ "src/assets/js": "assets/js" });
 
-  config.addWatchTarget("./src/assets/js");
+
   config.addWatchTarget("./src/assets/styles");
 
   config.addGlobalData("assetManifest", () => {
@@ -26,8 +28,11 @@ export default function eleventyConfig(config) {
         "assets/styles/main.css": "/assets/styles/main.css",
         "assets/js/article-audio-player.js": "/assets/js/article-audio-player.js",
         "assets/js/audio-playlist.js": "/assets/js/audio-playlist.js",
+        "assets/js/featured-photo.js": "/assets/js/featured-photo.js",
         "assets/js/main.js": "/assets/js/main.js",
-        "assets/js/matomo.js": "/assets/js/matomo.js"
+        "assets/js/matomo.js": "/assets/js/matomo.js",
+        "assets/js/nuevo-para-ti.js": "/assets/js/nuevo-para-ti.js",
+        "assets/js/theme-toggle.js": "/assets/js/theme-toggle.js"
       };
     }
   });

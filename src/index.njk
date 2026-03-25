@@ -13,12 +13,19 @@ canonicalUrl: /
         <img
           src="/assets/logo-wordmark.png"
           alt="La Otra Pucela"
-          class="h-[180px] w-auto"
+          class="h-[180px] w-auto dark:hidden"
+          loading="eager"
+          decoding="async"
+        >
+        <img
+          src="/assets/logo-wordmark.dark.png"
+          alt="La Otra Pucela"
+          class="hidden h-[180px] w-auto dark:block"
           loading="eager"
           decoding="async"
         >
       </a>
-      <p class="mx-auto mt-2 max-w-2xl text-center text-base leading-relaxed text-gray-600">
+      <p class="mx-auto mt-2 max-w-2xl text-center text-base leading-relaxed text-gray-600 dark:text-gray-400">
         Información vecinal, útil e independiente sobre Valladolid
       </p>
     </div>
@@ -26,10 +33,10 @@ canonicalUrl: /
 
   <div class="mt-4 grid grid-cols-1 gap-x-10 gap-y-12 lg:hidden">
     {% for articulo in articulos.items %}
-    <article class="border-b border-[#EEE] pb-5 last:border-b-0 last:pb-0">
+    <article class="border-b border-[#EEE] dark:border-gray-800 pb-5 last:border-b-0 last:pb-0">
       <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
         {% if articulo.image %}
-        <div class="mb-6 overflow-hidden bg-gray-100">
+        <div class="mb-6 overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
             src="{{ articulo.image }}"
             alt="{{ articulo.title }}"
@@ -41,27 +48,27 @@ canonicalUrl: /
         {% endif %}
 
         <div class="max-w-3xl">
-          <div class="flex items-center gap-2 text-sm text-gray-500">
+          <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <time datetime="{{ articulo.createdAt }}">{{ articulo.createdAt | date("d MMM yyyy") }}</time>
           </div>
 
-          <h2 class="mt-4 font-serif text-2xl font-semibold leading-[1.08] tracking-tight text-gray-900 sm:text-[2rem]">
+          <h2 class="mt-4 font-serif text-2xl font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white sm:text-[2rem]">
             {{ articulo.title }}
           </h2>
 
           {% if articulo.description %}
-          <p class="mt-4 text-[0.98rem] leading-[1.55] text-gray-600 sm:text-[1.04rem]">
+          <p class="mt-4 text-[0.98rem] leading-[1.55] text-gray-600 dark:text-gray-400 sm:text-[1.04rem]">
             {{ articulo.description }}
           </p>
           {% elif articulo.excerpt %}
-          <p class="mt-4 text-[0.98rem] leading-[1.55] text-gray-600 sm:text-[1.04rem]">
+          <p class="mt-4 text-[0.98rem] leading-[1.55] text-gray-600 dark:text-gray-400 [&_*]:dark:!text-gray-400 sm:text-[1.04rem]">
             {{ articulo.excerpt }}
           </p>
           {% endif %}
 
           {% if articulo.author and articulo.author.name %}
-          <p class="mt-3 text-sm font-normal text-gray-400">
-            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+          <p class="mt-3 text-sm font-normal text-gray-400 dark:text-gray-400">
+            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
               {{ articulo.author.name }}
             </a>
           </p>
@@ -72,10 +79,10 @@ canonicalUrl: /
 
     {% if loop.index == 2 %}
     <section
-      class="js-home-catchup hidden -mt-5 rounded-[1.5rem] border border-[#E3DDD1] bg-[#FBF8F2] px-5 py-5 text-left"
+      class="js-home-catchup hidden -mt-5 rounded-[1.5rem] border border-[#E3DDD1] dark:border-gray-700 bg-[#FBF8F2] dark:bg-gray-800 px-5 py-5 text-left"
       data-home-catchup
     >
-      <div class="border-b border-[#E8E0D2] pb-3">
+      <div class="border-b border-[#E8E0D2] dark:border-gray-700 pb-3">
         <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8A7F6B]">
           Nuevo para ti
         </p>
@@ -84,7 +91,7 @@ canonicalUrl: /
       <div class="mt-4 flex justify-end">
         <a
           href="/nuevo/"
-          class="text-[0.76rem] font-semibold uppercase tracking-[0.08em] text-[#6B7280] transition-colors duration-200 hover:text-[#243746]"
+          class="text-[0.76rem] font-semibold uppercase tracking-[0.08em] text-[#6B7280] dark:text-gray-400 dark:text-gray-500 transition-colors duration-200 hover:text-[#243746] dark:text-white"
         >
           Ver más
         </a>
@@ -125,11 +132,11 @@ canonicalUrl: /
     {% endif %}
 
     {% if loop.index == 3 %}
-    <section class="border border-[#E3DDD1] bg-[#F8F5EE] px-5 py-6 text-left">
-      <h2 class="font-serif text-[1.28rem] font-semibold leading-[1.08] tracking-tight text-[#243746]">
+    <section class="border border-[#E3DDD1] dark:border-gray-700 bg-[#F8F5EE] dark:bg-[#151c21] px-5 py-6 text-left">
+      <h2 class="font-serif text-[1.28rem] font-semibold leading-[1.08] tracking-tight text-[#243746] dark:text-white">
         ¿Quieres escuchar nuestros artículos como audios?
       </h2>
-      <p class="mt-3 text-[0.98rem] leading-[1.6] text-[#556270]">
+      <p class="mt-3 text-[0.98rem] leading-[1.6] text-[#556270] dark:text-gray-300">
         Entra en la sección de audios y escucha los artículos a tu ritmo, uno detrás de otro, o añádelo a tu aplicación de podcast.
       </p>
       <a
@@ -145,14 +152,14 @@ canonicalUrl: /
     {% endfor %}
   </div>
 
-  <div class="mt-4 hidden border-t border-[#EEE] pt-6 lg:block">
+  <div class="mt-4 hidden border-t border-[#EEE] dark:border-gray-800 pt-6 lg:block">
     {% if articulos.items[0] %}
-    <div class="border-b border-[#EEE] pb-10">
+    <div class="border-b border-[#EEE] dark:border-gray-800 pb-10">
       <article>
         <div class="grid items-start gap-12 lg:grid-cols-10">
           <a
             href="/p/{{ articulos.items[0].id }}/{{ articulos.items[0].slug }}/"
-            class="block overflow-hidden bg-gray-100 lg:col-span-6"
+            class="block overflow-hidden bg-gray-100 dark:bg-gray-800 lg:col-span-6"
           >
             {% if articulos.items[0].image %}
             <img
@@ -166,28 +173,28 @@ canonicalUrl: /
 
           <div class="{% if articulos.items[0].image %}lg:col-span-4 lg:pl-2{% else %}lg:col-span-10{% endif %}">
             <a href="/p/{{ articulos.items[0].id }}/{{ articulos.items[0].slug }}/" class="block">
-              <div class="flex items-center gap-2 text-sm text-gray-500">
+              <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <time datetime="{{ articulos.items[0].createdAt }}">{{ articulos.items[0].createdAt | date("d MMM yyyy") }}</time>
               </div>
 
-              <h2 class="mt-4 max-w-[16ch] font-serif text-[2.5rem] font-semibold leading-[0.98] tracking-tight text-gray-900">
+              <h2 class="mt-4 max-w-[16ch] font-serif text-[2.5rem] font-semibold leading-[0.98] tracking-tight text-gray-900 dark:text-white">
                 {{ articulos.items[0].title }}
               </h2>
 
               {% if articulos.items[0].description %}
-              <p class="mt-6 max-w-[34rem] text-[1.02rem] leading-[1.65] text-gray-600">
+              <p class="mt-6 max-w-[34rem] text-[1.02rem] leading-[1.65] text-gray-600 dark:text-gray-400">
                 {{ articulos.items[0].description }}
               </p>
               {% elif articulos.items[0].excerpt %}
-              <p class="mt-6 max-w-[34rem] text-[1.02rem] leading-[1.65] text-gray-600">
+              <p class="mt-6 max-w-[34rem] text-[1.02rem] leading-[1.65] text-gray-600 dark:text-gray-400">
                 {{ articulos.items[0].excerpt }}
               </p>
               {% endif %}
             </a>
 
             {% if articulos.items[0].author and articulos.items[0].author.name %}
-            <p class="mt-5 text-sm text-gray-500">
-              <a href="{{ articulos.items[0].author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+            <p class="mt-5 text-sm text-gray-500 dark:text-gray-400">
+              <a href="{{ articulos.items[0].author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
                 {{ articulos.items[0].author.name }}
               </a>
             </p>
@@ -202,24 +209,24 @@ canonicalUrl: /
       {% if loop.index > 1 %}
       {% if loop.index == 5 %}
       <section
-        class="js-home-catchup hidden col-span-3 rounded-[1.75rem] border border-[#E3DDD1] bg-[#FBF8F2] px-7 py-7 text-left"
+        class="js-home-catchup hidden col-span-3 rounded-[1.75rem] border border-[#E3DDD1] dark:border-gray-700 bg-[#FBF8F2] dark:bg-gray-800 px-7 py-7 text-left"
         data-home-catchup
       >
-        <div class="flex items-end justify-between gap-6 border-b border-[#E8E0D2] pb-4">
+        <div class="flex items-end justify-between gap-6 border-b border-[#E8E0D2] dark:border-gray-700 pb-4">
           <div>
             <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8A7F6B]">
               Nuevo para ti
             </p>
           </div>
-          <p class="max-w-md text-sm leading-[1.6] text-[#6B7280]">
+          <p class="max-w-md text-sm leading-[1.6] text-[#6B7280] dark:text-gray-400 dark:text-gray-500">
             Las últimas piezas que aún no has leído.
           </p>
         </div>
         <div class="mt-5 grid grid-cols-3 gap-5" data-home-catchup-items></div>
-        <div class="mt-5 flex justify-end border-t border-[#E8E0D2] pt-4">
+        <div class="mt-5 flex justify-end border-t border-[#E8E0D2] dark:border-gray-700 pt-4">
           <a
             href="/nuevo/"
-            class="text-[0.76rem] font-semibold uppercase tracking-[0.08em] text-[#6B7280] transition-colors duration-200 hover:text-[#243746]"
+            class="text-[0.76rem] font-semibold uppercase tracking-[0.08em] text-[#6B7280] dark:text-gray-400 dark:text-gray-500 transition-colors duration-200 hover:text-[#243746] dark:text-white"
           >
             Ver más
           </a>
@@ -258,10 +265,10 @@ canonicalUrl: /
         </div>
       </section>
       {% endif %}
-      <article class="border-b border-[#EEE] pb-8">
+      <article class="border-b border-[#EEE] dark:border-gray-800 pb-8">
         <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
           {% if articulo.image %}
-          <div class="mb-4 overflow-hidden bg-gray-100">
+          <div class="mb-4 overflow-hidden bg-gray-100 dark:bg-gray-800">
             <img
               src="{{ articulo.image }}"
               alt="{{ articulo.title }}"
@@ -271,27 +278,27 @@ canonicalUrl: /
           </div>
           {% endif %}
 
-          <div class="flex items-center gap-2 text-sm text-gray-500">
+          <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <time datetime="{{ articulo.createdAt }}">{{ articulo.createdAt | date("d MMM yyyy") }}</time>
           </div>
 
-          <h2 class="mt-4 font-serif text-[1.55rem] font-semibold leading-[1.08] tracking-tight text-gray-900">
+          <h2 class="mt-4 font-serif text-[1.55rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
             {{ articulo.title }}
           </h2>
 
           {% if articulo.description %}
-          <p class="mt-3 text-[0.95rem] leading-[1.55] text-gray-600">
+          <p class="mt-3 text-[0.95rem] leading-[1.55] text-gray-600 dark:text-gray-400">
             {{ articulo.description }}
           </p>
           {% elif articulo.excerpt %}
-          <p class="mt-3 text-[0.95rem] leading-[1.55] text-gray-600">
+          <p class="mt-3 text-[0.95rem] leading-[1.55] text-gray-600 dark:text-gray-400 [&_*]:dark:!text-gray-400">
             {{ articulo.excerpt }}
           </p>
           {% endif %}
 
           {% if articulo.author and articulo.author.name %}
-          <p class="mt-4 text-sm text-gray-500">
-            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+          <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
               {{ articulo.author.name }}
             </a>
           </p>

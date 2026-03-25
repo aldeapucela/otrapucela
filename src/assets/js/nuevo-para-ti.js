@@ -165,21 +165,21 @@ function createUnreadHomepageItemMarkup(article, compact = false) {
 
   if (compact) {
     return `
-      <article class="border-b border-[#E8E0D2] py-3 last:border-b-0 last:pb-0">
-        <h3 class="font-serif text-[1.15rem] font-semibold leading-[1.1] tracking-tight text-[#243746]">
-          <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827]">${title}</a>
+      <article class="border-b border-[#E8E0D2] dark:border-gray-700 py-3 last:border-b-0 last:pb-0">
+        <h3 class="font-serif text-[1.15rem] font-semibold leading-[1.1] tracking-tight text-[#243746] dark:text-gray-100">
+          <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827] dark:hover:text-white">${title}</a>
         </h3>
-        ${meta ? `<p class="mt-2 text-[0.78rem] leading-[1.5] text-[#6B7280]">${meta}</p>` : ""}
+        ${meta ? `<p class="mt-2 text-[0.78rem] leading-[1.5] text-[#6B7280] dark:text-gray-400 dark:text-gray-500">${meta}</p>` : ""}
       </article>
     `;
   }
 
   return `
-    <article class="border-l border-[#E8E0D2] pl-5 first:border-l-0 first:pl-0">
-      <h3 class="font-serif text-[1.25rem] font-semibold leading-[1.1] tracking-tight text-[#243746]">
-        <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827]">${title}</a>
+    <article class="border-l border-[#E8E0D2] dark:border-gray-700 pl-5 first:border-l-0 first:pl-0">
+      <h3 class="font-serif text-[1.25rem] font-semibold leading-[1.1] tracking-tight text-[#243746] dark:text-gray-100">
+        <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827] dark:hover:text-white">${title}</a>
       </h3>
-      ${meta ? `<p class="mt-2 text-[0.8rem] leading-[1.5] text-[#6B7280]">${meta}</p>` : ""}
+      ${meta ? `<p class="mt-2 text-[0.8rem] leading-[1.5] text-[#6B7280] dark:text-gray-400 dark:text-gray-500">${meta}</p>` : ""}
     </article>
   `;
 }
@@ -227,23 +227,23 @@ function createUnreadArticleItemMarkup(article) {
   const theme = escapeHtml(article.tags?.[0]?.name || article.tags?.[0]?.slug || "");
   const image = article.image
     ? `<img src="${escapeHtml(article.image)}" alt="${title}" class="h-14 w-[4.5rem] shrink-0 rounded-lg object-cover sm:h-[4.6rem] sm:w-[5.75rem]">`
-    : `<div class="flex h-14 w-[4.5rem] shrink-0 items-center justify-center rounded-lg bg-[#F4F1E9] text-[#8A7F6B] sm:h-[4.6rem] sm:w-[5.75rem]"><i class="fa-regular fa-newspaper" aria-hidden="true"></i></div>`;
+    : `<div class="flex h-14 w-[4.5rem] shrink-0 items-center justify-center rounded-lg bg-[#F4F1E9] dark:bg-[#1a2529] text-[#8A7F6B] sm:h-[4.6rem] sm:w-[5.75rem]"><i class="fa-regular fa-newspaper" aria-hidden="true"></i></div>`;
   const meta = [formatReadingListDate(article.createdAt), author].filter(Boolean).join(" · ");
 
   return `
-    <article class="border-b border-[#E7E1D6] py-3 last:border-b-0 sm:py-4">
+    <article class="border-b border-[#E7E1D6] dark:border-gray-700 py-3 last:border-b-0 sm:py-4">
       <div class="flex items-start gap-3 sm:gap-4">
         <a href="${url}" class="shrink-0">${image}</a>
         <div class="min-w-0 flex-1">
           ${theme ? `<p class="text-[0.64rem] font-semibold uppercase tracking-[0.1em] text-[#8A7F6B]">${theme}</p>` : ""}
-          <a href="${url}" class="mt-0.5 block font-serif text-[0.92rem] font-semibold leading-[1.22] tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700 sm:mt-1 sm:text-[1rem]">
+          <a href="${url}" class="mt-0.5 block font-serif text-[0.92rem] font-semibold leading-[1.22] tracking-tight text-gray-900 dark:text-white transition-colors duration-200 hover:text-gray-700 dark:text-gray-300 sm:mt-1 sm:text-[1rem]">
             ${title}
           </a>
-          ${meta ? `<p class="mt-0.5 text-[0.75rem] leading-[1.45] text-gray-500 sm:mt-1 sm:text-[0.8rem]">${meta}</p>` : ""}
+          ${meta ? `<p class="mt-0.5 text-[0.75rem] leading-[1.45] text-gray-500 dark:text-gray-400 dark:text-gray-500 sm:mt-1 sm:text-[0.8rem]">${meta}</p>` : ""}
         </div>
         <button
           type="button"
-          class="inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border border-[#D9D1C4] bg-white text-[#3F3424] transition-colors duration-200 hover:bg-[#F3EBDD] sm:h-11 sm:w-11"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border border-[#D9D1C4] dark:border-gray-700 bg-white dark:bg-[#1a2529] text-[#3F3424] dark:text-gray-300 transition-colors duration-200 hover:bg-[#F3EBDD] dark:hover:bg-gray-700 sm:h-11 sm:w-11"
           data-unread-mark-read="${escapeHtml(article.id)}"
           aria-label="Marcar como leído"
           title="Marcar como leído"

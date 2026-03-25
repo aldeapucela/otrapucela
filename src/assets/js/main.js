@@ -498,7 +498,7 @@ function highlightSearchTerms(value = "", tokens = []) {
 
   for (const range of mergedRanges) {
     highlighted += escapeHtml(source.slice(cursor, range.start));
-    highlighted += `<mark class="rounded-sm bg-[#E8D7A7] px-1 py-[0.05rem] text-gray-900">${escapeHtml(source.slice(range.start, range.end))}</mark>`;
+    highlighted += `<mark class="rounded-sm bg-[#E8D7A7] px-1 py-[0.05rem] text-gray-900 dark:text-white">${escapeHtml(source.slice(range.start, range.end))}</mark>`;
     cursor = range.end;
   }
 
@@ -625,7 +625,7 @@ function createSearchResultMarkup(article, tokens) {
 
   const imageMarkup = article.image
     ? `
-      <a href="${publicPath}" class="block overflow-hidden bg-gray-100 shadow-sm">
+      <a href="${publicPath}" class="block overflow-hidden bg-gray-100 dark:bg-[#1a2529] shadow-sm">
         <img
           src="${escapeHtml(article.image)}"
           alt="${title}"
@@ -640,16 +640,16 @@ function createSearchResultMarkup(article, tokens) {
     : "block";
 
   const descriptionMarkup = snippet
-    ? `<p class="mt-4 text-base leading-[1.6] text-gray-600">${snippet}</p>`
+    ? `<p class="mt-4 text-base leading-[1.6] text-gray-600 dark:text-gray-400 dark:text-gray-500">${snippet}</p>`
     : "";
 
   return `
-    <article class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+    <article class="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0">
       <div class="${layoutClass}">
         ${imageMarkup ? `<div>${imageMarkup}</div>` : ""}
         <div class="min-w-0">
-          <h2 class="font-serif text-[1.2rem] font-semibold leading-[1.16] tracking-tight text-gray-900 sm:text-[1.32rem]">
-            <a href="${publicPath}" class="transition-colors duration-200 hover:text-gray-700">${title}</a>
+          <h2 class="font-serif text-[1.2rem] font-semibold leading-[1.16] tracking-tight text-gray-900 dark:text-white sm:text-[1.32rem]">
+            <a href="${publicPath}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">${title}</a>
           </h2>
           ${descriptionMarkup}
         </div>
@@ -675,21 +675,21 @@ function createHomepageCatchupItemMarkup(article, compact = false) {
 
   if (compact) {
     return `
-      <article class="border-b border-[#E8E0D2] py-3 last:border-b-0 last:pb-0">
-        <h3 class="font-serif text-[1.15rem] font-semibold leading-[1.1] tracking-tight text-[#243746]">
-          <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827]">${title}</a>
+      <article class="border-b border-[#E8E0D2] dark:border-gray-700 py-3 last:border-b-0 last:pb-0">
+        <h3 class="font-serif text-[1.15rem] font-semibold leading-[1.1] tracking-tight text-[#243746] dark:text-gray-100">
+          <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827] dark:hover:text-white">${title}</a>
         </h3>
-        ${meta ? `<p class="mt-2 text-[0.78rem] leading-[1.5] text-[#6B7280]">${meta}</p>` : ""}
+        ${meta ? `<p class="mt-2 text-[0.78rem] leading-[1.5] text-[#6B7280] dark:text-gray-400 dark:text-gray-500">${meta}</p>` : ""}
       </article>
     `;
   }
 
   return `
-    <article class="border-l border-[#E8E0D2] pl-5 first:border-l-0 first:pl-0">
-      <h3 class="font-serif text-[1.25rem] font-semibold leading-[1.1] tracking-tight text-[#243746]">
-        <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827]">${title}</a>
+    <article class="border-l border-[#E8E0D2] dark:border-gray-700 pl-5 first:border-l-0 first:pl-0">
+      <h3 class="font-serif text-[1.25rem] font-semibold leading-[1.1] tracking-tight text-[#243746] dark:text-gray-100">
+        <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#111827] dark:hover:text-white">${title}</a>
       </h3>
-      ${meta ? `<p class="mt-2 text-[0.8rem] leading-[1.5] text-[#6B7280]">${meta}</p>` : ""}
+      ${meta ? `<p class="mt-2 text-[0.8rem] leading-[1.5] text-[#6B7280] dark:text-gray-400 dark:text-gray-500">${meta}</p>` : ""}
     </article>
   `;
 }
@@ -1377,22 +1377,22 @@ function createReadingListItemMarkup(article) {
   const author = escapeHtml(article.author || "");
   const image = article.image
     ? `<img src="${escapeHtml(article.image)}" alt="${title}" class="h-14 w-[4.5rem] shrink-0 rounded-lg object-cover sm:h-[4.6rem] sm:w-[5.75rem]">`
-    : `<div class="flex h-14 w-[4.5rem] shrink-0 items-center justify-center rounded-lg bg-[#F4F1E9] text-[#8A7F6B] sm:h-[4.6rem] sm:w-[5.75rem]"><i class="fa-regular fa-bookmark" aria-hidden="true"></i></div>`;
+    : `<div class="flex h-14 w-[4.5rem] shrink-0 items-center justify-center rounded-lg bg-[#F4F1E9] dark:bg-[#1a2529] text-[#8A7F6B] sm:h-[4.6rem] sm:w-[5.75rem]"><i class="fa-regular fa-bookmark" aria-hidden="true"></i></div>`;
   const meta = [author, formatReadingListDate(article.date)].filter(Boolean).join(" · ");
 
   return `
-    <article class="border-b border-[#E7E1D6] py-3 last:border-b-0 sm:py-4">
+    <article class="border-b border-[#E7E1D6] dark:border-gray-700 py-3 last:border-b-0 sm:py-4">
       <div class="flex items-start gap-3 sm:gap-4">
         <a href="${url}" class="shrink-0">${image}</a>
         <div class="min-w-0 flex-1">
-          <a href="${url}" class="block font-serif text-[0.92rem] font-semibold leading-[1.22] tracking-tight text-gray-900 transition-colors duration-200 hover:text-gray-700 sm:text-[1rem]">
+          <a href="${url}" class="block font-serif text-[0.92rem] font-semibold leading-[1.22] tracking-tight text-gray-900 dark:text-white transition-colors duration-200 hover:text-gray-700 dark:text-gray-300 sm:text-[1rem]">
             ${title}
           </a>
-          ${meta ? `<p class="mt-0.5 text-[0.75rem] leading-[1.45] text-gray-500 sm:mt-1 sm:text-[0.8rem]">${meta}</p>` : ""}
+          ${meta ? `<p class="mt-0.5 text-[0.75rem] leading-[1.45] text-gray-500 dark:text-gray-400 sm:mt-1 sm:text-[0.8rem]">${meta}</p>` : ""}
         </div>
         <button
           type="button"
-          class="inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border border-[#D9D1C4] bg-white text-gray-500 transition-colors duration-200 hover:bg-[#F3EBDD] hover:text-gray-700 sm:h-11 sm:w-11"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border border-[#D9D1C4] dark:border-gray-700 bg-white dark:bg-[#1a2529] text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:bg-[#F3EBDD] dark:hover:bg-gray-700 hover:text-gray-700 dark:text-gray-300 sm:h-11 sm:w-11"
           data-reading-list-remove="${escapeHtml(article.id)}"
           aria-label="Quitar de la lista de lectura"
           title="Quitar de la lista de lectura"
@@ -2284,6 +2284,7 @@ function setupRelatedCarousel() {
 
 function setupScrollTopButton() {
   const scrollTopButton = document.querySelector(".js-scroll-top");
+  const scrollThemeButton = document.querySelector(".js-scroll-theme-toggle");
   const scrollShareButton = document.querySelector(".js-scroll-share-btn");
 
   if (!scrollTopButton) {
@@ -2298,6 +2299,14 @@ function setupScrollTopButton() {
     scrollTopButton.classList.toggle("translate-y-3", !shouldShow);
     scrollTopButton.classList.toggle("opacity-100", shouldShow);
     scrollTopButton.classList.toggle("translate-y-0", shouldShow);
+
+    if (scrollThemeButton) {
+      scrollThemeButton.classList.toggle("pointer-events-none", !shouldShow);
+      scrollThemeButton.classList.toggle("opacity-0", !shouldShow);
+      scrollThemeButton.classList.toggle("translate-y-3", !shouldShow);
+      scrollThemeButton.classList.toggle("opacity-100", shouldShow);
+      scrollThemeButton.classList.toggle("translate-y-0", shouldShow);
+    }
 
     if (scrollShareButton) {
       scrollShareButton.classList.toggle("pointer-events-none", !shouldShow);
@@ -2410,14 +2419,23 @@ function updateCommentCount(commentCount) {
   });
 }
 
+const DISCOURSE_DARK_COLOR_SCHEME_ID = 1;
+
+function getDiscourseColorScheme() {
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
 function loadDiscourseEmbed(discourseUrl, topicId) {
   if (!discourseUrl || !topicId || document.querySelector('script[data-js-discourse-embed="true"]')) {
     return;
   }
 
+  const isDark = getDiscourseColorScheme() === "dark";
+
   window.DiscourseEmbed = {
     discourseUrl,
-    topicId: Number(topicId)
+    topicId: Number(topicId),
+    colorScheme: isDark ? "dark" : "light"
   };
 
   const embedScript = document.createElement("script");
@@ -2425,19 +2443,74 @@ function loadDiscourseEmbed(discourseUrl, topicId) {
   embedScript.async = true;
   embedScript.dataset.jsDiscourseEmbed = "true";
   document.body.appendChild(embedScript);
+
+  // After embed.js renders the iframe, force color_scheme_id into the URL
+  embedScript.addEventListener("load", () => {
+    setTimeout(applyDiscourseColorSchemeToFrame, 1500);
+  });
 }
 
-function refreshDiscourseEmbed() {
+function applyDiscourseColorSchemeToFrame() {
   const embedFrame =
     document.getElementById("discourse-embed-frame") ??
     document.querySelector('iframe[id^="discourse-embed"]');
 
-  if (!embedFrame || !embedFrame.src) {
-    return;
+  if (!embedFrame || !embedFrame.src) return;
+
+  try {
+    const url = new URL(embedFrame.src);
+    if (getDiscourseColorScheme() === "dark") {
+      url.searchParams.set("color_scheme_id", String(DISCOURSE_DARK_COLOR_SCHEME_ID));
+    } else {
+      url.searchParams.delete("color_scheme_id");
+    }
+    embedFrame.src = url.toString();
+  } catch (_) {
+    embedFrame.src = embedFrame.src;
+  }
+}
+
+function refreshDiscourseEmbed() {
+  applyDiscourseColorSchemeToFrame();
+}
+
+function setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState) {
+  if (!embedContainer || !embedWrapper) {
+    return () => {};
   }
 
-  embedFrame.src = embedFrame.src;
+  const toggleEmbedVisibility = () => {
+    const hasIframe = Boolean(
+      embedContainer.querySelector('iframe[id^="discourse-embed"], iframe#discourse-embed-frame')
+    );
+
+    embedWrapper.classList.toggle("hidden", !hasIframe);
+
+    if (hasIframe) {
+      emptyState?.classList.add("hidden");
+    }
+
+    return hasIframe;
+  };
+
+  toggleEmbedVisibility();
+
+  const observer = new MutationObserver(() => {
+    if (toggleEmbedVisibility()) {
+      observer.disconnect();
+    }
+  });
+
+  observer.observe(embedContainer, {
+    childList: true,
+    subtree: true
+  });
+
+  return () => observer.disconnect();
 }
+
+// Rebuild color scheme when user toggles theme
+document.addEventListener("discourse-theme-changed", applyDiscourseColorSchemeToFrame);
 
 async function fetchTopicMetadata(topicJsonUrl, fallbackCount, fallbackLatestPostNumber = 2) {
   if (!topicJsonUrl) {
@@ -2485,6 +2558,7 @@ async function setupCommentsSection() {
   const addCommentLink = commentsRoot.querySelector(".js-add-comment-link");
   const emptyState = commentsRoot.querySelector(".js-comments-empty-state");
   const embedContainer = commentsRoot.querySelector(".js-comments-embed");
+  const embedWrapper = commentsRoot.querySelector(".js-comments-embed-wrapper");
   const discourseUrl = commentsRoot.dataset.discourseUrl;
   const topicId = commentsRoot.dataset.topicId;
   const topicUrl = commentsRoot.dataset.topicUrl;
@@ -2494,6 +2568,7 @@ async function setupCommentsSection() {
   let commentCount = initialReplies;
   let latestPostNumber = 2;
   let hasLoadedEmbed = false;
+  setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState);
 
   function renderCommentsSection(nextCommentCount, previousCommentCount = commentCount) {
     updateCommentCount(nextCommentCount);
@@ -2505,7 +2580,7 @@ async function setupCommentsSection() {
 
       addCommentLink?.classList.remove("hidden");
       emptyState?.classList.add("hidden");
-      embedContainer?.classList.remove("hidden");
+      embedWrapper?.classList.add("hidden");
 
       if (!hasLoadedEmbed) {
         loadDiscourseEmbed(discourseUrl, topicId);
@@ -2518,7 +2593,7 @@ async function setupCommentsSection() {
     }
 
     addCommentLink?.classList.add("hidden");
-    embedContainer?.classList.add("hidden");
+    embedWrapper?.classList.add("hidden");
     emptyState?.classList.remove("hidden");
   }
 

@@ -15,7 +15,7 @@ eleventyComputed:
 {% set themeArticles = articulos.items | articlesForTheme(tag.slug) %}
 <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
   <div class="max-w-3xl">
-    <h1 class="text-[2rem] font-extrabold uppercase tracking-tight text-gray-900 sm:text-[2.5rem]">
+    <h1 class="text-[2rem] font-extrabold uppercase tracking-tight text-gray-900 dark:text-white sm:text-[2.5rem]">
       {{ tag.name | themeName }}
     </h1>
     <div class="mt-6 h-px w-full max-w-6xl bg-gray-900"></div>
@@ -23,10 +23,10 @@ eleventyComputed:
 
   <div class="mt-10 grid grid-cols-1 gap-x-10 gap-y-12 lg:hidden">
     {% for articulo in themeArticles %}
-    <article class="border-b border-gray-200 pb-10 last:border-b-0 last:pb-0">
+    <article class="border-b border-gray-200 dark:border-gray-800 pb-10 last:border-b-0 last:pb-0">
       <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
         {% if articulo.image %}
-        <div class="mb-6 overflow-hidden bg-gray-100">
+        <div class="mb-6 overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
             src="{{ articulo.image }}"
             alt="{{ articulo.title }}"
@@ -37,27 +37,27 @@ eleventyComputed:
         {% endif %}
 
         <div class="max-w-3xl">
-          <div class="flex items-center gap-2 text-sm text-gray-500">
+          <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <time datetime="{{ articulo.createdAt }}">{{ articulo.createdAt | date("d MMM yyyy") }}</time>
           </div>
 
-          <h2 class="mt-4 font-serif text-2xl font-semibold leading-[1.08] tracking-tight text-gray-900 sm:text-[2rem]">
+          <h2 class="mt-4 font-serif text-2xl font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white sm:text-[2rem]">
             {{ articulo.title }}
           </h2>
 
           {% if articulo.description %}
-          <p class="mt-4 text-lg leading-[1.35] text-gray-600 sm:text-xl">
+          <p class="mt-4 text-lg leading-[1.35] text-gray-600 dark:text-gray-400 sm:text-xl">
             {{ articulo.description }}
           </p>
           {% elif articulo.excerpt %}
-          <p class="mt-4 text-lg leading-[1.35] text-gray-600 sm:text-xl">
+          <p class="mt-4 text-lg leading-[1.35] text-gray-600 dark:text-gray-400 sm:text-xl">
             {{ articulo.excerpt }}
           </p>
           {% endif %}
 
           {% if articulo.author and articulo.author.name %}
-          <p class="mt-5 text-sm font-normal text-gray-400">
-            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+          <p class="mt-5 text-sm font-normal text-gray-400 dark:text-gray-400">
+            <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
               {{ articulo.author.name }}
             </a>
           </p>
@@ -70,26 +70,26 @@ eleventyComputed:
 
   {% set featuredArticle = themeArticles[0] %}
   {% if featuredArticle %}
-  <div class="mt-12 hidden border-t border-gray-300 pt-6 lg:grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.75fr)] lg:items-start lg:gap-8">
+  <div class="mt-12 hidden border-t border-gray-300 dark:border-gray-600 pt-6 lg:grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.75fr)] lg:items-start lg:gap-8">
     <article class="pr-2">
       <a href="/p/{{ featuredArticle.id }}/{{ featuredArticle.slug }}/" class="block">
-        <h2 class="font-serif text-[2.15rem] font-semibold leading-[1.02] tracking-tight text-gray-900">
+        <h2 class="font-serif text-[2.15rem] font-semibold leading-[1.02] tracking-tight text-gray-900 dark:text-white">
           {{ featuredArticle.title }}
         </h2>
 
         {% if featuredArticle.description %}
-        <p class="mt-4 text-[1.05rem] leading-[1.45] text-gray-600">
+        <p class="mt-4 text-[1.05rem] leading-[1.45] text-gray-600 dark:text-gray-400">
           {{ featuredArticle.description }}
         </p>
         {% elif featuredArticle.excerpt %}
-        <p class="mt-4 text-[1.05rem] leading-[1.45] text-gray-600">
+        <p class="mt-4 text-[1.05rem] leading-[1.45] text-gray-600 dark:text-gray-400">
           {{ featuredArticle.excerpt }}
         </p>
         {% endif %}
 
         {% if featuredArticle.author and featuredArticle.author.name %}
-        <p class="mt-4 text-base text-gray-500">
-          <a href="{{ featuredArticle.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+        <p class="mt-4 text-base text-gray-500 dark:text-gray-400">
+          <a href="{{ featuredArticle.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
             {{ featuredArticle.author.name }}
           </a>
         </p>
@@ -100,7 +100,7 @@ eleventyComputed:
     <article>
       <a href="/p/{{ featuredArticle.id }}/{{ featuredArticle.slug }}/" class="block">
         {% if featuredArticle.image %}
-        <div class="overflow-hidden bg-gray-100">
+        <div class="overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
             src="{{ featuredArticle.image }}"
             alt="{{ featuredArticle.title }}"
@@ -113,12 +113,12 @@ eleventyComputed:
     </article>
   </div>
 
-  <div class="mt-10 hidden border-t border-gray-200 pt-8 lg:grid lg:grid-cols-3 lg:gap-6">
+  <div class="mt-10 hidden border-t border-gray-200 dark:border-gray-800 pt-8 lg:grid lg:grid-cols-3 lg:gap-6">
     {% for articulo in themeArticles.slice(1) %}
-    <article class="border-b border-gray-200 pb-8">
+    <article class="border-b border-gray-200 dark:border-gray-800 pb-8">
       <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
         {% if articulo.image %}
-        <div class="mb-4 overflow-hidden bg-gray-100">
+        <div class="mb-4 overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
             src="{{ articulo.image }}"
             alt="{{ articulo.title }}"
@@ -128,13 +128,13 @@ eleventyComputed:
         </div>
         {% endif %}
 
-        <h2 class="font-serif text-[1.4rem] font-semibold leading-[1.08] tracking-tight text-gray-900">
+        <h2 class="font-serif text-[1.4rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
           {{ articulo.title }}
         </h2>
 
         {% if articulo.author and articulo.author.name %}
-        <p class="mt-4 text-sm text-gray-500">
-          <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700">
+        <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
             {{ articulo.author.name }}
           </a>
         </p>
@@ -143,7 +143,7 @@ eleventyComputed:
     </article>
       {% if loop.index % 3 == 0 and not loop.last %}
   </div>
-  <div class="mt-10 hidden border-t border-gray-200 pt-8 lg:grid lg:grid-cols-3 lg:gap-6">
+  <div class="mt-10 hidden border-t border-gray-200 dark:border-gray-800 pt-8 lg:grid lg:grid-cols-3 lg:gap-6">
       {% endif %}
     {% endfor %}
   </div>

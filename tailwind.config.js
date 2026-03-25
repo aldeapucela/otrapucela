@@ -4,6 +4,7 @@ export default {
   content: [
     "./src/**/*.{njk,html,md,js}"
   ],
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {

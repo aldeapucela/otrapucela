@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ title or "La Otra Pucela" }}</title>
     <meta name="description" content="{{ description or 'Medio digital estático con artículos publicados desde Discourse.' }}">
-    <meta name="theme-color" content="#1F2937">
+    <meta name="theme-color" content="#1F2937" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1a2529" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -46,16 +47,24 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     >
-    <script src="{{ assetManifest['assets/js/matomo.js'] or '/assets/js/matomo.js' }}" defer></script>
+    <script src="/assets/js/matomo.js" defer></script>
+    <script>
+      // Prevent FOUC by setting dark mode early
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
   </head>
-  <body class="min-h-screen {{ bodyClass or 'bg-gray-50' }} text-gray-800 antialiased">
+  <body class="min-h-screen {{ bodyClass or 'bg-gray-50 dark:bg-[#151c21]' }} dark:bg-[#151c21] dark:text-gray-200 text-gray-800 dark:text-gray-200 antialiased transition-colors duration-200">
     <div class="relative min-h-screen">
       <header
         id="js-header"
-        class="relative sticky top-0 z-50 border-b border-gray-200 bg-white transition-transform duration-300 shadow-sm"
+        class="relative sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] transition-transform duration-300 shadow-sm"
       >
         <div class="relative mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:justify-center sm:px-6 lg:px-8">
-          <a href="/" class="min-w-0 flex-1 pr-24 text-left text-[#092440] sm:flex-none sm:pr-0 sm:text-center {% if page.url == '/' %}lg:hidden{% endif %}">
+          <a href="/" class="min-w-0 flex-1 pr-24 text-left text-[#092440] dark:text-gray-100 sm:flex-none sm:pr-0 sm:text-center {% if page.url == '/' %}lg:hidden{% endif %}">
             <span class="block font-serif text-[1.2rem] uppercase tracking-[0.02em] sm:text-[1.35rem]">
               <span class="font-['Montserrat',sans-serif] font-medium">La Otra</span>
               <span class="font-extrabold [font-variation-settings:'wght'_850]">Pucela</span>
@@ -63,26 +72,26 @@
           </a>
 
           <div class="absolute right-2 flex items-center gap-0 sm:right-4 lg:right-6">
-            <a href="/boletin/" class="inline-flex min-h-11 items-center gap-1 rounded-full px-0.5 text-gray-500 sm:hidden" aria-label="Ir al boletín" data-newsletter-header-link data-newsletter-cta>
+            <a href="/boletin/" class="inline-flex min-h-11 items-center gap-1 rounded-full px-0.5 text-gray-500 dark:text-gray-400 sm:hidden" aria-label="Ir al boletín" data-newsletter-header-link data-newsletter-cta>
               <i class="fa-regular fa-envelope text-base" aria-hidden="true"></i>
-              <span class="inline-block font-['Montserrat',sans-serif] text-[11px] leading-none font-normal uppercase tracking-[0.04em] text-gray-400" data-newsletter-header-label>Boletín</span>
+              <span class="inline-block font-['Montserrat',sans-serif] text-[11px] leading-none font-normal uppercase tracking-[0.04em] text-gray-400 dark:text-gray-400" data-newsletter-header-label>Boletín</span>
             </a>
 
             <button
               type="button"
-              class="js-menu-toggle relative inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              class="js-menu-toggle relative inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
               aria-expanded="false"
               aria-controls="js-menu-panel"
               aria-label="Abrir menú de secciones"
             >
               <i class="fa-solid fa-bars text-lg" aria-hidden="true"></i>
               <span
-                class="hidden absolute right-0.5 top-0.5 min-h-4 min-w-4 items-center justify-center rounded-full bg-[#E7D7B8] px-1 text-[0.58rem] font-['Montserrat',sans-serif] font-semibold leading-none text-[#3F3424] ring-2 ring-white sm:right-0 sm:top-0 sm:min-h-[1.15rem] sm:min-w-[1.15rem] sm:px-1.5 sm:text-[0.62rem]"
+                class="hidden absolute right-0.5 top-0.5 min-h-4 min-w-4 items-center justify-center rounded-full bg-[#E7D7B8] dark:bg-amber-900/80 px-1 text-[0.58rem] font-['Montserrat',sans-serif] font-semibold leading-none text-[#3F3424] dark:text-amber-200 ring-2 ring-white dark:ring-[#1a2529] sm:right-0 sm:top-0 sm:min-h-[1.15rem] sm:min-w-[1.15rem] sm:px-1.5 sm:text-[0.62rem]"
                 data-reading-list-menu-dot
                 aria-hidden="true"
               ></span>
               <span
-                class="hidden absolute bottom-0.5 right-0.5 min-h-4 min-w-4 items-center justify-center rounded-full bg-[#DCE7E1] px-1 text-[0.58rem] font-['Montserrat',sans-serif] font-semibold leading-none text-[#31453D] ring-2 ring-white sm:bottom-0 sm:right-0 sm:min-h-[1.15rem] sm:min-w-[1.15rem] sm:px-1.5 sm:text-[0.62rem]"
+                class="hidden absolute bottom-0.5 right-0.5 min-h-4 min-w-4 items-center justify-center rounded-full bg-[#DCE7E1] dark:bg-emerald-900/80 px-1 text-[0.58rem] font-['Montserrat',sans-serif] font-semibold leading-none text-[#31453D] dark:text-emerald-200 ring-2 ring-white dark:ring-[#1a2529] sm:bottom-0 sm:right-0 sm:min-h-[1.15rem] sm:min-w-[1.15rem] sm:px-1.5 sm:text-[0.62rem]"
                 data-unread-menu-dot
                 aria-hidden="true"
               ></span>
@@ -96,27 +105,27 @@
             {% for tag in desktopThemes %}
             <a
               href="/tema/{{ tag.slug }}/"
-              class="whitespace-nowrap text-sm font-semibold text-gray-700 transition-colors duration-200 hover:text-gray-900"
+              class="whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white"
             >
               {{ tag.name | themeName }}
             </a>
             {% endfor %}
             <a
               href="/temas/"
-              class="whitespace-nowrap text-sm font-semibold text-gray-500 transition-colors duration-200 hover:text-gray-900"
+              class="whitespace-nowrap text-sm font-semibold text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:text-gray-900 dark:text-white"
             >
               Más temas
             </a>
             <a
               href="/audios/"
-              class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-800 hover:text-gray-900 dark:text-white"
               aria-label="Ir a audios y podcast"
             >
               <i class="fa-solid fa-headphones-simple text-[0.95rem]" aria-hidden="true"></i>
             </a>
             <a
               href="/boletin/"
-              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
+              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] dark:border-gray-700 bg-[#F4F1E9] dark:bg-gray-800 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] dark:text-white transition-colors duration-200 hover:bg-[#ECE6DA] dark:bg-gray-700"
               data-newsletter-cta
             >
               <span>Boletín</span>
@@ -126,32 +135,32 @@
         </div>
 
         {% if page.url != '/' and desktopThemes.length %}
-        <div class="border-t border-gray-200">
+        <div class="border-t border-gray-200 dark:border-gray-800">
           <div class="mx-auto hidden max-w-7xl items-center gap-8 overflow-x-auto px-6 py-4 lg:flex">
             {% for tag in desktopThemes %}
             <a
               href="/tema/{{ tag.slug }}/"
-              class="whitespace-nowrap text-sm font-semibold text-gray-700 transition-colors duration-200 hover:text-gray-900"
+              class="whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white"
             >
               {{ tag.name | themeName }}
             </a>
             {% endfor %}
             <a
               href="/temas/"
-              class="whitespace-nowrap text-sm font-semibold text-gray-500 transition-colors duration-200 hover:text-gray-900"
+              class="whitespace-nowrap text-sm font-semibold text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:text-gray-900 dark:text-white"
             >
               Más temas
             </a>
             <a
               href="/audios/"
-              class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-800 hover:text-gray-900 dark:text-white"
               aria-label="Ir a audios y podcast"
             >
               <i class="fa-solid fa-headphones-simple text-[0.95rem]" aria-hidden="true"></i>
             </a>
             <a
               href="/boletin/"
-              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
+              class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD] dark:border-gray-700 bg-[#F4F1E9] dark:bg-gray-800 px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] dark:text-white transition-colors duration-200 hover:bg-[#ECE6DA] dark:bg-gray-700"
               data-newsletter-cta
             >
               <span>Boletín</span>
@@ -162,11 +171,11 @@
 
         <div
           id="js-menu-panel"
-          class="js-menu-panel absolute inset-x-0 top-full hidden border-t border-gray-200 bg-white shadow-md"
+          class="js-menu-panel absolute inset-x-0 top-full hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] shadow-md"
         >
           <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-5">
-              <form action="/buscar/" method="get" class="border-b border-gray-200 pb-5">
+              <form action="/buscar/" method="get" class="border-b border-gray-200 dark:border-gray-800 pb-5">
                 <div class="flex items-center gap-3">
                   <label for="menu-search" class="sr-only">Buscar</label>
                   <input
@@ -176,11 +185,11 @@
                     inputmode="search"
                     autocomplete="off"
                     placeholder="Buscar"
-                    class="block min-h-12 w-full min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 outline-none transition-colors duration-200 placeholder:text-gray-400 focus:border-gray-900"
+                    class="block min-h-12 w-full min-w-0 flex-1 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a2529] px-4 py-3 text-base text-gray-900 dark:text-white outline-none transition-colors duration-200 placeholder:text-gray-400 dark:text-gray-400 focus:border-gray-900"
                   >
                   <button
                     type="submit"
-                    class="hidden h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-gray-50 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 sm:inline-flex"
+                    class="hidden h-12 w-12 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#151c21] text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-800 hover:text-gray-900 dark:text-white sm:inline-flex"
                     aria-label="Buscar"
                   >
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -189,69 +198,80 @@
               </form>
 
               <div class="flex flex-col gap-4">
-                <a href="/" class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-900">
+                <a href="/" class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-900 dark:text-white">
                   Portada
                 </a>
                 <a
                   href="/temas/"
-                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/temas/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/temas/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white{% endif %}"
                 >
                   Temas
                 </a>
                 <a
                   href="/audios/"
-                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white{% endif %}"
                 >
                   Audios
                 </a>
                 <a
                   href="/lista-de-lectura/"
-                  class="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/lista-de-lectura/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                  class="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/lista-de-lectura/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white{% endif %}"
                 >
                   <span>Lista de lectura</span>
                   <span
-                    class="hidden rounded-full border border-[#DDD4C5] bg-[#F8F5EE] px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#6B6253]"
+                    class="hidden rounded-full border border-[#DDD4C5] dark:border-amber-900/40 bg-[#F8F5EE] dark:bg-amber-900/40 px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#6B6253] dark:text-amber-200"
                     data-reading-list-count-badge
                   ></span>
                 </a>
                 <a
                   href="/nuevo/"
-                  class="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/nuevo/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                  class="inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/nuevo/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white{% endif %}"
                 >
                   <span>Nuevo para ti</span>
                   <span
-                    class="hidden rounded-full bg-[#DCE7E1] px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#31453D]"
+                    class="hidden rounded-full bg-[#DCE7E1] dark:bg-emerald-900/40 px-2.5 py-1 font-['Montserrat',sans-serif] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#31453D] dark:text-emerald-200"
                     data-unread-count-badge
                   ></span>
                 </a>
               </div>
 
-              <div class="border-t border-gray-200 pt-5">
+              <div class="border-t border-gray-200 dark:border-gray-800 pt-5">
                 <div class="flex flex-col gap-4">
                   <a
                     href="/quienes-somos/"
-                    class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/quienes-somos/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                    class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/quienes-somos/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:hover:text-white{% endif %}"
                   >
                     Quiénes somos
                   </a>
                   <a
                     href="https://foro.aldeapucela.org/t/acerca-de-la-otra-pucela/966"
-                    class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 transition-colors duration-200 hover:text-gray-900"
+                    class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:hover:text-white"
                   >
                     Colaborar
                   </a>
                   <a
                     href="/contacto/"
-                    class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/contacto/' %}text-gray-900{% else %}text-gray-700 transition-colors duration-200 hover:text-gray-900{% endif %}"
+                    class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/contacto/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:hover:text-white{% endif %}"
                   >
                     Contacto
                   </a>
+                       <div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800/50 pt-5">
+                    <span class="text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">Apariencia</span>
+                    <button
+                      type="button"
+                      class="js-theme-toggle inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-900 dark:hover:text-white"
+                      title="Cambiar tema"
+                      aria-label="Cambiar tema"
+                    >
+                      <i class="js-theme-toggle-icon fa-solid fa-moon text-sm" aria-hidden="true"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <a
                 href="/boletin/"
-                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#DDD] bg-[#F4F1E9] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] transition-colors duration-200 hover:bg-[#ECE6DA]"
+                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#DDD] dark:border-gray-700 bg-[#F4F1E9] dark:bg-gray-800 px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#1F2937] dark:text-white transition-colors duration-200 hover:bg-[#ECE6DA] dark:bg-gray-700"
                 data-newsletter-cta
               >
                 <i class="fa-regular fa-envelope text-[0.95rem]" aria-hidden="true"></i>
@@ -260,29 +280,29 @@
 
               <button
                 type="button"
-                class="js-install-app-trigger hidden min-h-12 w-full items-center justify-between gap-4 rounded-2xl border border-[#DDD7CC] bg-[#FFFDF8] px-4 py-3 text-left text-sm text-gray-800 shadow-sm transition-colors duration-200 hover:bg-[#F8F4EC]"
+                class="js-install-app-trigger hidden min-h-12 w-full items-center justify-between gap-4 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-[#FFFDF8] dark:bg-gray-900 px-4 py-3 text-left text-sm text-gray-800 dark:text-gray-200 shadow-sm transition-colors duration-200 hover:bg-[#F8F4EC] dark:bg-gray-800"
                 aria-haspopup="dialog"
               >
                 <span class="flex items-center gap-3">
-                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F1E7] text-[#2F3E46]">
+                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F1E7] dark:bg-gray-800 text-[#2F3E46] dark:text-gray-200">
                     <i class="fa-solid fa-mobile-screen-button text-base" aria-hidden="true"></i>
                   </span>
                   <span class="min-w-0">
-                    <span class="block font-semibold uppercase tracking-[0.08em] text-gray-900">Añadir a pantalla de inicio</span>
-                    <span class="mt-1 block text-sm leading-[1.55] text-gray-500 js-install-app-description">Ten La Otra Pucela más a mano en tu móvil.</span>
+                    <span class="block font-semibold uppercase tracking-[0.08em] text-gray-900 dark:text-white">Añadir a pantalla de inicio</span>
+                    <span class="mt-1 block text-sm leading-[1.55] text-gray-500 dark:text-gray-400 js-install-app-description">Ten La Otra Pucela más a mano en tu móvil.</span>
                   </span>
                 </span>
-                <i class="fa-solid fa-chevron-right text-sm text-gray-400" aria-hidden="true"></i>
+                <i class="fa-solid fa-chevron-right text-sm text-gray-400 dark:text-gray-400" aria-hidden="true"></i>
               </button>
 
               {% if articulos and articulos.tags and articulos.tags.length %}
-              <div class="border-t border-gray-200 pt-5 lg:hidden">
-                <p class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500">Temas</p>
+              <div class="border-t border-gray-200 dark:border-gray-800 pt-5 lg:hidden">
+                <p class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400">Temas</p>
                 <div class="mt-4 flex flex-wrap gap-3">
                   {% for tag in articulos.tags %}
                   <a
                     href="/tema/{{ tag.slug }}/"
-                    class="inline-flex min-h-11 items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+                    class="inline-flex min-h-11 items-center rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-800 hover:text-gray-900 dark:text-white"
                   >
                     {{ tag.name | themeName }}
                   </a>
@@ -291,7 +311,7 @@
               </div>
               {% endif %}
 
-              <div class="border-t border-gray-200 pt-5">
+              <div class="border-t border-gray-200 dark:border-gray-800 pt-5">
                 <button
                   type="button"
                   class="js-share-btn inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#2F3E46] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#253138]"
@@ -313,11 +333,11 @@
 
       {% if page.url == '/' %}
       <section
-        class="border-y border-[#DDD7CC] bg-[#F6F1E7] px-4 py-4 sm:px-6 sm:py-[18px] lg:hidden"
+        class="border-y border-[#DDD7CC] dark:border-gray-700 bg-[#F6F1E7] dark:bg-gray-800 px-4 py-4 sm:px-6 sm:py-[18px] lg:hidden"
         aria-label="Identidad editorial"
       >
         <div class="mx-auto flex max-w-7xl flex-col items-start text-left">
-          <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#5F5645] sm:text-[0.78rem] sm:tracking-[0.28em]">
+          <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#5F5645] dark:text-gray-400 dark:text-gray-500 sm:text-[0.78rem] sm:tracking-[0.28em]">
             Información vecinal, útil e independiente sobre Valladolid
           </p>
         </div>
@@ -328,8 +348,8 @@
         {{ content | safe }}
       </main>
 
-      <footer class="border-t border-gray-200 bg-white">
-        <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-gray-600 {% if ogType == 'article' %}pb-28 md:pb-8{% endif %} sm:px-6 lg:px-8">
+      <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529]">
+        <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-gray-600 dark:text-gray-400 {% if ogType == 'article' %}pb-28 md:pb-8{% endif %} sm:px-6 lg:px-8">
           {% if page.url != '/boletin/' %}
           {% set subscriptionVariant = 'inline' %}
           {% set subscriptionTitle = 'Valladolid en tu email' %}
@@ -342,7 +362,14 @@
           <img
             src="/assets/logo-wordmark.png"
             alt="La Otra Pucela"
-            class="h-auto w-[100%] md:w-[50%] lg:w-[30%] self-start"
+            class="h-auto w-[100%] md:w-[50%] lg:w-[30%] self-start dark:hidden"
+            loading="lazy"
+            decoding="async"
+          >
+          <img
+            src="/assets/logo-wordmark.dark.png"
+            alt="La Otra Pucela"
+            class="hidden h-auto w-[100%] md:w-[50%] lg:w-[30%] self-start dark:block"
             loading="lazy"
             decoding="async"
           >
@@ -352,26 +379,26 @@
             {% set absolutePodcastUrl = site.podcastFeedUrl %}
             <a
               href="/audios/"
-              class="inline-flex min-h-11 items-center gap-2 font-medium text-gray-800 transition-colors duration-200 hover:text-gray-950"
+              class="inline-flex min-h-11 items-center gap-2 font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:text-gray-950"
             >
-              <i class="fa-solid fa-headphones-simple text-[0.95rem] text-[#2F3E46]" aria-hidden="true"></i>
+              <i class="fa-solid fa-headphones-simple text-[0.95rem] text-[#2F3E46] dark:text-gray-200" aria-hidden="true"></i>
               <span>Audios y podcast</span>
             </a>
             <a
               href="{{ site.feedPath }}"
-              class="inline-flex min-h-11 items-center gap-2 self-start py-2 font-medium text-gray-700 transition-colors duration-200 hover:text-gray-950"
+              class="inline-flex min-h-11 items-center gap-2 self-start py-2 font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-950"
               data-rss-trigger
               data-feed-url="{{ absoluteFeedUrl }}"
               data-podcast-url="{{ absolutePodcastUrl }}"
               data-default-feed="rss"
               aria-haspopup="dialog"
             >
-              <i class="fa-solid fa-rss text-[0.95rem] text-[#8A5A2B]" aria-hidden="true"></i>
+              <i class="fa-solid fa-rss text-[0.95rem] text-[#8A5A2B] dark:text-yellow-500" aria-hidden="true"></i>
               <span>RSS</span>
             </a>
             <a
               href="https://creativecommons.org/licenses/by-sa/4.0/deed.es"
-              class="inline-flex min-h-11 items-center font-medium text-gray-800 transition-colors duration-200 hover:text-gray-950"
+              class="inline-flex min-h-11 items-center font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:text-gray-950"
               target="_blank"
               rel="noreferrer"
             >
@@ -382,14 +409,14 @@
       </footer>
 
       <dialog
-        class="w-[min(92vw,42rem)] rounded-[2rem] border border-[#DDD7CC] bg-[#FFFDF8] p-0 text-gray-900 shadow-2xl backdrop:bg-[#2F3E46]/55"
+        class="w-[min(92vw,42rem)] rounded-[2rem] border border-[#DDD7CC] dark:border-gray-700 bg-[#FFFDF8] dark:bg-gray-900 p-0 text-gray-900 dark:text-white shadow-2xl backdrop:bg-[#2F3E46]/55"
         data-rss-dialog
         aria-labelledby="rss-dialog-title"
       >
         <div class="relative overflow-hidden rounded-[2rem]">
           <button
             type="button"
-            class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-[#F3EEE3] hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
+            class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-400 dark:text-gray-400 transition-colors duration-200 hover:bg-[#F3EEE3] dark:bg-gray-700 hover:text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
             data-rss-close
             aria-label="Cerrar"
           >
@@ -402,26 +429,26 @@
             </div>
 
             <div class="mt-6 text-center">
-              <h2 id="rss-dialog-title" class="font-serif text-[2rem] font-semibold leading-tight tracking-tight text-[#2F3E46] sm:text-[2.4rem]">
+              <h2 id="rss-dialog-title" class="font-serif text-[2rem] font-semibold leading-tight tracking-tight text-[#2F3E46] dark:text-gray-200 sm:text-[2.4rem]">
                 Suscríbete al RSS
               </h2>
-              <p class="mt-4 text-base leading-[1.6] text-gray-600 sm:text-[1.15rem]">
+              <p class="mt-4 text-base leading-[1.6] text-gray-600 dark:text-gray-400 sm:text-[1.15rem]">
                 Recibe las nuevas publicaciones en tu lector favorito. Puedes copiar la URL del feed o abrirla directamente en algunas apps populares.
               </p>
             </div>
 
-            <section class="mt-8 border-t border-[#E7E0D3] pt-8">
-              <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#2F3E46]">
+            <section class="mt-8 border-t border-[#E7E0D3] dark:border-gray-700 pt-8">
+              <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#2F3E46] dark:text-gray-200">
                 <i class="fa-regular fa-copy text-[1.2rem]" aria-hidden="true"></i>
                 <span>Feeds disponibles</span>
               </h3>
               <div class="mt-5 space-y-4">
-                <div class="rounded-[1.5rem] border border-[#DDD7CC] bg-white p-4 sm:p-5">
+                <div class="rounded-[1.5rem] border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] p-4 sm:p-5">
                   <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-newspaper text-[1.35rem] text-[#8A5A2B]" aria-hidden="true"></i>
+                    <i class="fa-solid fa-newspaper text-[1.35rem] text-[#8A5A2B] dark:text-yellow-500" aria-hidden="true"></i>
                     <div>
-                      <p class="text-base font-semibold leading-tight text-[#2F3E46]">RSS general</p>
-                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 sm:text-base">
+                      <p class="text-base font-semibold leading-tight text-[#2F3E46] dark:text-gray-200">RSS general</p>
+                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 dark:text-gray-400 sm:text-base">
                         Todas las publicaciones para lectores RSS como Feedly o Inoreader.
                       </p>
                     </div>
@@ -430,7 +457,7 @@
                     <input
                       type="text"
                       readonly
-                      class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm leading-[1.5] text-gray-800 outline-none ring-0 sm:text-base"
+                      class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-3 text-sm leading-[1.5] text-gray-800 dark:text-gray-200 outline-none ring-0 sm:text-base"
                       data-rss-feed-input="rss"
                     >
                     <button
@@ -444,12 +471,12 @@
                   </div>
                 </div>
 
-                <div class="rounded-[1.5rem] border border-[#DDD7CC] bg-white p-4 sm:p-5">
+                <div class="rounded-[1.5rem] border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] p-4 sm:p-5">
                   <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-podcast text-[1.35rem] text-[#2F3E46]" aria-hidden="true"></i>
+                    <i class="fa-solid fa-podcast text-[1.35rem] text-[#2F3E46] dark:text-gray-200" aria-hidden="true"></i>
                     <div>
-                      <p class="text-base font-semibold leading-tight text-[#2F3E46]">Feed de podcast</p>
-                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 sm:text-base">
+                      <p class="text-base font-semibold leading-tight text-[#2F3E46] dark:text-gray-200">Feed de podcast</p>
+                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 dark:text-gray-400 sm:text-base">
                         Solo los artículos con audio, preparado para apps de podcast.
                       </p>
                     </div>
@@ -458,7 +485,7 @@
                     <input
                       type="text"
                       readonly
-                      class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm leading-[1.5] text-gray-800 outline-none ring-0 sm:text-base"
+                      class="min-h-12 flex-1 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-3 text-sm leading-[1.5] text-gray-800 dark:text-gray-200 outline-none ring-0 sm:text-base"
                       data-rss-feed-input="podcast"
                     >
                     <button
@@ -470,81 +497,81 @@
                       <span data-rss-copy-label="podcast">Copiar</span>
                     </button>
                   </div>
-                  <div class="mt-5 rounded-[1.25rem] border border-[#E7E0D3] bg-[#FCFAF5] p-4">
-                    <p class="text-sm font-semibold tracking-tight text-[#2F3E46] sm:text-base">
+                  <div class="mt-5 rounded-[1.25rem] border border-[#E7E0D3] dark:border-gray-700 bg-[#FCFAF5] dark:bg-gray-900 p-4">
+                    <p class="text-sm font-semibold tracking-tight text-[#2F3E46] dark:text-gray-200 sm:text-base">
                       Abrir en apps compatibles
                     </p>
                     <div class="mt-3 grid gap-3 sm:grid-cols-2">
                       <a
-                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm font-medium text-gray-800 transition-colors duration-200 hover:border-[#BFD3D8] hover:bg-[#F6FAFB] sm:text-base"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:border-[#BFD3D8] dark:border-gray-600 hover:bg-[#F6FAFB] sm:text-base"
                         data-podcast-service="antennapod"
                         target="_blank"
                         rel="noreferrer"
                       >
-                        <i class="fa-solid fa-mobile-screen-button text-[0.95rem] text-[#2F3E46]" aria-hidden="true"></i>
+                        <i class="fa-solid fa-mobile-screen-button text-[0.95rem] text-[#2F3E46] dark:text-gray-200" aria-hidden="true"></i>
                         <span>AntennaPod</span>
                       </a>
                       <a
-                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-3 text-sm font-medium text-gray-800 transition-colors duration-200 hover:border-[#BFD3D8] hover:bg-[#F6FAFB] sm:text-base"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:border-[#BFD3D8] dark:border-gray-600 hover:bg-[#F6FAFB] sm:text-base"
                         data-podcast-service="overcast"
                         rel="noreferrer"
                       >
-                        <i class="fa-solid fa-headphones-simple text-[0.95rem] text-[#2F3E46]" aria-hidden="true"></i>
+                        <i class="fa-solid fa-headphones-simple text-[0.95rem] text-[#2F3E46] dark:text-gray-200" aria-hidden="true"></i>
                         <span>Overcast</span>
                       </a>
                     </div>
-                    <div class="mt-4 space-y-2 text-sm leading-[1.6] text-gray-600 sm:text-[0.95rem]">
+                    <div class="mt-4 space-y-2 text-sm leading-[1.6] text-gray-600 dark:text-gray-400 sm:text-[0.95rem]">
                       <p>
-                        <strong class="font-semibold text-[#2F3E46]">Apple Podcasts:</strong>
+                        <strong class="font-semibold text-[#2F3E46] dark:text-gray-200">Apple Podcasts:</strong>
                         abre Biblioteca, toca <strong class="font-semibold">...</strong> y elige <strong class="font-semibold">Añadir un programa por URL</strong>.
                       </p>
                       <p>
-                        <strong class="font-semibold text-[#2F3E46]">Pocket Casts:</strong>
+                        <strong class="font-semibold text-[#2F3E46] dark:text-gray-200">Pocket Casts:</strong>
                         pega la URL del feed en la búsqueda de <strong class="font-semibold">Discover</strong> para seguirlo.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-              <p class="mt-4 text-sm leading-[1.6] text-gray-500 sm:text-base">
+              <p class="mt-4 text-sm leading-[1.6] text-gray-500 dark:text-gray-400 sm:text-base">
                 Usa el RSS general para lectura y el feed de podcast si quieres escuchar los artículos en una app de podcasts.
               </p>
             </section>
 
-            <section class="mt-8 border-t border-[#E7E0D3] pt-8">
-              <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#2F3E46]">
+            <section class="mt-8 border-t border-[#E7E0D3] dark:border-gray-700 pt-8">
+              <h3 class="flex items-center gap-3 text-[1.55rem] font-semibold tracking-tight text-[#2F3E46] dark:text-gray-200">
                 <i class="fa-solid fa-arrow-up-right-from-square text-[1.05rem]" aria-hidden="true"></i>
                 <span>Suscripción rápida</span>
               </h3>
-              <p class="mt-4 text-sm leading-[1.6] text-gray-500 sm:text-base">
+              <p class="mt-4 text-sm leading-[1.6] text-gray-500 dark:text-gray-400 sm:text-base">
                 Abre el feed directamente en uno de estos lectores:
               </p>
               <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="feedly" target="_blank" rel="noreferrer">
-                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-4 text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:border-[#C8BCA5] dark:border-gray-600 hover:bg-[#F8F4EC] dark:bg-gray-800" data-rss-reader="feedly" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B] dark:text-yellow-500" aria-hidden="true"></i>
                   <span>Feedly</span>
                 </a>
-                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="inoreader" target="_blank" rel="noreferrer">
-                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-4 text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:border-[#C8BCA5] dark:border-gray-600 hover:bg-[#F8F4EC] dark:bg-gray-800" data-rss-reader="inoreader" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B] dark:text-yellow-500" aria-hidden="true"></i>
                   <span>Inoreader</span>
                 </a>
-                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="newsblur" target="_blank" rel="noreferrer">
-                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-4 text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:border-[#C8BCA5] dark:border-gray-600 hover:bg-[#F8F4EC] dark:bg-gray-800" data-rss-reader="newsblur" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B] dark:text-yellow-500" aria-hidden="true"></i>
                   <span>NewsBlur</span>
                 </a>
-                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] bg-white px-4 py-4 text-base font-medium text-gray-800 transition-colors duration-200 hover:border-[#C8BCA5] hover:bg-[#F8F4EC]" data-rss-reader="theoldreader" target="_blank" rel="noreferrer">
-                  <i class="fa-solid fa-rss text-[#8A5A2B]" aria-hidden="true"></i>
+                <a class="flex min-h-12 items-center gap-3 rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-4 text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:border-[#C8BCA5] dark:border-gray-600 hover:bg-[#F8F4EC] dark:bg-gray-800" data-rss-reader="theoldreader" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-rss text-[#8A5A2B] dark:text-yellow-500" aria-hidden="true"></i>
                   <span>The Old Reader</span>
                 </a>
               </div>
             </section>
 
-            <section class="mt-8 rounded-[1.75rem] bg-[#F5F1E7] px-5 py-6 sm:px-6">
-              <h3 class="flex items-center gap-3 text-[1.4rem] font-semibold tracking-tight text-[#2F3E46]">
+            <section class="mt-8 rounded-[1.75rem] bg-[#F5F1E7] dark:bg-gray-800 px-5 py-6 sm:px-6">
+              <h3 class="flex items-center gap-3 text-[1.4rem] font-semibold tracking-tight text-[#2F3E46] dark:text-gray-200">
                 <i class="fa-solid fa-circle-info text-[1.1rem]" aria-hidden="true"></i>
                 <span>Cómo añadirlo manualmente</span>
               </h3>
-              <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 sm:text-base">
+              <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 dark:text-gray-300 sm:text-base">
                 <li>1. Abre tu aplicación o servicio de lectura RSS.</li>
                 <li>2. Busca una opción como “Añadir feed”, “Suscribirse” o el icono +.</li>
                 <li>3. Si es una app de podcast, usa el feed de podcast; si es un lector RSS, usa el general.</li>
@@ -556,14 +583,14 @@
       </dialog>
 
       <dialog
-        class="w-[min(92vw,32rem)] rounded-[2rem] border border-[#DDD7CC] bg-[#FFFDF8] p-0 text-gray-900 shadow-2xl backdrop:bg-[#2F3E46]/55"
+        class="w-[min(92vw,32rem)] rounded-[2rem] border border-[#DDD7CC] dark:border-gray-700 bg-[#FFFDF8] dark:bg-gray-900 p-0 text-gray-900 dark:text-white shadow-2xl backdrop:bg-[#2F3E46]/55"
         data-install-dialog
         aria-labelledby="install-dialog-title"
       >
         <div class="relative overflow-hidden rounded-[2rem]">
           <button
             type="button"
-            class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-[#F3EEE3] hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
+            class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full text-gray-400 dark:text-gray-400 transition-colors duration-200 hover:bg-[#F3EEE3] dark:bg-gray-700 hover:text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#8A5A2B]/30"
             data-install-close
             aria-label="Cerrar"
           >
@@ -576,20 +603,20 @@
             </div>
 
             <div class="mt-6 text-center">
-              <h2 id="install-dialog-title" class="font-serif text-[1.9rem] font-semibold leading-tight tracking-tight text-[#2F3E46] sm:text-[2.2rem]">
+              <h2 id="install-dialog-title" class="font-serif text-[1.9rem] font-semibold leading-tight tracking-tight text-[#2F3E46] dark:text-gray-200 sm:text-[2.2rem]">
                 Añádelo a tu pantalla de inicio
               </h2>
-              <p class="mt-4 text-base leading-[1.6] text-gray-600 sm:text-[1.08rem] js-install-dialog-copy">
+              <p class="mt-4 text-base leading-[1.6] text-gray-600 dark:text-gray-400 sm:text-[1.08rem] js-install-dialog-copy">
                 Sigue estos pasos para tener La Otra Pucela más a mano en tu móvil o tablet.
               </p>
             </div>
 
-            <section class="mt-8 rounded-[1.75rem] bg-[#F5F1E7] px-5 py-6 sm:px-6">
-              <h3 class="flex items-center gap-3 text-[1.35rem] font-semibold tracking-tight text-[#2F3E46]">
+            <section class="mt-8 rounded-[1.75rem] bg-[#F5F1E7] dark:bg-gray-800 px-5 py-6 sm:px-6">
+              <h3 class="flex items-center gap-3 text-[1.35rem] font-semibold tracking-tight text-[#2F3E46] dark:text-gray-200">
                 <i class="fa-solid fa-circle-info text-[1.1rem]" aria-hidden="true"></i>
                 <span>Pasos</span>
               </h3>
-              <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 sm:text-base js-install-steps">
+              <ol class="mt-5 space-y-3 text-sm leading-[1.6] text-gray-700 dark:text-gray-300 sm:text-base js-install-steps">
                 <li>1. Abre el menú de compartir de tu navegador.</li>
                 <li>2. Busca la opción “Añadir a pantalla de inicio”.</li>
                 <li>3. Confirma el nombre y pulsa “Añadir”.</li>
@@ -606,7 +633,7 @@
               </button>
               <button
                 type="button"
-                class="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[#DDD7CC] bg-white px-5 py-3 text-base font-semibold text-gray-700 transition-colors duration-200 hover:bg-[#F8F4EC] focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/15"
+                class="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[#DDD7CC] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-5 py-3 text-base font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-[#F8F4EC] dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/15"
                 data-install-close
               >
                 Cerrar
@@ -698,10 +725,11 @@
       </dialog>
     </div>
 
-    <script src="{{ assetManifest['assets/js/article-audio-player.js'] or '/assets/js/article-audio-player.js' }}" defer></script>
-    <script src="{{ assetManifest['assets/js/audio-playlist.js'] or '/assets/js/audio-playlist.js' }}" defer></script>
-    <script src="{{ assetManifest['assets/js/featured-photo.js'] or '/assets/js/featured-photo.js' }}" defer></script>
-    <script src="{{ assetManifest['assets/js/main.js'] or '/assets/js/main.js' }}" defer></script>
-    <script src="{{ assetManifest['assets/js/nuevo-para-ti.js'] or '/assets/js/nuevo-para-ti.js' }}" defer></script>
+    <script src="/assets/js/article-audio-player.js?v=7" defer></script>
+    <script src="/assets/js/audio-playlist.js?v=7" defer></script>
+    <script src="/assets/js/featured-photo.js?v=7" defer></script>
+    <script src="/assets/js/main.js?v=7" defer></script>
+    <script src="/assets/js/nuevo-para-ti.js?v=7" defer></script>
+    <script src="/assets/js/theme-toggle.js?v=7" defer></script>
   </body>
 </html>

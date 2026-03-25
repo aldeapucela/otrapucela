@@ -9,16 +9,16 @@ permalink: /404.html
 ---
 <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
   <div class="mx-auto max-w-4xl">
-    <div class="overflow-hidden rounded-[2rem] border border-[#DDD7CC] bg-[#F6F1E7] shadow-sm">
+    <div class="overflow-hidden rounded-[2rem] border border-[#DDD7CC] dark:border-gray-700 bg-[#F6F1E7] dark:bg-gray-800 shadow-sm">
       <div class="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
         <div class="space-y-3">
-          <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#6B6253] sm:text-[0.78rem]">
+          <p class="font-['Montserrat',sans-serif] text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#6B6253] dark:text-gray-400 dark:text-gray-500 sm:text-[0.78rem]">
             Error 404
           </p>
-          <h1 class="max-w-2xl font-serif text-[2rem] font-semibold leading-[1.05] tracking-tight text-[#1F2937] sm:text-[2.6rem]">
+          <h1 class="max-w-2xl font-serif text-[2rem] font-semibold leading-[1.05] tracking-tight text-[#1F2937] dark:text-white sm:text-[2.6rem]">
             La página que has intentado acceder no existe
           </h1>
-          <p class="max-w-2xl text-base leading-[1.6] text-[#5F5645] sm:text-[1.05rem]">
+          <p class="max-w-2xl text-base leading-[1.6] text-[#5F5645] dark:text-gray-400 dark:text-gray-500 sm:text-[1.05rem]">
             Puede que la dirección esté mal escrita, que el enlace sea antiguo o que el contenido se haya movido.
           </p>
         </div>
@@ -36,12 +36,12 @@ permalink: /404.html
 
     <div class="mt-8 space-y-4">
       <div class="space-y-2">
-        <h2 class="font-serif text-[1.45rem] font-semibold leading-[1.1] tracking-tight text-gray-900 sm:text-[1.65rem]">
+        <h2 class="font-serif text-[1.45rem] font-semibold leading-[1.1] tracking-tight text-gray-900 dark:text-white sm:text-[1.65rem]">
           Buscar en la web
         </h2>
       </div>
 
-      <form action="/404.html" method="get" class="js-search-form rounded-[2rem] border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+      <form action="/404.html" method="get" class="js-search-form rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] p-4 shadow-sm sm:p-5">
         <div class="flex items-center gap-3">
           <label for="error-search-input" class="sr-only">Buscar artículos</label>
           <input
@@ -51,11 +51,11 @@ permalink: /404.html
             inputmode="search"
             autocomplete="off"
             placeholder="Buscar en La Otra Pucela"
-            class="js-search-input block min-h-12 w-full min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 outline-none transition-colors duration-200 placeholder:text-gray-400 focus:border-gray-900"
+            class="js-search-input block min-h-12 w-full min-w-0 flex-1 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a2529] px-4 py-3 text-base text-gray-900 dark:text-white outline-none transition-colors duration-200 placeholder:text-gray-400 dark:text-gray-400 focus:border-gray-900"
           >
           <button
             type="submit"
-            class="hidden h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-gray-50 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 sm:inline-flex"
+            class="hidden h-12 w-12 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#151c21] text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-800 hover:text-gray-900 dark:text-white sm:inline-flex"
             aria-label="Buscar"
           >
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -67,34 +67,34 @@ permalink: /404.html
         class="js-search-page"
         data-search-endpoint="/api/articulos.json"
       >
-        <div class="js-search-loading hidden rounded-[1.75rem] border border-gray-200 bg-white px-6 py-7 shadow-sm">
-          <p class="text-base leading-[1.6] text-gray-600">Buscando artículos…</p>
+        <div class="js-search-loading hidden rounded-[1.75rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] px-6 py-7 shadow-sm">
+          <p class="text-base leading-[1.6] text-gray-600 dark:text-gray-400">Buscando artículos…</p>
         </div>
 
-        <div class="js-search-summary hidden border-b border-gray-200 pb-6">
-          <p class="text-base leading-[1.6] text-gray-700">
-            <span class="js-search-count font-semibold text-gray-900">0</span>
+        <div class="js-search-summary hidden border-b border-gray-200 dark:border-gray-800 pb-6">
+          <p class="text-base leading-[1.6] text-gray-700 dark:text-gray-300">
+            <span class="js-search-count font-semibold text-gray-900 dark:text-white">0</span>
             resultados para
-            <span class="js-search-query font-semibold text-gray-900"></span>
+            <span class="js-search-query font-semibold text-gray-900 dark:text-white"></span>
           </p>
         </div>
 
-        <div class="js-search-idle rounded-[1.75rem] border border-[#DDD7CC] bg-[#F6F1E7] px-6 py-7 shadow-sm">
-          <p class="text-base leading-[1.6] text-[#5F5645]">
+        <div class="js-search-idle rounded-[1.75rem] border border-[#DDD7CC] dark:border-gray-700 bg-[#F6F1E7] dark:bg-gray-800 px-6 py-7 shadow-sm">
+          <p class="text-base leading-[1.6] text-[#5F5645] dark:text-gray-400 dark:text-gray-500">
             Escribe una palabra clave para encontrar un artículo o vuelve a la portada para seguir navegando.
           </p>
         </div>
 
-        <div class="js-search-empty hidden rounded-[1.75rem] border border-gray-200 bg-white px-6 py-7 shadow-sm">
-          <p class="text-xl font-semibold text-gray-900">No hemos encontrado resultados</p>
-          <p class="mt-2 max-w-2xl text-base leading-[1.6] text-gray-600">
+        <div class="js-search-empty hidden rounded-[1.75rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] px-6 py-7 shadow-sm">
+          <p class="text-xl font-semibold text-gray-900 dark:text-white">No hemos encontrado resultados</p>
+          <p class="mt-2 max-w-2xl text-base leading-[1.6] text-gray-600 dark:text-gray-400">
             Prueba con un término más general, sin comillas o con menos palabras.
           </p>
         </div>
 
-        <div class="js-search-error hidden rounded-[1.75rem] border border-gray-200 bg-white px-6 py-7 shadow-sm">
-          <p class="text-xl font-semibold text-gray-900">La búsqueda no está disponible ahora mismo</p>
-          <p class="mt-2 max-w-2xl text-base leading-[1.6] text-gray-600">
+        <div class="js-search-error hidden rounded-[1.75rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a2529] px-6 py-7 shadow-sm">
+          <p class="text-xl font-semibold text-gray-900 dark:text-white">La búsqueda no está disponible ahora mismo</p>
+          <p class="mt-2 max-w-2xl text-base leading-[1.6] text-gray-600 dark:text-gray-400">
             Ha habido un problema al cargar los artículos. Inténtalo de nuevo dentro de un momento.
           </p>
         </div>

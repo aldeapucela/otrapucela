@@ -532,6 +532,71 @@ function writeAuthorsCache(authors) {
   );
 }
 
+function buildTagsFromItems(items = []) {
+  const tagsMap = new Map();
+
+  for (const articulo of items) {
+    for (const tag of articulo.tags ?? []) {
+      if (!tagsMap.has(tag.slug)) {
+        tagsMap.set(tag.slug, {
+          ...tag,
+          count: 0
+        });
+      }
+
+      tagsMap.get(tag.slug).count += 1;
+    }
+  }
+
+  return Array.from(tagsMap.values()).sort((a, b) =>
+    a.name.localeCompare(b.name, "es")
+  );
+}
+
+function buildFallbackDataFromCache(cache, authorsCache, error) {
+  const items = Object.values(cache.itemsById ?? {})
+    .map((item) => {
+      const cachedAuthor = item.author?.username
+        ? normalizeAuthor(authorsCache.itemsByUsername[item.author.username] ?? {})
+        : {};
+
+      return {
+        ...item,
+        tags: (item.tags ?? []).map(normalizeTag),
+        replies: Number(item.replies ?? 0),
+        views: Number(item.views ?? 0),
+        likeCount: Number(item.likeCount ?? 0),
+        author: normalizeAuthor({
+          ...item.author,
+          ...cachedAuthor
+        }),
+        audio: buildArticleAudio(item.id),
+        fetchError: item.fetchError ?? error.message
+      };
+    })
+    .sort((a, b) => {
+      if (a.featured !== b.featured) {
+        return a.featured ? -1 : 1;
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+  const authors = Object.values(authorsCache.itemsByUsername ?? {})
+    .map((author) => normalizeAuthor(author))
+    .filter((author) => author.username)
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+
+  return {
+    discourseBaseUrl,
+    categoryUrl,
+    generatedAt: new Date().toISOString(),
+    items,
+    authors,
+    tags: buildTagsFromItems(items)
+  };
+}
+
 async function fetchJson(url) {
   let lastError = null;
 
@@ -665,10 +730,27 @@ async function fetchAuthorDetail(author) {
 }
 
 export default async function articulos() {
-  const payload = await fetchJson(categoryUrl);
-  const topics = payload.topic_list?.topics ?? [];
   const cache = readCache();
   const authorsCache = readAuthorsCache();
+  let payload;
+
+  try {
+    payload = await fetchJson(categoryUrl);
+  } catch (error) {
+    const cachedItems = Object.values(cache.itemsById ?? {});
+
+    if (cachedItems.length > 0) {
+      console.warn(
+        `[articulos] No se pudo actualizar Discourse; usando cache local (${cachedItems.length} articulos).`,
+        error
+      );
+      return buildFallbackDataFromCache(cache, authorsCache, error);
+    }
+
+    throw error;
+  }
+
+  const topics = payload.topic_list?.topics ?? [];
 
   const items = await mapWithConcurrency(
     topics,

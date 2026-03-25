@@ -689,7 +689,9 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
     speedOptionButtons.forEach((buttonElement) => {
       const isActive = Number(buttonElement.dataset.speed) === nextRate;
       buttonElement.classList.toggle("bg-[#F4F1E9]", isActive);
+      buttonElement.classList.toggle("dark:bg-[#1a2529]", isActive);
       buttonElement.classList.toggle("text-black", isActive);
+      buttonElement.classList.toggle("dark:text-white", isActive);
     });
   }
 
