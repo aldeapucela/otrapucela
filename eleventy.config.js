@@ -74,6 +74,23 @@ export default function eleventyConfig(config) {
     return formatter.format(new Date(value));
   });
 
+  config.addFilter("olderThanMonths", (value, months = 1) => {
+    if (!value) {
+      return false;
+    }
+
+    const articleDate = new Date(value);
+
+    if (Number.isNaN(articleDate.getTime())) {
+      return false;
+    }
+
+    const thresholdDate = new Date();
+    thresholdDate.setMonth(thresholdDate.getMonth() - Number(months));
+
+    return articleDate < thresholdDate;
+  });
+
   config.addFilter("absoluteUrl", (value, baseUrl = "") => {
     if (!value) {
       return "";
