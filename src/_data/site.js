@@ -16,7 +16,7 @@ export default {
     author: defaultPodcastOwnerName,
     ownerName: (process.env.PODCAST_OWNER_NAME || defaultPodcastOwnerName).trim(),
     ownerEmail: (process.env.PODCAST_OWNER_EMAIL || defaultPodcastOwnerEmail).trim(),
-    artworkPath: "/assets/podcast-cover.png",
+    artworkPath: "/assets/podcast-cover-3000.png",
     category: "News",
     explicit: "false"
   },
