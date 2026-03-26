@@ -18,7 +18,17 @@ export default {
     ownerEmail: (process.env.PODCAST_OWNER_EMAIL || defaultPodcastOwnerEmail).trim(),
     artworkPath: "/assets/podcast-cover-3000.png",
     category: "News",
-    explicit: "false"
+    explicit: "false",
+    platforms: {
+      spotify: {
+        enabled: false,
+        url: "https://open.spotify.com/show/5dRzACo8Q8i14VYMQTRgol"
+      },
+      apple: {
+        enabled: false,
+        url: "https://podcasts.apple.com/us/podcast/la-otra-pucela-en-audio/id1888136539"
+      }
+    }
   },
   siteUrl: (process.env.SITE_URL || defaultSiteUrl).replace(/\/+$/, ""),
   podcastFeedUrl: (process.env.PODCAST_FEED_URL || defaultPodcastFeedUrl).replace(/\/+$/, "")
