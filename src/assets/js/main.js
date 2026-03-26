@@ -65,6 +65,12 @@ function setupHeaderAutoHide() {
   let lastScrollY = window.scrollY;
 
   const handleScroll = throttle(() => {
+    if (document.documentElement.classList.contains("menu-open")) {
+      headerElement.classList.remove("-translate-y-full");
+      lastScrollY = window.scrollY;
+      return;
+    }
+
     const currentScrollY = window.scrollY;
     const isScrollingDown = currentScrollY > lastScrollY;
     const hasPassedThreshold = currentScrollY > 50;
@@ -258,6 +264,7 @@ function setupHeaderMenu() {
   const menuToggleButton = document.querySelector(".js-menu-toggle");
   const menuPanel = document.querySelector(".js-menu-panel");
   const headerElement = document.querySelector("#js-header");
+  let menuScrollY = 0;
 
   if (!menuToggleButton || !menuPanel || !headerElement) {
     return;
@@ -271,13 +278,18 @@ function setupHeaderMenu() {
   function closeMenu() {
     menuPanel.classList.add("hidden");
     menuToggleButton.setAttribute("aria-expanded", "false");
+    headerElement.classList.remove("menu-open-header", "-translate-y-full");
     document.documentElement.classList.remove("menu-open");
     document.body.classList.remove("menu-open");
     document.documentElement.style.overflow = "";
     document.body.style.overflow = "";
+    window.scrollTo(0, menuScrollY);
   }
 
   function openMenu() {
+    menuScrollY = window.scrollY;
+    headerElement.classList.remove("-translate-y-full");
+    headerElement.classList.add("menu-open-header");
     syncMenuViewport();
     menuPanel.classList.remove("hidden");
     menuToggleButton.setAttribute("aria-expanded", "true");
@@ -2173,6 +2185,8 @@ function setupRssDialog() {
   });
 
   const podcastServiceUrls = {
+    spotify: "https://open.spotify.com/show/5dRzACo8Q8i14VYMQTRgol",
+    apple: "https://podcasts.apple.com/us/podcast/la-otra-pucela-en-audio/id1888136539",
     antennapod: `https://antennapod.org/deeplink/subscribe?url=${encodeURIComponent(podcastUrl)}&title=${encodeURIComponent("La Otra Pucela en audio")}`,
     overcast: `overcast://x-callback-url/add?url=${encodeURIComponent(podcastUrl)}`
   };

@@ -67,6 +67,15 @@ body.menu-open {
   display: none;
 }
 
+#js-header.menu-open-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  width: 100%;
+  transform: translateY(0) !important;
+}
+
 @layer components {
   .newsletter-confirmation {
     @apply flex min-h-[calc(100vh-10rem)] items-center justify-center px-4 pt-16 pb-12 sm:px-6 sm:pt-24 sm:pb-16 lg:px-8 lg:pt-28 lg:pb-20;
@@ -764,7 +773,7 @@ body.menu-open {
   }
 
   .audio-hub-page__hero-row {
-    @apply mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between;
+    @apply mt-3 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between;
   }
 
   .audio-hub-page__title {
@@ -798,6 +807,12 @@ body.menu-open {
 
   .audio-hub-page__continue {
     @apply inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2F3E46] px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#253138] sm:max-w-[20rem];
+  }
+
+  @media (min-width: 640px) {
+    .audio-hub-page__continue {
+      margin-top: 4.25rem;
+    }
   }
 
   .audio-hub-page__hero-actions {
