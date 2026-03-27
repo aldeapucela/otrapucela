@@ -260,6 +260,200 @@ function setupContactFormLoadingState() {
   }, 5000);
 }
 
+function setupArticleImageLightbox() {
+  const articleBody = document.querySelector(".article-body");
+
+  if (!articleBody) {
+    return;
+  }
+
+  const imageElements = Array.from(articleBody.querySelectorAll("img"))
+    .filter((imageElement) => {
+      if (imageElement.classList.contains("emoji")) {
+        return false;
+      }
+
+      return true;
+    });
+
+  if (!imageElements.length) {
+    return;
+  }
+
+  const lightboxElement = document.createElement("div");
+  lightboxElement.className = "article-lightbox";
+  lightboxElement.setAttribute("hidden", "");
+  lightboxElement.setAttribute("aria-hidden", "true");
+  lightboxElement.innerHTML = `
+    <div class="article-lightbox__inner" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+      <div class="article-lightbox__frame">
+        <button type="button" class="article-lightbox__close" aria-label="Cerrar imagen ampliada">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+        <img class="article-lightbox__image" alt="">
+      </div>
+      <p class="article-lightbox__caption hidden"></p>
+    </div>
+  `;
+
+  document.body.append(lightboxElement);
+
+  const dialogElement = lightboxElement.querySelector("[role='dialog']");
+  const lightboxImageElement = lightboxElement.querySelector(".article-lightbox__image");
+  const captionElement = lightboxElement.querySelector(".article-lightbox__caption");
+  const closeButton = lightboxElement.querySelector(".article-lightbox__close");
+  let previousActiveElement = null;
+
+  function getImageCaption(imageElement) {
+    if (!imageElement) {
+      return "";
+    }
+
+    const role = imageElement.getAttribute("role")?.trim().toLowerCase();
+    const altText = imageElement.alt?.trim() || "";
+    const titleText = imageElement.getAttribute("title")?.trim() || "";
+
+    if (role === "presentation") {
+      return titleText;
+    }
+
+    return altText || titleText;
+  }
+
+  function injectInlineCaption(imageElement, caption) {
+    if (!caption) {
+      return;
+    }
+
+    const anchorElement = imageElement.closest("a");
+    const targetElement = anchorElement && articleBody.contains(anchorElement)
+      ? anchorElement
+      : imageElement;
+
+    if (targetElement.parentElement?.classList.contains("article-inline-media")) {
+      const existingCaption = targetElement.parentElement.querySelector(".article-inline-caption");
+
+      if (existingCaption) {
+        existingCaption.textContent = caption;
+      }
+
+      return;
+    }
+
+    const wrapperElement = document.createElement("figure");
+    wrapperElement.className = "article-inline-media";
+
+    targetElement.insertAdjacentElement("beforebegin", wrapperElement);
+    wrapperElement.appendChild(targetElement);
+
+    const captionElement = document.createElement("figcaption");
+    captionElement.className = "article-inline-caption";
+    captionElement.textContent = caption;
+    captionElement.setAttribute("aria-hidden", "true");
+    wrapperElement.appendChild(captionElement);
+  }
+
+  function closeLightbox({ restoreFocus = true } = {}) {
+    lightboxElement.dataset.open = "false";
+    lightboxElement.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("overflow-hidden");
+
+    window.setTimeout(() => {
+      if (lightboxElement.dataset.open === "true") {
+        return;
+      }
+
+      lightboxElement.setAttribute("hidden", "");
+      lightboxImageElement.removeAttribute("src");
+      lightboxImageElement.alt = "";
+      captionElement.textContent = "";
+      captionElement.classList.add("hidden");
+    }, 220);
+
+    if (restoreFocus && previousActiveElement instanceof HTMLElement) {
+      previousActiveElement.focus();
+    }
+  }
+
+  function openLightbox(imageElement) {
+    const source = imageElement.currentSrc || imageElement.src;
+
+    if (!source) {
+      return;
+    }
+
+    previousActiveElement = imageElement;
+    lightboxImageElement.src = source;
+    lightboxImageElement.alt = imageElement.alt || "";
+
+    const caption = getImageCaption(imageElement);
+    captionElement.textContent = caption;
+    captionElement.classList.toggle("hidden", !caption);
+
+    lightboxElement.removeAttribute("hidden");
+
+    requestAnimationFrame(() => {
+      lightboxElement.dataset.open = "true";
+      lightboxElement.setAttribute("aria-hidden", "false");
+      document.body.classList.add("overflow-hidden");
+      closeButton.focus();
+    });
+  }
+
+  imageElements.forEach((imageElement) => {
+    const caption = getImageCaption(imageElement);
+
+    injectInlineCaption(imageElement, caption);
+
+    imageElement.dataset.lightboxImage = "true";
+    imageElement.tabIndex = 0;
+    imageElement.setAttribute("role", "button");
+    imageElement.setAttribute(
+      "aria-label",
+      caption
+        ? `Ampliar imagen: ${caption}`
+        : "Ampliar imagen"
+    );
+
+    imageElement.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+
+      if (imageElement.closest("a")) {
+        event.preventDefault();
+      }
+
+      openLightbox(imageElement);
+    });
+
+    imageElement.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      event.preventDefault();
+      openLightbox(imageElement);
+    });
+  });
+
+  closeButton?.addEventListener("click", () => {
+    closeLightbox();
+  });
+
+  lightboxElement.addEventListener("click", (event) => {
+    if (!dialogElement.contains(event.target)) {
+      closeLightbox();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && lightboxElement.dataset.open === "true") {
+      closeLightbox();
+    }
+  });
+}
+
 function setupHeaderMenu() {
   const menuToggleButton = document.querySelector(".js-menu-toggle");
   const menuPanel = document.querySelector(".js-menu-panel");
@@ -2665,6 +2859,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPwaRegistration();
   setupInstallPrompt();
   setupContactFormLoadingState();
+  setupArticleImageLightbox();
   setupHeaderAutoHide();
   setupHeaderMenu();
   setupSearchPage();
