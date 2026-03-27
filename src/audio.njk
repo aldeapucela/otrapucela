@@ -27,6 +27,8 @@ permalink: /audios/index.html
                 data-feed-url="{{ absoluteFeedUrl }}"
                 data-podcast-url="{{ absolutePodcastUrl }}"
                 data-default-feed="podcast"
+                {% if site.podcast.platforms.spotify.enabled %}data-spotify-url="{{ site.podcast.platforms.spotify.url }}"{% endif %}
+                {% if site.podcast.platforms.apple.enabled %}data-apple-url="{{ site.podcast.platforms.apple.url }}"{% endif %}
                 aria-haspopup="dialog"
               >
                 <i class="fa-solid fa-podcast text-[0.9rem]" aria-hidden="true"></i>
@@ -62,18 +64,24 @@ permalink: /audios/index.html
             </div>
           </div>
         </div>
+      </div>
+    </header>
+
+    {% if audioItems.length %}
+    <div class="audio-hub-page__toolbar">
+      <div class="audio-hub-page__toolbar-primary">
         <button
           type="button"
           class="audio-hub-page__continue hidden"
           data-audio-hub-continue
         >
           <i class="fa-solid fa-play text-xs" aria-hidden="true"></i>
-          <span>Continuar</span>
+          <span class="audio-hub-page__continue-label">Continuar</span>
         </button>
       </div>
-      <div class="audio-hub-page__toolbar">
+      <div class="audio-hub-page__toolbar-secondary">
         <p class="audio-hub-page__meta" data-audio-hub-pending-copy>
-          {{ audioItems.length }} artículos pendientes por escuchar
+          {{ audioItems.length }} pendientes
         </p>
         <button
           type="button"
@@ -82,12 +90,11 @@ permalink: /audios/index.html
           data-filter-state="showing"
           aria-pressed="false"
         >
-          Ocultar escuchados
+          <i class="fa-regular fa-eye-slash audio-hub-page__filter-toggle-icon" aria-hidden="true"></i>
+          <span class="audio-hub-page__filter-toggle-label">Ocultar escuchados</span>
         </button>
       </div>
-    </header>
-
-    {% if audioItems.length %}
+    </div>
     <ol class="audio-hub-list" data-audio-hub-list>
       {% for articulo in audioItems %}
       <li

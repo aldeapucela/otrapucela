@@ -11,6 +11,8 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
   const continueButton = pageElement.querySelector("[data-audio-hub-continue]");
   const pendingCopyElement = pageElement.querySelector("[data-audio-hub-pending-copy]");
   const hideCompletedToggle = pageElement.querySelector("[data-audio-hub-hide-completed]");
+  const hideCompletedToggleLabel = hideCompletedToggle?.querySelector(".audio-hub-page__filter-toggle-label");
+  const hideCompletedToggleIcon = hideCompletedToggle?.querySelector(".audio-hub-page__filter-toggle-icon");
   const playToggleButton = pageElement.querySelector(".js-audio-hub-play-toggle");
   const playIconElement = pageElement.querySelector(".js-audio-hub-play-icon");
   const seekElement = pageElement.querySelector(".js-audio-hub-seek");
@@ -537,9 +539,7 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
     });
 
     if (pendingCopyElement) {
-      pendingCopyElement.textContent = pendingCount === 1
-        ? "1 artículo pendiente por escuchar"
-        : `${pendingCount} artículos pendientes por escuchar`;
+      pendingCopyElement.textContent = `${pendingCount} pendientes`;
     }
 
     applyCompletedFilter();
@@ -552,6 +552,25 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
     items.forEach((item) => {
       item.element.classList.toggle("is-hidden-by-filter", shouldHideCompleted && isItemCompleted(item));
     });
+  }
+
+  function syncHideCompletedToggle(shouldHideCompleted) {
+    if (!hideCompletedToggle) {
+      return;
+    }
+
+    hideCompletedToggle.dataset.filterState = shouldHideCompleted ? "hidden" : "showing";
+    hideCompletedToggle.setAttribute("aria-pressed", shouldHideCompleted ? "true" : "false");
+
+    if (hideCompletedToggleLabel) {
+      hideCompletedToggleLabel.textContent = shouldHideCompleted ? "Mostrar escuchados" : "Ocultar escuchados";
+    }
+
+    if (hideCompletedToggleIcon) {
+      hideCompletedToggleIcon.className = shouldHideCompleted
+        ? "fa-regular fa-eye audio-hub-page__filter-toggle-icon"
+        : "fa-regular fa-eye-slash audio-hub-page__filter-toggle-icon";
+    }
   }
 
   function findBestResumeItem() {
@@ -894,9 +913,7 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
 
   hideCompletedToggle?.addEventListener("click", () => {
     const shouldHideCompleted = hideCompletedToggle.dataset.filterState !== "hidden";
-    hideCompletedToggle.dataset.filterState = shouldHideCompleted ? "hidden" : "showing";
-    hideCompletedToggle.setAttribute("aria-pressed", shouldHideCompleted ? "true" : "false");
-    hideCompletedToggle.textContent = shouldHideCompleted ? "Mostrar escuchados" : "Ocultar escuchados";
+    syncHideCompletedToggle(shouldHideCompleted);
     saveHideCompletedPreference(shouldHideCompleted);
     applyCompletedFilter();
   });
@@ -908,9 +925,7 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
   updatePlaybackRate(readSavedPlaybackRate());
   if (hideCompletedToggle) {
     const shouldHideCompleted = readHideCompletedPreference();
-    hideCompletedToggle.dataset.filterState = shouldHideCompleted ? "hidden" : "showing";
-    hideCompletedToggle.setAttribute("aria-pressed", shouldHideCompleted ? "true" : "false");
-    hideCompletedToggle.textContent = shouldHideCompleted ? "Mostrar escuchados" : "Ocultar escuchados";
+    syncHideCompletedToggle(shouldHideCompleted);
   }
   renderStoredState();
   syncContinueButton();

@@ -2571,8 +2571,8 @@ function setupRssDialog() {
   });
 
   const podcastServiceUrls = {
-    spotify: "https://open.spotify.com/show/5dRzACo8Q8i14VYMQTRgol",
-    apple: "https://podcasts.apple.com/us/podcast/la-otra-pucela-en-audio/id1888136539",
+    spotify: primaryTriggerElement.dataset.spotifyUrl || "",
+    apple: primaryTriggerElement.dataset.appleUrl || "",
     antennapod: `https://antennapod.org/deeplink/subscribe?url=${encodeURIComponent(podcastUrl)}&title=${encodeURIComponent("La Otra Pucela en audio")}`,
     overcast: `overcast://x-callback-url/add?url=${encodeURIComponent(podcastUrl)}`
   };

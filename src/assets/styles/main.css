@@ -948,33 +948,49 @@ body.menu-open {
   }
 
   .audio-hub-page__meta {
-    @apply mt-4 text-sm leading-[1.6] text-[#7A746A] dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500;
+    @apply text-sm leading-[1.6] text-[#7A746A] dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500;
   }
 
   .audio-hub-page__toolbar {
-    @apply mt-4 flex flex-col items-center gap-3;
+    @apply mt-6 mb-4 w-full max-w-md;
+  }
+
+  .audio-hub-page__toolbar-primary {
+    @apply w-full;
+  }
+
+  .audio-hub-page__toolbar-secondary {
+    @apply mt-3 grid grid-cols-2 gap-3;
   }
 
   .audio-hub-page__toolbar .audio-hub-page__meta {
-    @apply mt-0;
+    @apply mt-0 flex min-h-11 items-center px-1 text-sm font-medium leading-none text-[#7A746A] dark:text-gray-300;
   }
 
   .audio-hub-page__filter-toggle {
-    @apply inline-flex min-h-11 items-center justify-center rounded-full border border-[#D9D2C6] dark:border-gray-700 bg-white dark:bg-[#1a2529] px-4 py-2.5 text-sm font-medium text-[#556270] dark:text-gray-300 transition-colors duration-200 hover:bg-[#F8F5EE] dark:hover:bg-[#202d32];
+    @apply inline-flex min-h-11 w-auto max-w-full items-center justify-end justify-self-end gap-2 whitespace-nowrap px-1 py-3 text-[0.78rem] font-medium text-[#6C7783] dark:text-gray-400 transition-colors duration-200 hover:text-[#2F3E46] dark:hover:text-gray-200;
     font-family: "Montserrat", sans-serif;
   }
 
+  .audio-hub-page__filter-toggle-icon {
+    @apply text-[0.9rem];
+  }
+
   .audio-hub-page__filter-toggle[data-filter-state="hidden"] {
-    @apply border-[#CBBFA9] dark:border-gray-600 bg-[#F4F1E9] dark:bg-[#202d32] text-[#2F3E46] dark:text-gray-200;
+    @apply text-[#2F3E46] dark:text-gray-200;
   }
 
   .audio-hub-page__continue {
-    @apply inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2F3E46] px-5 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#253138] sm:max-w-[20rem];
+    @apply inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 overflow-hidden rounded-full bg-[#2F3E46] px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#253138];
   }
 
-  @media (min-width: 640px) {
-    .audio-hub-page__continue {
-      margin-top: 4.25rem;
+  .audio-hub-page__continue-label {
+    @apply block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  @media (max-width: 639px) {
+    .audio-hub-page__toolbar-secondary {
+      @apply grid-cols-2 items-center;
     }
   }
 
@@ -1088,7 +1104,7 @@ body.menu-open {
   }
 
   .audio-hub-list__item.is-complete .audio-hub-list__progress-fill {
-    @apply bg-[#C5B9A2];
+    @apply bg-[#CDD5DB] dark:bg-gray-600;
   }
 
   .audio-hub-list__item.is-complete {
@@ -1100,7 +1116,7 @@ body.menu-open {
   .audio-hub-list__item.is-complete .audio-hub-list__link,
   .audio-hub-list__item.is-complete .audio-hub-list__play,
   .audio-hub-list__item.is-complete .audio-hub-list__status-icon {
-    @apply text-[#8D8B85];
+    @apply text-[#98A2AD] dark:text-gray-400;
   }
 
   .audio-hub-list__item.is-complete .audio-hub-list__status-icon {
@@ -1108,7 +1124,7 @@ body.menu-open {
   }
 
   .audio-hub-list__item.is-complete .audio-hub-list__play {
-    @apply border-[#DED7CA] dark:border-gray-700 bg-[#FAF8F2];
+    @apply border-[#D5DCE2] dark:border-gray-700 bg-[#F4F7F8] dark:bg-[#202d32];
   }
 
   .audio-hub-list__item.is-hidden-by-filter {

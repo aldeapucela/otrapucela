@@ -21,12 +21,12 @@ export default {
     explicit: "false",
     platforms: {
       spotify: {
-        enabled: false,
+        enabled: true,
         url: "https://open.spotify.com/show/5dRzACo8Q8i14VYMQTRgol"
       },
       apple: {
-        enabled: false,
-        url: "https://podcasts.apple.com/us/podcast/la-otra-pucela-en-audio/id1888136539"
+        enabled: true,
+        url: "https://podcasts.apple.com/es/podcast/la-otra-pucela-en-audio/id1888136539"
       }
     }
   },
