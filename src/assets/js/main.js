@@ -922,6 +922,50 @@ function createHomepageCatchupItemMarkup(article, compact = false) {
   `;
 }
 
+function escapeHtmlAttribute(value) {
+  return escapeHtml(String(value ?? ""));
+}
+
+function createArticleRailItemMarkup(article) {
+  const title = escapeHtml(article.title ?? "");
+  const publicPath = escapeHtml(article.publicPath ?? "#");
+  const authorName = escapeHtml(article.author?.name ?? "");
+  const authorPath = escapeHtml(article.author?.publicPath ?? "#");
+  const imageMarkup = article.image
+    ? `
+      <div class="mb-4 overflow-hidden bg-gray-100 dark:bg-gray-800">
+        <img
+          src="${escapeHtmlAttribute(article.image)}"
+          alt="${title}"
+          class="aspect-[16/10] w-full object-cover"
+          loading="lazy"
+        >
+      </div>
+    `
+    : "";
+  const authorMarkup = authorName
+    ? `
+      <p class="mt-3 text-sm leading-[1.55] text-gray-700 dark:text-gray-300 lg:text-[0.95rem]">
+        <a href="${authorPath}" class="transition-colors duration-200 hover:text-gray-900 dark:hover:text-white">
+          ${authorName}
+        </a>
+      </p>
+    `
+    : "";
+
+  return `
+    <article class="w-[17.5rem] min-w-[17.5rem] border-r border-gray-200 pr-5 last:border-r-0 last:pr-0 dark:border-gray-800 sm:w-[19rem] sm:min-w-[19rem] lg:w-[14rem] lg:min-w-[14rem] lg:pr-4">
+      <a href="${publicPath}" class="block">
+        ${imageMarkup}
+        <h3 class="font-serif text-[1.35rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white lg:text-[1.28rem]">
+          ${title}
+        </h3>
+        ${authorMarkup}
+      </a>
+    </article>
+  `;
+}
+
 async function setupSearchPage() {
   const searchRoot = document.querySelector(".js-search-page");
 
@@ -2481,35 +2525,130 @@ function setupRssDialog() {
   });
 }
 
-function setupRelatedCarousel() {
-  const viewportElement = document.querySelector(".js-related-viewport");
-  const trackElement = document.querySelector(".js-related-track");
-  const previousButton = document.querySelector(".js-related-prev");
-  const nextButton = document.querySelector(".js-related-next");
+function setupArticleRailCarousels() {
+  const sections = document.querySelectorAll("section");
 
-  if (!viewportElement || !trackElement || !previousButton || !nextButton) {
+  sections.forEach((section) => {
+    const viewportElement = section.querySelector("[data-carousel-viewport], .js-related-viewport");
+    const trackElement = section.querySelector("[data-carousel-track], .js-related-track");
+    const previousButton = section.querySelector("[data-carousel-prev], .js-related-prev");
+    const nextButton = section.querySelector("[data-carousel-next], .js-related-next");
+    const controlsElement = previousButton?.parentElement;
+
+    if (!viewportElement || !trackElement || !previousButton || !nextButton) {
+      return;
+    }
+
+    function syncCarouselControlsVisibility() {
+      if (!controlsElement) {
+        return;
+      }
+
+      const hasOverflow = trackElement.scrollWidth - viewportElement.clientWidth > 8;
+      controlsElement.classList.toggle("lg:flex", hasOverflow);
+      controlsElement.classList.toggle("lg:hidden", !hasOverflow);
+    }
+
+    function scrollTrack(direction) {
+      const firstCard = trackElement.querySelector("article");
+      const trackStyles = window.getComputedStyle(trackElement);
+      const gap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
+      const scrollStep = firstCard
+        ? firstCard.getBoundingClientRect().width + gap
+        : viewportElement.clientWidth * 0.8;
+
+      viewportElement.scrollBy({
+        left: direction * scrollStep,
+        behavior: "smooth"
+      });
+    }
+
+    previousButton.addEventListener("click", () => {
+      scrollTrack(-1);
+    });
+
+    nextButton.addEventListener("click", () => {
+      scrollTrack(1);
+    });
+
+    syncCarouselControlsVisibility();
+    window.addEventListener("resize", syncCarouselControlsVisibility, { passive: true });
+  });
+}
+
+function normalizePathname(value) {
+  if (!value) {
+    return "/";
+  }
+
+  try {
+    const url = new URL(value, window.location.origin);
+    return url.pathname.replace(/\/+$/, "") || "/";
+  } catch {
+    const normalizedValue = String(value).trim();
+    return normalizedValue.replace(/\/+$/, "") || "/";
+  }
+}
+
+async function setupMostReadArticles() {
+  const sectionElement = document.querySelector("[data-most-read-section]");
+
+  if (!sectionElement) {
     return;
   }
 
-  function scrollRelated(direction) {
-    const firstCard = trackElement.querySelector("article");
-    const scrollStep = firstCard
-      ? firstCard.getBoundingClientRect().width + 16
-      : viewportElement.clientWidth * 0.8;
+  const itemsElement = sectionElement.querySelector("[data-most-read-items]");
 
-    viewportElement.scrollBy({
-      left: direction * scrollStep,
-      behavior: "smooth"
-    });
+  if (!itemsElement) {
+    return;
   }
 
-  previousButton.addEventListener("click", () => {
-    scrollRelated(-1);
-  });
+  const currentArticlePath = normalizePathname(sectionElement.dataset.currentArticlePath);
 
-  nextButton.addEventListener("click", () => {
-    scrollRelated(1);
-  });
+  try {
+    const [statsResponse, articles] = await Promise.all([
+      fetch("https://proyectos.aldeapucela.org/exports/otrapucela/post-stats.json", {
+        headers: {
+          Accept: "application/json"
+        }
+      }),
+      loadArticlesIndex()
+    ]);
+
+    if (!statsResponse.ok) {
+      throw new Error("Most read stats request failed");
+    }
+
+    const statsPayload = await statsResponse.json();
+    const statsItems = Array.isArray(statsPayload) ? statsPayload : [];
+    const articlesByPath = new Map(
+      articles
+        .filter((article) => article?.publicPath)
+        .map((article) => [normalizePathname(article.publicPath), article])
+    );
+
+    const mostReadArticles = statsItems
+      .map((item) => {
+        const path = normalizePathname(item?.label || item?.url);
+        return articlesByPath.get(path);
+      })
+      .filter((article) => article?.publicPath)
+      .filter((article) => normalizePathname(article.publicPath) !== currentArticlePath)
+      .filter((article, index, collection) => (
+        collection.findIndex((entry) => entry.id === article.id) === index
+      ))
+      .slice(0, 3);
+
+    if (!mostReadArticles.length) {
+      return;
+    }
+
+    itemsElement.innerHTML = mostReadArticles.map(createArticleRailItemMarkup).join("");
+    sectionElement.classList.remove("hidden");
+    window.dispatchEvent(new Event("resize"));
+  } catch {
+    // Keep the article page stable if the remote ranking is unavailable.
+  }
 }
 
 function setupScrollTopButton() {
@@ -2877,7 +3016,8 @@ document.addEventListener("DOMContentLoaded", () => {
   syncNewsletterCtasVisibility();
   setupNewsletterPageState();
   setupRssDialog();
-  setupRelatedCarousel();
+  setupArticleRailCarousels();
+  setupMostReadArticles();
   window.setupArticleAudioPlayer?.();
   window.setupAudioPlaylistPage?.();
   setupScrollTopButton();

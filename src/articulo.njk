@@ -210,6 +210,39 @@ eleventyComputed:
   {% endif %}
 
   <section
+    class="js-most-read-section mx-auto mt-16 hidden max-w-6xl border-t border-[#EEE] pt-8 dark:border-gray-800"
+    data-most-read-section
+    data-current-article-path="{{ articulo.publicPath }}"
+    aria-live="polite"
+  >
+    <div class="mb-6 flex items-center justify-between gap-4">
+      <h2 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Más leídas</h2>
+      <div class="hidden items-center gap-3 lg:flex">
+        <button
+          type="button"
+          class="js-carousel-prev inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 dark:border-gray-800 dark:bg-[#1a2529] dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+          data-carousel-prev
+          aria-label="Ver historias anteriores de más leídas"
+        >
+          <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="js-carousel-next inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 dark:border-gray-800 dark:bg-[#1a2529] dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+          data-carousel-next
+          aria-label="Ver más historias de más leídas"
+        >
+          <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="js-carousel-viewport -mx-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:-mx-6 sm:px-6 lg:mx-0 lg:max-w-[64rem] lg:px-0" data-carousel-viewport>
+      <div class="js-carousel-track flex gap-5 lg:gap-4" data-most-read-items data-carousel-track></div>
+    </div>
+  </section>
+
+  <section
     class="js-conditional-subscription pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-3 opacity-0 translate-y-6 md:inset-x-auto md:right-6 md:top-24 md:bottom-auto md:w-[24rem] md:px-0 md:pb-0 md:translate-y-0 lg:right-8"
     data-conditional-subscription
     data-newsletter-cta
