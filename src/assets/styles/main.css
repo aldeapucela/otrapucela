@@ -739,6 +739,8 @@ body.menu-open {
 
   .article-body img {
     border-radius: 0;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .article-card-image,
@@ -837,6 +839,14 @@ body.menu-open {
     width: fit-content;
     max-width: 100%;
     margin: 1.5rem auto 1.65rem;
+  }
+
+  .article-body a:has(> img:only-child) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .article-inline-media > img,
