@@ -2960,8 +2960,21 @@ function getDiscourseColorScheme() {
 }
 
 function loadDiscourseEmbed(discourseUrl, topicId) {
-  if (!discourseUrl || !topicId || document.querySelector('script[data-js-discourse-embed="true"]')) {
+  if (!discourseUrl || !topicId) {
     return;
+  }
+
+  const existingEmbedScript = document.querySelector('script[data-js-discourse-embed="true"]');
+  const existingEmbedFrame =
+    document.getElementById("discourse-embed-frame") ??
+    document.querySelector('iframe[id^="discourse-embed"]');
+
+  if (existingEmbedScript && existingEmbedFrame) {
+    return;
+  }
+
+  if (existingEmbedScript && !existingEmbedFrame) {
+    existingEmbedScript.remove();
   }
 
   const isDark = getDiscourseColorScheme() === "dark";
@@ -3010,7 +3023,12 @@ function refreshDiscourseEmbed() {
 
 function setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState) {
   if (!embedContainer || !embedWrapper) {
-    return () => {};
+    return {
+      disconnect() {},
+      sync() {
+        return false;
+      }
+    };
   }
 
   const toggleEmbedVisibility = () => {
@@ -3040,7 +3058,12 @@ function setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState) 
     subtree: true
   });
 
-  return () => observer.disconnect();
+  return {
+    disconnect() {
+      observer.disconnect();
+    },
+    sync: toggleEmbedVisibility
+  };
 }
 
 // Rebuild color scheme when user toggles theme
@@ -3102,7 +3125,22 @@ async function setupCommentsSection() {
   let commentCount = initialReplies;
   let latestPostNumber = 2;
   let hasLoadedEmbed = false;
-  setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState);
+  let embedVisibilityController = setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState);
+
+  function resetCommentsEmbed() {
+    document.querySelector('script[data-js-discourse-embed="true"]')?.remove();
+    document.getElementById("discourse-embed-frame")?.remove();
+    document.querySelector('iframe[id^="discourse-embed"]')?.remove();
+
+    if (embedContainer) {
+      embedContainer.innerHTML = "";
+    }
+
+    embedWrapper?.classList.add("hidden");
+    embedVisibilityController.disconnect();
+    embedVisibilityController = setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState);
+    hasLoadedEmbed = false;
+  }
 
   function renderCommentsSection(nextCommentCount, previousCommentCount = commentCount) {
     updateCommentCount(nextCommentCount);
@@ -3114,7 +3152,7 @@ async function setupCommentsSection() {
 
       addCommentLink?.classList.remove("hidden");
       emptyState?.classList.add("hidden");
-      embedWrapper?.classList.add("hidden");
+      embedWrapper?.classList.remove("hidden");
 
       if (!hasLoadedEmbed) {
         loadDiscourseEmbed(discourseUrl, topicId);
@@ -3122,6 +3160,8 @@ async function setupCommentsSection() {
       } else if (nextCommentCount !== previousCommentCount) {
         refreshDiscourseEmbed();
       }
+
+      embedVisibilityController.sync();
 
       return;
     }
@@ -3156,6 +3196,18 @@ async function setupCommentsSection() {
     if (!document.hidden) {
       syncCommentsSection();
     }
+  });
+
+  window.addEventListener("pageshow", () => {
+    const embedFrame =
+      document.getElementById("discourse-embed-frame") ??
+      document.querySelector('iframe[id^="discourse-embed"]');
+
+    if (commentCount > 0 && !embedFrame) {
+      resetCommentsEmbed();
+    }
+
+    syncCommentsSection();
   });
 }
 
