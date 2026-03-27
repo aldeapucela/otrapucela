@@ -966,6 +966,105 @@ function createArticleRailItemMarkup(article) {
   `;
 }
 
+function createMostReadMoreItemMarkup() {
+  return `
+    <article class="w-[17.5rem] min-w-[17.5rem] border-r border-gray-200 pr-5 last:border-r-0 last:pr-0 dark:border-gray-800 sm:w-[19rem] sm:min-w-[19rem] lg:w-[14rem] lg:min-w-[14rem] lg:pr-4">
+      <a
+        href="/populares/"
+        class="flex min-h-full min-h-[17rem] flex-col rounded-[1.5rem] border border-gray-200 bg-white p-5 transition-colors duration-200 hover:bg-gray-50 dark:border-gray-800 dark:bg-[#1a2529] dark:hover:bg-[#202b31] sm:min-h-[18.5rem] lg:min-h-[16.25rem]"
+      >
+        <div>
+          <span class="inline-flex min-h-9 items-center text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">
+            Descubrir más
+          </span>
+        </div>
+        <div class="flex flex-1 items-center justify-center text-gray-600 dark:text-gray-400">
+          <i class="fa-solid fa-fire text-[3rem] sm:text-[3.25rem]" aria-hidden="true"></i>
+        </div>
+        <span class="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold uppercase tracking-[0.08em] text-gray-700 dark:text-gray-300">
+          <span>Ver más populares</span>
+          <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+        </span>
+      </a>
+    </article>
+  `;
+}
+
+function formatVisitCount(value) {
+  const visits = Number(value);
+
+  if (!Number.isFinite(visits) || visits <= 0) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("es-ES").format(Math.round(visits));
+}
+
+function createPopularArticleItemMarkup(article, index) {
+  const title = escapeHtml(article.title ?? "Artículo");
+  const publicPath = escapeHtml(article.publicPath ?? "#");
+  const authorName = escapeHtml(article.author?.name ?? "");
+  const authorPath = escapeHtml(article.author?.publicPath ?? "#");
+  const imageMarkup = article.image
+    ? `
+      <a href="${publicPath}" class="block overflow-hidden rounded-[1.35rem] bg-[#EDE7DB] dark:bg-[#12191e]">
+        <img
+          src="${escapeHtmlAttribute(article.image)}"
+          alt="${title}"
+          class="aspect-[16/10] w-full object-cover"
+          loading="lazy"
+        >
+      </a>
+    `
+    : `
+      <a href="${publicPath}" class="flex aspect-[16/10] items-center justify-center rounded-[1.35rem] bg-[#F1E8D9] text-[#7B6E5B] dark:bg-[#12191e] dark:text-gray-500">
+        <i class="fa-regular fa-newspaper text-2xl" aria-hidden="true"></i>
+      </a>
+    `;
+  const authorMarkup = authorName
+    ? `
+      <a href="${authorPath}" class="transition-colors duration-200 hover:text-gray-900 dark:hover:text-white">
+        ${authorName}
+      </a>
+    `
+    : "";
+  const themeName = article.tags?.[0]?.name ? escapeHtml(article.tags[0].name) : "";
+  const themeMarkup = themeName
+    ? `<span class="text-[0.76rem] font-semibold uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400">${themeName}</span>`
+    : "";
+  const dateMarkup = article.createdAt
+    ? `<time datetime="${escapeHtmlAttribute(article.createdAt)}">${escapeHtml(formatReadingListDate(article.createdAt))}</time>`
+    : "";
+  const metaParts = [authorMarkup, dateMarkup].filter(Boolean);
+  const metaMarkup = metaParts.length
+    ? `<p class="mt-3 text-[0.82rem] leading-[1.55] text-gray-500 dark:text-gray-400">${metaParts.join(" · ")}</p>`
+    : "";
+
+  return `
+    <article class="rounded-[1.75rem] border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-[#1a2529] sm:p-5">
+      <div class="grid gap-5 md:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] md:items-start lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] lg:gap-6">
+        <div class="relative">
+          ${imageMarkup}
+          <div class="pointer-events-none absolute left-3 top-3 inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#1F2937] px-3 text-sm font-semibold text-white shadow-sm">
+            ${index + 1}
+          </div>
+        </div>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            ${themeMarkup}
+          </div>
+          <h2 class="mt-4 font-serif text-[1.55rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white sm:text-[1.75rem]">
+            <a href="${publicPath}" class="transition-colors duration-200 hover:text-[#334155] dark:hover:text-gray-300">
+              ${title}
+            </a>
+          </h2>
+          ${metaMarkup}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 async function setupSearchPage() {
   const searchRoot = document.querySelector(".js-search-page");
 
@@ -1385,6 +1484,7 @@ const articleReadingProgressResumeHideThreshold = 0.18;
 const articleReadingAnchorSelector = "p, h2, h3, h4, h5, h6, li, blockquote, img, figure";
 const articleReadingAnchorViewportOffset = 140;
 let cachedArticlesIndex = null;
+let cachedMostReadArticles = null;
 
 function safelyReadLocalStorage(key) {
   try {
@@ -1522,6 +1622,54 @@ async function loadArticlesIndex() {
   const payload = await response.json();
   cachedArticlesIndex = Array.isArray(payload?.items) ? payload.items : [];
   return cachedArticlesIndex;
+}
+
+async function loadMostReadArticles() {
+  if (cachedMostReadArticles) {
+    return cachedMostReadArticles;
+  }
+
+  const [statsResponse, articles] = await Promise.all([
+    fetch("https://proyectos.aldeapucela.org/exports/otrapucela/post-stats.json", {
+      headers: {
+        Accept: "application/json"
+      }
+    }),
+    loadArticlesIndex()
+  ]);
+
+  if (!statsResponse.ok) {
+    throw new Error("Most read stats request failed");
+  }
+
+  const statsPayload = await statsResponse.json();
+  const statsItems = Array.isArray(statsPayload) ? statsPayload : [];
+  const articlesByPath = new Map(
+    articles
+      .filter((article) => article?.publicPath)
+      .map((article) => [normalizePathname(article.publicPath), article])
+  );
+
+  cachedMostReadArticles = statsItems
+    .map((item) => {
+      const path = normalizePathname(item?.label || item?.url);
+      const article = articlesByPath.get(path);
+
+      if (!article) {
+        return null;
+      }
+
+      return {
+        ...article,
+        nbVisits: Number(item?.nb_visits ?? 0)
+      };
+    })
+    .filter((article) => article?.publicPath)
+    .filter((article, index, collection) => (
+      collection.findIndex((entry) => entry.id === article.id) === index
+    ));
+
+  return cachedMostReadArticles;
 }
 
 function formatReadingListDate(value) {
@@ -2606,48 +2754,65 @@ async function setupMostReadArticles() {
   const currentArticlePath = normalizePathname(sectionElement.dataset.currentArticlePath);
 
   try {
-    const [statsResponse, articles] = await Promise.all([
-      fetch("https://proyectos.aldeapucela.org/exports/otrapucela/post-stats.json", {
-        headers: {
-          Accept: "application/json"
-        }
-      }),
-      loadArticlesIndex()
-    ]);
-
-    if (!statsResponse.ok) {
-      throw new Error("Most read stats request failed");
-    }
-
-    const statsPayload = await statsResponse.json();
-    const statsItems = Array.isArray(statsPayload) ? statsPayload : [];
-    const articlesByPath = new Map(
-      articles
-        .filter((article) => article?.publicPath)
-        .map((article) => [normalizePathname(article.publicPath), article])
-    );
-
-    const mostReadArticles = statsItems
-      .map((item) => {
-        const path = normalizePathname(item?.label || item?.url);
-        return articlesByPath.get(path);
-      })
+    const mostReadArticles = (await loadMostReadArticles())
       .filter((article) => article?.publicPath)
       .filter((article) => normalizePathname(article.publicPath) !== currentArticlePath)
-      .filter((article, index, collection) => (
-        collection.findIndex((entry) => entry.id === article.id) === index
-      ))
       .slice(0, 3);
 
     if (!mostReadArticles.length) {
       return;
     }
 
-    itemsElement.innerHTML = mostReadArticles.map(createArticleRailItemMarkup).join("");
+    itemsElement.innerHTML = [
+      ...mostReadArticles.map(createArticleRailItemMarkup),
+      createMostReadMoreItemMarkup()
+    ].join("");
     sectionElement.classList.remove("hidden");
     window.dispatchEvent(new Event("resize"));
   } catch {
     // Keep the article page stable if the remote ranking is unavailable.
+  }
+}
+
+async function setupPopularPage() {
+  const pageElement = document.querySelector("[data-popular-page]");
+
+  if (!pageElement) {
+    return;
+  }
+
+  const loadingElement = pageElement.querySelector("[data-popular-loading]");
+  const emptyElement = pageElement.querySelector("[data-popular-empty]");
+  const readyElement = pageElement.querySelector("[data-popular-ready]");
+  const itemsElement = pageElement.querySelector("[data-popular-items]");
+
+  if (!loadingElement || !emptyElement || !readyElement || !itemsElement) {
+    return;
+  }
+
+  function setState(state) {
+    loadingElement.classList.toggle("hidden", state !== "loading");
+    emptyElement.classList.toggle("hidden", state !== "empty");
+    readyElement.classList.toggle("hidden", state !== "ready");
+  }
+
+  setState("loading");
+
+  try {
+    const popularArticles = (await loadMostReadArticles()).slice(0, 10);
+
+    if (!popularArticles.length) {
+      setState("empty");
+      return;
+    }
+
+    itemsElement.innerHTML = popularArticles
+      .map((article, index) => createPopularArticleItemMarkup(article, index))
+      .join("");
+    setState("ready");
+  } catch {
+    itemsElement.innerHTML = "";
+    setState("empty");
   }
 }
 
@@ -3018,6 +3183,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupRssDialog();
   setupArticleRailCarousels();
   setupMostReadArticles();
+  setupPopularPage();
   window.setupArticleAudioPlayer?.();
   window.setupAudioPlaylistPage?.();
   setupScrollTopButton();

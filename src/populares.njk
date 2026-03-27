@@ -1,0 +1,44 @@
+---
+layout: base.njk
+title: Populares | La Otra Pucela
+description: Los artículos más leídos en este momento en La Otra Pucela.
+ogTitle: Populares | La Otra Pucela
+ogDescription: Los artículos más leídos en este momento en La Otra Pucela.
+canonicalUrl: /populares/
+---
+<section class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+  <div class="max-w-3xl">
+    <h1 class="font-serif text-[2.5rem] font-semibold leading-[0.98] tracking-tight text-gray-900 dark:text-white sm:text-[3.3rem]">
+      Los más leídos
+    </h1>
+    <p class="mt-5 text-[1.02rem] leading-[1.65] text-gray-600 dark:text-gray-400 sm:text-[1.08rem]">
+      Estos son los artículos más populares del momento.
+    </p>
+  </div>
+
+  <div class="mt-10" data-popular-page>
+    <div class="hidden rounded-[1.75rem] border border-gray-200 bg-white px-6 py-7 shadow-sm dark:border-gray-800 dark:bg-[#1a2529]" data-popular-loading>
+      <p class="text-base leading-[1.6] text-gray-600 dark:text-gray-400">Cargando selección popular…</p>
+    </div>
+
+    <div class="hidden rounded-[1.75rem] border border-[#DDD7CC] bg-[#F6F1E7] px-6 py-7 shadow-sm dark:border-gray-700 dark:bg-gray-800" data-popular-empty>
+      <p class="text-xl font-semibold text-gray-900 dark:text-white">Ahora mismo no hay datos disponibles</p>
+      <p class="mt-2 max-w-2xl text-base leading-[1.6] text-[#5F5645] dark:text-gray-400">
+        En cuanto vuelva a estar accesible el listado dinámico, aparecerá aquí automáticamente.
+      </p>
+      <div class="mt-6">
+        <a
+          href="/"
+          class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#1F2937] px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-200 hover:bg-[#111827]"
+        >
+          <i class="fa-solid fa-house text-sm" aria-hidden="true"></i>
+          <span>Ir a portada</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-7 hidden" data-popular-ready>
+      <div class="space-y-4" data-popular-items></div>
+    </div>
+  </div>
+</section>
