@@ -140,6 +140,8 @@ Responsabilidades:
 Para reducir peticiones y evitar volver a bajar topics sin cambios, el proyecto guarda una caché local en:
 
 - `.cache/articulos.json`
+- `.cache/autores.json`
+- `.cache/audio-manifest.json`
 
 La caché reutiliza artículos ya descargados si no han cambiado según `updatedAt`.
 
@@ -147,6 +149,57 @@ Notas:
 
 - no hace falta commitear esta caché
 - si quieres forzar una reconstrucción completa desde Discourse, puedes borrarla manualmente
+
+## Flujo de datos en build
+
+En cada `npm run build` el proyecto hace esto:
+
+1. consulta el índice de la categoría de Discourse (`/c/9.json`)
+2. compara cada topic con la caché local por `updatedAt`
+3. solo entra al JSON completo de los topics que han cambiado o no están cacheados
+4. resuelve autores reutilizando caché cuando es posible
+5. resuelve audio de una de estas dos formas:
+
+- preferida: leyendo un manifiesto JSON único definido en `AUDIO_MANIFEST_URL`
+- fallback: haciendo una petición `HEAD` por artículo al MP3 remoto
+
+Eso significa que ya no se “bajan todos los artículos” en cada build: siempre se consulta el índice de la categoría, pero el detalle solo se pide para los topics nuevos o modificados.
+
+## Manifiesto de audios
+
+Para escalar mejor, el proyecto puede consumir un único manifiesto remoto en vez de hacer una comprobación por audio.
+
+Variables opcionales:
+
+- `AUDIO_MANIFEST_URL`: URL JSON del manifiesto de audios
+- `AUDIO_MANIFEST_TTL_MS`: tiempo de caché local del manifiesto en milisegundos. Por defecto, `600000` (10 minutos)
+
+Formato admitido del manifiesto:
+
+```json
+{
+  "generatedAt": "2026-03-28T10:00:00.000Z",
+  "items": [
+    {
+      "id": "123",
+      "isAvailable": true,
+      "src": "https://media.aldeapucela.org/audios/123.mp3",
+      "downloadUrl": "https://media.aldeapucela.org/audios/123.mp3",
+      "mimeType": "audio/mpeg",
+      "sizeBytes": 1843200,
+      "duration": "03:12"
+    }
+  ]
+}
+```
+
+También se aceptan estas variantes:
+
+- `audios` en lugar de `items`
+- `itemsById` como objeto
+- claves `articleId` o `topicId` en lugar de `id`
+
+Si el manifiesto falla temporalmente, el build intenta usar la copia local en `.cache/audio-manifest.json`. Si tampoco existe, vuelve al modo anterior de `HEAD` por artículo.
 
 ## Salida JSON para frontend
 

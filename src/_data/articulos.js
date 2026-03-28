@@ -12,7 +12,11 @@ const baseRetryDelayMs = 1200;
 const cacheDirectory = path.resolve(process.cwd(), ".cache");
 const cacheFilePath = path.join(cacheDirectory, "articulos.json");
 const authorsCacheFilePath = path.join(cacheDirectory, "autores.json");
+const audioManifestCacheFilePath = path.join(cacheDirectory, "audio-manifest.json");
 const remoteAudioBaseUrl = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E";
+const defaultAudioManifestUrl = `${remoteAudioBaseUrl}/audio-manifest.json`;
+const audioManifestUrl = process.env.AUDIO_MANIFEST_URL?.trim() || defaultAudioManifestUrl;
+const audioManifestTtlMs = Number.parseInt(process.env.AUDIO_MANIFEST_TTL_MS ?? "", 10) || (10 * 60 * 1000);
 
 function stripHtml(html = "") {
   return html
@@ -408,6 +412,19 @@ function buildArticleAudio(id, isAvailable = true) {
   };
 }
 
+function buildArticleAudioFromCachedItem(item = {}) {
+  if (!item?.audio?.sources?.length) {
+    return buildArticleAudio(item?.id);
+  }
+
+  return {
+    ...item.audio,
+    sources: item.audio.sources.map((source) => ({
+      ...source
+    }))
+  };
+}
+
 async function remoteAudioExists(id) {
   const articleId = String(id ?? "").trim();
 
@@ -442,6 +459,182 @@ async function remoteAudioExists(id) {
       isAvailable: false
     };
   }
+}
+
+function normalizeAudioManifestEntry(entry = {}) {
+  const id = String(
+    entry.id
+    ?? entry.articleId
+    ?? entry.topicId
+    ?? entry.slug
+    ?? ""
+  ).trim();
+
+  if (!id) {
+    return null;
+  }
+
+  const hasExplicitAvailability = typeof entry.isAvailable === "boolean";
+  const src = typeof entry.src === "string" && entry.src.trim()
+    ? entry.src.trim()
+    : `${remoteAudioBaseUrl}/${encodeURIComponent(id)}.mp3`;
+  const mimeType = typeof entry.mimeType === "string" && entry.mimeType.trim()
+    ? entry.mimeType.trim()
+    : "audio/mpeg";
+  const duration = typeof entry.duration === "string" && entry.duration.trim()
+    ? entry.duration.trim()
+    : null;
+  const rawSize = Number.parseInt(entry.sizeBytes ?? entry.size ?? "", 10);
+  const sizeBytes = Number.isFinite(rawSize) ? rawSize : null;
+
+  return {
+    id,
+    isAvailable: hasExplicitAvailability
+      ? entry.isAvailable
+      : Boolean(src),
+    src,
+    downloadUrl: typeof entry.downloadUrl === "string" && entry.downloadUrl.trim()
+      ? entry.downloadUrl.trim()
+      : src,
+    mimeType,
+    duration,
+    sizeBytes
+  };
+}
+
+function normalizeAudioManifest(payload = {}) {
+  const rawItems = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload.items)
+      ? payload.items
+      : Array.isArray(payload.audios)
+        ? payload.audios
+        : Object.entries(payload.itemsById ?? {}).map(([id, entry]) => ({
+          id,
+          ...entry
+        }));
+
+  const items = rawItems
+    .map(normalizeAudioManifestEntry)
+    .filter(Boolean);
+
+  return {
+    generatedAt: typeof payload.generatedAt === "string" ? payload.generatedAt : null,
+    itemsById: Object.fromEntries(items.map((entry) => [entry.id, entry]))
+  };
+}
+
+function readAudioManifestCache() {
+  if (!existsSync(audioManifestCacheFilePath)) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(readFileSync(audioManifestCacheFilePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function writeAudioManifestCache(manifest) {
+  mkdirSync(cacheDirectory, { recursive: true });
+
+  writeFileSync(
+    audioManifestCacheFilePath,
+    JSON.stringify(
+      {
+        fetchedAt: new Date().toISOString(),
+        manifest
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
+function readFreshAudioManifestFromCache() {
+  const cachedPayload = readAudioManifestCache();
+  const fetchedAtMs = new Date(cachedPayload?.fetchedAt ?? "").getTime();
+
+  if (!cachedPayload?.manifest || !Number.isFinite(fetchedAtMs)) {
+    return null;
+  }
+
+  if ((Date.now() - fetchedAtMs) > audioManifestTtlMs) {
+    return null;
+  }
+
+  return normalizeAudioManifest(cachedPayload.manifest);
+}
+
+async function fetchAudioManifest() {
+  if (!audioManifestUrl) {
+    return null;
+  }
+
+  const freshCachedManifest = readFreshAudioManifestFromCache();
+
+  if (freshCachedManifest) {
+    return freshCachedManifest;
+  }
+
+  try {
+    const manifestPayload = await fetchJson(audioManifestUrl);
+    writeAudioManifestCache(manifestPayload);
+    return normalizeAudioManifest(manifestPayload);
+  } catch (error) {
+    const cachedPayload = readAudioManifestCache();
+
+    if (cachedPayload?.manifest) {
+      console.warn("[articulos] No se pudo actualizar el manifiesto de audio; usando cache local.", error);
+      return normalizeAudioManifest(cachedPayload.manifest);
+    }
+
+    console.warn("[articulos] No se pudo cargar el manifiesto de audio; se usa comprobacion HEAD por articulo.", error);
+    return null;
+  }
+}
+
+function buildArticleAudioFromManifestEntry(entry) {
+  if (!entry?.isAvailable) {
+    return null;
+  }
+
+  return {
+    sources: [
+      {
+        src: entry.src,
+        type: entry.mimeType || "audio/mpeg"
+      }
+    ],
+    downloadUrl: entry.downloadUrl || entry.src,
+    sizeBytes: Number.isFinite(entry.sizeBytes) ? entry.sizeBytes : null,
+    mimeType: entry.mimeType || "audio/mpeg",
+    duration: entry.duration || null
+  };
+}
+
+async function resolveAudioAvailability(items) {
+  const manifest = await fetchAudioManifest();
+
+  if (manifest) {
+    return new Map(
+      items.map((item) => {
+        const manifestEntry = manifest.itemsById[String(item.id)];
+        return [String(item.id), manifestEntry ? buildArticleAudioFromManifestEntry(manifestEntry) : null];
+      })
+    );
+  }
+
+  const audioAvailabilityEntries = await mapWithConcurrency(
+    items,
+    audioRequestConcurrency,
+    async (item) => [String(item.id), await remoteAudioExists(item.id)]
+  );
+
+  return new Map(
+    audioAvailabilityEntries.map(([id, availability]) => [id, buildArticleAudio(id, availability)])
+  );
 }
 
 function readCache() {
@@ -570,7 +763,7 @@ function buildFallbackDataFromCache(cache, authorsCache, error) {
           ...item.author,
           ...cachedAuthor
         }),
-        audio: buildArticleAudio(item.id),
+        audio: buildArticleAudioFromCachedItem(item),
         fetchError: item.fetchError ?? error.message
       };
     })
@@ -833,16 +1026,10 @@ export default async function articulos() {
     }
   );
 
-  const audioAvailabilityEntries = await mapWithConcurrency(
-    items,
-    audioRequestConcurrency,
-    async (item) => [String(item.id), await remoteAudioExists(item.id)]
-  );
-
-  const audioAvailabilityMap = new Map(audioAvailabilityEntries);
+  const audioAvailabilityMap = await resolveAudioAvailability(items);
 
   items.forEach((item) => {
-    item.audio = buildArticleAudio(item.id, audioAvailabilityMap.get(String(item.id)));
+    item.audio = audioAvailabilityMap.get(String(item.id)) ?? null;
   });
 
   items.sort((a, b) => {

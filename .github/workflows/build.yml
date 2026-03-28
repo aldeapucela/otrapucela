@@ -67,12 +67,14 @@ jobs:
           if [ "$current_hash" = "$previous_hash" ]; then
           python3 <<'PY'
           import os
+          import json
           import pathlib
           import urllib.error
           import urllib.request
 
           pending_path = pathlib.Path(".cache/workflow/pending-audio-ids.txt")
           base_url = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E"
+          manifest_url = "https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E/audio-manifest.json"
           should_build = False
 
           if pending_path.exists():
@@ -82,21 +84,43 @@ jobs:
                   if line.strip()
               ]
 
-              for article_id in pending_ids:
-                  request = urllib.request.Request(
-                      f"{base_url}/{article_id}.mp3",
-                      method="HEAD",
-                  )
-
+              if pending_ids:
                   try:
-                      with urllib.request.urlopen(request, timeout=10) as response:
-                          if 200 <= response.status < 400:
-                              should_build = True
-                              break
-                  except urllib.error.HTTPError:
-                      continue
+                      with urllib.request.urlopen(manifest_url, timeout=10) as response:
+                          payload = json.load(response)
+
+                      raw_items = payload if isinstance(payload, list) else (
+                          payload.get("items")
+                          or payload.get("audios")
+                          or [
+                              {"id": item_id, **entry}
+                              for item_id, entry in (payload.get("itemsById") or {}).items()
+                          ]
+                      )
+
+                      available_ids = {
+                          str(item.get("id") or item.get("articleId") or item.get("topicId") or "").strip()
+                          for item in raw_items
+                          if isinstance(item, dict) and item.get("isAvailable", True)
+                      }
+
+                      should_build = any(article_id in available_ids for article_id in pending_ids)
                   except Exception:
-                      continue
+                      for article_id in pending_ids:
+                          request = urllib.request.Request(
+                              f"{base_url}/{article_id}.mp3",
+                              method="HEAD",
+                          )
+
+                          try:
+                              with urllib.request.urlopen(request, timeout=10) as response:
+                                  if 200 <= response.status < 400:
+                                      should_build = True
+                                      break
+                          except urllib.error.HTTPError:
+                              continue
+                          except Exception:
+                              continue
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output_file:
               output_file.write(f"should_build={'true' if should_build else 'false'}\n")
@@ -131,6 +155,7 @@ jobs:
       - name: Build site
         if: steps.detect-forum-changes.outputs.should_build == 'true'
         env:
+          AUDIO_MANIFEST_URL: https://media.aldeapucela.org/public.php/dav/files/qGB2wj3AjGZSb4E/audio-manifest.json
           PODCAST_OWNER_EMAIL: ${{ vars.PODCAST_OWNER_EMAIL || secrets.PODCAST_OWNER_EMAIL }}
           PODCAST_OWNER_NAME: ${{ vars.PODCAST_OWNER_NAME || secrets.PODCAST_OWNER_NAME }}
         run: npm run build
