@@ -1,0 +1,43 @@
+---
+permalink: /sitemap.xml
+eleventyExcludeFromCollections: true
+---
+{% set staticUrls = [
+  "/",
+  "/audios/",
+  "/boletin/",
+  "/buscar/",
+  "/contacto/",
+  "/nuevo/",
+  "/populares/",
+  "/quienes-somos/",
+  "/temas/"
+] %}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{%- for path in staticUrls %}
+  <url>
+    <loc>{{ path | absoluteUrl(site.siteUrl) }}</loc>
+  </url>
+{%- endfor %}
+{%- for article in articulos.items %}
+  <url>
+    <loc>{{ article.publicPath | absoluteUrl(site.siteUrl) }}</loc>
+    {%- if article.updatedAt %}
+    <lastmod>{{ article.updatedAt }}</lastmod>
+    {%- elif article.createdAt %}
+    <lastmod>{{ article.createdAt }}</lastmod>
+    {%- endif %}
+  </url>
+{%- endfor %}
+{%- for author in articulos.authors %}
+  <url>
+    <loc>{{ author.publicPath | absoluteUrl(site.siteUrl) }}</loc>
+  </url>
+{%- endfor %}
+{%- for tag in articulos.tags %}
+  <url>
+    <loc>{{ ("/tema/" + tag.slug + "/") | absoluteUrl(site.siteUrl) }}</loc>
+  </url>
+{%- endfor %}
+</urlset>

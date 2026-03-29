@@ -1,6 +1,16 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+function toValidDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsedDate = new Date(value);
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
 export default function eleventyConfig(config) {
   config.addPassthroughCopy({ "src/assets/favicon.ico": "favicon.ico" });
   config.addPassthroughCopy({ "src/assets/favicon.svg": "favicon.svg" });
@@ -114,6 +124,33 @@ export default function eleventyConfig(config) {
     } catch {
       return String(value);
     }
+  });
+
+  config.addFilter("json", (value) => JSON.stringify(value));
+
+  config.addFilter("newsSitemapEntries", (items = [], siteUrl = "", maxItems = 1000) => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    return [...items]
+      .filter((item) => {
+        const publicationDate = toValidDate(item?.createdAt);
+
+        return publicationDate && publicationDate >= twoDaysAgo;
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, maxItems)
+      .map((item) => ({
+        loc: new URL(String(item.publicPath), String(siteUrl)).toString(),
+        publicationName: item?.publicationName ?? null,
+        publicationLanguage: "es",
+        publicationDate: new Date(item.createdAt).toISOString(),
+        title: item?.title ?? ""
+      }));
   });
 
   config.addFilter("relatedArticles", (items = [], currentArticle, limit = 5) => {

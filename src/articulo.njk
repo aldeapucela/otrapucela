@@ -16,6 +16,47 @@ eleventyComputed:
 ---
 {% set relatedItems = articulos.items | relatedArticles(articulo, 5) %}
 {% set audioDownloadName = articulo.title ~ ' (' ~ articulo.author.name ~ ' - La Otra Pucela).mp3' %}
+{% set articleDescription = articulo.description or articulo.excerpt or 'Artículo publicado en La Otra Pucela.' %}
+{% set articleImage = (articulo.image or site.defaultSocialImage) | absoluteUrl(site.siteUrl) %}
+{% set articleUrl = articulo.publicPath | absoluteUrl(site.siteUrl) %}
+{% set authorUrl = articulo.author.publicPath | absoluteUrl(site.siteUrl) %}
+{% set publisherLogo = '/assets/logo-wordmark.png' | absoluteUrl(site.siteUrl) %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": {{ articulo.title | json | safe }},
+  "description": {{ articleDescription | json | safe }},
+  "datePublished": "{{ articulo.createdAt }}",
+  "dateModified": "{{ articulo.updatedAt or articulo.createdAt }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ articleUrl }}"
+  },
+  "url": "{{ articleUrl }}",
+  "image": [
+    "{{ articleImage }}"
+  ],
+  {% if articulo.tags and articulo.tags.length %}
+  "articleSection": {{ articulo.tags[0].name | json | safe }},
+  {% endif %}
+  "author": {
+    "@type": "Person",
+    "name": {{ articulo.author.name | json | safe }},
+    "url": "{{ authorUrl }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ site.name | json | safe }},
+    "url": "{{ site.siteUrl }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ publisherLogo }}"
+    }
+  }
+}
+</script>
 
 <section class="mx-auto max-w-6xl px-4 pb-40 pt-8 sm:px-6 md:pb-28 lg:px-8 lg:pt-12">
   <article class="mx-auto mb-12 w-full max-w-6xl" data-article-id="{{ articulo.id }}">

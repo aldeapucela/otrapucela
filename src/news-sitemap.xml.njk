@@ -1,0 +1,21 @@
+---
+permalink: /news-sitemap.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+{%- for entry in articulos.items | newsSitemapEntries(site.siteUrl, 1000) %}
+  <url>
+    <loc>{{ entry.loc }}</loc>
+    <news:news>
+      <news:publication>
+        <news:name>{{ site.name }}</news:name>
+        <news:language>{{ entry.publicationLanguage }}</news:language>
+      </news:publication>
+      <news:publication_date>{{ entry.publicationDate }}</news:publication_date>
+      <news:title>{{ entry.title }}</news:title>
+    </news:news>
+  </url>
+{%- endfor %}
+</urlset>
