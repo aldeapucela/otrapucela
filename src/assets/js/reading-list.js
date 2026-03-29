@@ -70,6 +70,36 @@ function dispatchReadingListUpdated() {
   document.dispatchEvent(new CustomEvent("reading-list-updated"));
 }
 
+let toastTimeoutId = null;
+
+function showReadingListToast(message = "Guardado en tu lista de lectura") {
+  const toastElement = document.querySelector("[data-reading-list-toast]");
+  const copyElement = toastElement?.querySelector("[data-reading-list-toast-copy]");
+
+  if (!toastElement) {
+    return;
+  }
+
+  if (copyElement) {
+    copyElement.textContent = message;
+  }
+
+  toastElement.hidden = false;
+  requestAnimationFrame(() => {
+    toastElement.dataset.state = "visible";
+  });
+
+  window.clearTimeout(toastTimeoutId);
+  toastTimeoutId = window.setTimeout(() => {
+    toastElement.dataset.state = "hidden";
+    window.setTimeout(() => {
+      if (toastElement.dataset.state !== "visible") {
+        toastElement.hidden = true;
+      }
+    }, 300);
+  }, 2200);
+}
+
 export function syncReadingListCountBadges() {
   const badges = document.querySelectorAll("[data-reading-list-count-badge]");
   const menuDots = document.querySelectorAll("[data-reading-list-menu-dot]");
@@ -138,6 +168,7 @@ function setupReadingListButtons() {
           author: button.dataset.articleAuthor?.trim() || "",
           date: button.dataset.articleDate?.trim() || ""
         });
+        showReadingListToast();
       }
 
       syncReadingListButtons();

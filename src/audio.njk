@@ -107,6 +107,7 @@ permalink: /audios/index.html
         data-title="{{ articulo.title }}"
         data-author="{{ articulo.author.name }}"
         data-url="{{ articulo.publicPath }}"
+        data-image="{{ articulo.image }}"
         data-date="{{ articulo.createdAt | date('dd/MM/yyyy') }}"
       >
         <button
@@ -120,7 +121,7 @@ permalink: /audios/index.html
 
         <div class="audio-hub-list__body">
           <div class="audio-hub-list__row">
-            <div class="min-w-0">
+            <div class="audio-hub-list__content">
               <a href="{{ articulo.publicPath }}" class="audio-hub-list__title">
                 {{ articulo.title }}
               </a>
@@ -129,19 +130,58 @@ permalink: /audios/index.html
                 <span aria-hidden="true">·</span>
                 <span>{{ articulo.createdAt | date('dd/MM/yyyy') }}</span>
               </p>
+              <div class="audio-hub-list__progress">
+                <span class="audio-hub-list__progress-fill" data-audio-hub-progress-fill></span>
+              </div>
             </div>
+
             <div class="audio-hub-list__aside">
               <span class="audio-hub-list__status-wrap">
                 <i class="fa-solid fa-circle-check audio-hub-list__status-icon" data-audio-hub-status-icon aria-hidden="true"></i>
                 <span class="audio-hub-list__status" data-audio-hub-status>Sin empezar</span>
               </span>
-              <a href="{{ articulo.publicPath }}" class="audio-hub-list__link" aria-label="Abrir artículo {{ articulo.title }}">
-                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-              </a>
+              <div class="audio-hub-list__actions">
+                <div class="audio-hub-list__actions-top">
+                  <button
+                    type="button"
+                    class="audio-hub-list__action js-reading-list-toggle"
+                    data-reading-list-toggle
+                    data-article-id="{{ articulo.id }}"
+                    data-article-title="{{ articulo.title }}"
+                    data-article-url="{{ articulo.publicPath }}"
+                    data-article-image="{{ articulo.image }}"
+                    data-article-author="{{ articulo.author.name }}"
+                    data-article-date="{{ articulo.createdAt }}"
+                    aria-label="Guardar en lista de lectura"
+                  >
+                    <i class="fa-regular fa-bookmark js-reading-list-toggle-icon" aria-hidden="true"></i>
+                    <span class="sr-only js-reading-list-toggle-label">Leer más tarde</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="audio-hub-list__action js-share-btn"
+                    data-share-source="audio-list"
+                    data-share-content-type="article"
+                    data-share-content-id="{{ articulo.id }}"
+                    data-title="{{ articulo.title }}"
+                    data-url="{{ site.siteUrl }}{{ articulo.publicPath }}"
+                    aria-label="Compartir artículo {{ articulo.title }}"
+                  >
+                    <i class="fa-solid fa-share-nodes js-share-btn-icon" aria-hidden="true"></i>
+                    <span class="sr-only js-share-btn-label">Compartir</span>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="audio-hub-list__action audio-hub-list__action--spaced js-audio-hub-complete-toggle"
+                  data-audio-hub-complete-toggle
+                  aria-label="Marcar como escuchado {{ articulo.title }}"
+                >
+                  <i class="fa-regular fa-circle-check" data-audio-hub-complete-icon aria-hidden="true"></i>
+                  <span class="sr-only" data-audio-hub-complete-label>Marcar como escuchado</span>
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="audio-hub-list__progress">
-            <span class="audio-hub-list__progress-fill" data-audio-hub-progress-fill></span>
           </div>
         </div>
       </li>
@@ -152,17 +192,31 @@ permalink: /audios/index.html
       <div class="audio-hub-player">
         <audio class="js-audio-hub-element" preload="none"></audio>
 
-        <div class="audio-hub-player__meta">
-          <div class="audio-hub-player__title-marquee">
-            <p class="audio-hub-player__title">
-              <a href="/" class="audio-hub-player__title-link js-audio-hub-player-link">
-                <span class="audio-hub-player__title-text js-audio-hub-player-title">Selecciona un artículo</span>
-              </a>
-              <span class="audio-hub-player__title-separator" aria-hidden="true"> • </span>
-              <span class="audio-hub-player__title-text js-audio-hub-player-title-clone" aria-hidden="true">Selecciona un artículo</span>
-            </p>
+        <div class="audio-hub-player__header">
+          <a href="/" class="audio-hub-player__cover-link js-audio-hub-player-link" aria-label="Abrir artículo">
+            <div class="audio-hub-player__cover">
+              <img
+                src="/assets/social-preview.png"
+                alt=""
+                class="audio-hub-player__cover-image js-audio-hub-player-image"
+                loading="lazy"
+                decoding="async"
+              >
+            </div>
+          </a>
+
+          <div class="audio-hub-player__meta">
+            <div class="audio-hub-player__title-marquee">
+              <p class="audio-hub-player__title">
+                <a href="/" class="audio-hub-player__title-link js-audio-hub-player-link">
+                  <span class="audio-hub-player__title-text js-audio-hub-player-title">Selecciona un artículo</span>
+                </a>
+                <span class="audio-hub-player__title-separator" aria-hidden="true"> • </span>
+                <span class="audio-hub-player__title-text js-audio-hub-player-title-clone" aria-hidden="true">Selecciona un artículo</span>
+              </p>
+            </div>
+            <p class="audio-hub-player__byline js-audio-hub-player-author">La Otra Pucela</p>
           </div>
-          <p class="audio-hub-player__byline js-audio-hub-player-author">La Otra Pucela</p>
         </div>
 
         <div class="audio-hub-player__seek-row">

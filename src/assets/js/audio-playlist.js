@@ -20,8 +20,9 @@ export function setupAudioPlaylistPage() {
   const durationTimeElement = pageElement.querySelector(".js-audio-hub-time-duration");
   const titleElement = pageElement.querySelector(".js-audio-hub-player-title");
   const titleCloneElement = pageElement.querySelector(".js-audio-hub-player-title-clone");
-  const titleLinkElement = pageElement.querySelector(".js-audio-hub-player-link");
+  const titleLinkElements = [...pageElement.querySelectorAll(".js-audio-hub-player-link")];
   const authorElement = pageElement.querySelector(".js-audio-hub-player-author");
+  const coverImageElement = pageElement.querySelector(".js-audio-hub-player-image");
   const previousItemButton = pageElement.querySelector(".js-audio-hub-prev-item");
   const nextItemButton = pageElement.querySelector(".js-audio-hub-next-item");
   const controlsRowElement = pageElement.querySelector(".audio-hub-player__controls-row");
@@ -44,10 +45,14 @@ export function setupAudioPlaylistPage() {
     title: itemElement.dataset.title?.trim() || "Artículo",
     author: itemElement.dataset.author?.trim() || "La Otra Pucela",
     url: itemElement.dataset.url?.trim() || "/",
+    image: itemElement.dataset.image?.trim() || "",
     playButtons: [...itemElement.querySelectorAll("[data-audio-hub-start]")],
     statusElement: itemElement.querySelector("[data-audio-hub-status]"),
     statusIconElement: itemElement.querySelector("[data-audio-hub-status-icon]"),
-    progressFillElement: itemElement.querySelector("[data-audio-hub-progress-fill]")
+    progressFillElement: itemElement.querySelector("[data-audio-hub-progress-fill]"),
+    completeToggleButton: itemElement.querySelector("[data-audio-hub-complete-toggle]"),
+    completeToggleIconElement: itemElement.querySelector("[data-audio-hub-complete-icon]"),
+    completeToggleLabelElement: itemElement.querySelector("[data-audio-hub-complete-label]")
   })).filter((item) => item.src);
 
   if (!audioElement || !items.length) {
@@ -231,6 +236,35 @@ export function setupAudioPlaylistPage() {
     syncContinueButton();
   }
 
+  function toggleCompletionStateForItem(item) {
+    if (!item) {
+      return;
+    }
+
+    const savedState = getSavedAudioState(item.id);
+
+    if (savedState?.completed) {
+      resetCompletionStateForItem(item);
+      return;
+    }
+
+    const store = readAudioProgressStore();
+    store[item.id] = {
+      id: item.id,
+      title: item.title,
+      author: item.author,
+      url: item.url,
+      currentTime: 0,
+      duration: Number(savedState?.duration) || 0,
+      progressPercent: 100,
+      completed: true,
+      updatedAt: new Date().toISOString()
+    };
+    writeAudioProgressStore(store);
+    renderStoredState();
+    syncContinueButton();
+  }
+
   function formatTime(seconds) {
     const normalizedSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
     const minutes = Math.floor(normalizedSeconds / 60);
@@ -340,10 +374,15 @@ export function setupAudioPlaylistPage() {
       authorElement.textContent = `${currentItem.author} · La Otra Pucela`;
     }
 
-    if (titleLinkElement) {
-      titleLinkElement.href = currentItem.url;
-      titleLinkElement.setAttribute("aria-label", `Abrir artículo ${currentItem.title}`);
+    if (coverImageElement) {
+      coverImageElement.src = currentItem.image || "/assets/social-preview.png";
+      coverImageElement.alt = "";
     }
+
+    titleLinkElements.forEach((linkElement) => {
+      linkElement.href = currentItem.url;
+      linkElement.setAttribute("aria-label", `Abrir artículo ${currentItem.title}`);
+    });
   }
 
   function updatePlaybackState() {
@@ -518,7 +557,23 @@ export function setupAudioPlaylistPage() {
       item.element.classList.toggle("is-complete", isCompleted);
       item.element.classList.toggle("is-in-progress", !isCompleted && progressPercent > 0);
       if (item.statusIconElement) {
-        item.statusIconElement.style.display = isCompleted ? "inline-flex" : "none";
+        item.statusIconElement.style.display = "none";
+      }
+
+      if (item.completeToggleButton) {
+        item.completeToggleButton.setAttribute(
+          "aria-label",
+          isCompleted ? `Marcar como pendiente ${item.title}` : `Marcar como escuchado ${item.title}`
+        );
+        item.completeToggleButton.classList.toggle("is-active", isCompleted);
+      }
+
+      if (item.completeToggleIconElement) {
+        item.completeToggleIconElement.className = isCompleted ? "fa-solid fa-circle-check" : "fa-regular fa-circle-check";
+      }
+
+      if (item.completeToggleLabelElement) {
+        item.completeToggleLabelElement.textContent = isCompleted ? "Marcar como pendiente" : "Marcar como escuchado";
       }
 
       if (!item.statusElement) {
@@ -715,6 +770,10 @@ export function setupAudioPlaylistPage() {
   }
 
   items.forEach((item) => {
+    item.completeToggleButton?.addEventListener("click", () => {
+      toggleCompletionStateForItem(item);
+    });
+
     item.playButtons.forEach((buttonElement) => {
       buttonElement.addEventListener("click", async () => {
         if (isItemCompleted(item) || (getSavedAudioState(item.id)?.progressPercent ?? 0) >= 100) {
