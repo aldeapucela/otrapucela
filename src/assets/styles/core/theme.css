@@ -1,0 +1,8 @@
+.dark a {
+  color: #92a4ad;
+}
+
+.dark a:hover {
+  color: #b1c8d3;
+  text-decoration-color: #b1c8d3;
+}

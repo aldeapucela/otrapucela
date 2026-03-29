@@ -1,0 +1,209 @@
+@layer components {
+  .js-conditional-subscription {
+    visibility: hidden;
+    transition:
+      transform 0.4s ease-out,
+      opacity 0.28s ease-out;
+    will-change: transform, opacity;
+  }
+
+  .js-conditional-subscription[data-ready="true"] {
+    visibility: visible;
+  }
+
+  .js-conditional-subscription[data-visible="true"] {
+    @apply pointer-events-auto opacity-100 translate-y-0;
+  }
+
+  @media (min-width: 768px) {
+    .js-conditional-subscription[data-visible="true"] {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .article-body img {
+    border-radius: 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .article-card-image,
+  .article-body img {
+    transition: filter 180ms ease;
+  }
+
+  .article-body img[data-lightbox-image] {
+    cursor: zoom-in;
+    transition:
+      filter 180ms ease,
+      transform 220ms ease,
+      opacity 220ms ease;
+  }
+
+  .article-body img[data-lightbox-image]:hover {
+    transform: translateY(-1px);
+  }
+
+  .article-body img[data-lightbox-image]:focus-visible {
+    outline: 2px solid #2f3e46;
+    outline-offset: 4px;
+  }
+
+  .dark .article-card-image,
+  .dark .article-body img {
+    filter: brightness(0.9);
+  }
+
+  .dark .article-body img[data-lightbox-image]:focus-visible {
+    outline-color: #d8e1d6;
+  }
+
+  @media (max-width: 639px) {
+    .article-body img {
+      width: 100%;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .article-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(17, 24, 39, 0.88);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+
+  .article-lightbox[data-open="true"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .article-lightbox__inner {
+    width: auto;
+    max-width: min(100%, 1120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .article-lightbox__frame {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .article-lightbox__image {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 5.5rem);
+    border-radius: 1.25rem;
+    object-fit: contain;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  .article-lightbox__caption {
+    max-width: min(100%, 54rem);
+    text-align: center;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .article-inline-media {
+    width: fit-content;
+    max-width: 100%;
+    margin: 1.5rem auto 1.65rem;
+  }
+
+  .article-body a:has(> img:only-child) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .article-inline-media > img,
+  .article-inline-media > a,
+  .article-inline-media > a > img {
+    margin: 0;
+  }
+
+  .article-inline-media > a {
+    display: block;
+  }
+
+  .article-inline-caption {
+    margin: 0.42rem auto 0;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    font-style: italic;
+    color: #6b7280;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .article-lightbox__close {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    display: inline-flex;
+    min-height: 3rem;
+    min-width: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(9, 15, 28, 0.82);
+    color: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(10px);
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .article-lightbox__close:hover {
+    background: rgba(9, 15, 28, 0.98);
+    border-color: rgba(255, 255, 255, 0.28);
+    transform: translateY(-1px);
+  }
+
+  .article-lightbox__close:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 3px;
+  }
+
+  .article-lightbox__close i {
+    font-size: 1.1rem;
+  }
+
+  @media (min-width: 640px) {
+    .article-lightbox {
+      padding: 2rem;
+    }
+
+    .article-lightbox__close {
+      top: 1rem;
+      right: 1rem;
+      min-width: 3.25rem;
+    }
+
+    .article-inline-caption {
+      margin-top: 0.5rem;
+      font-size: 0.92rem;
+    }
+  }
+}
