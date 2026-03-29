@@ -433,10 +433,17 @@ function setupRssDialog() {
     document.body.classList.add("overflow-hidden");
 
     window.setTimeout(() => {
+      const defaultSectionElement = dialogElement.querySelector(`[data-rss-feed-section="${defaultFeedType}"]`)
+        || dialogElement.querySelector('[data-rss-feed-section="rss"]');
       const defaultInputElement = dialogElement.querySelector(`[data-rss-feed-input="${defaultFeedType}"]`)
         || dialogElement.querySelector('[data-rss-feed-input="rss"]');
 
-      defaultInputElement?.focus();
+      defaultSectionElement?.scrollIntoView({
+        block: "start",
+        behavior: "auto"
+      });
+
+      defaultInputElement?.focus({ preventScroll: true });
       defaultInputElement?.select();
     }, 30);
   }
