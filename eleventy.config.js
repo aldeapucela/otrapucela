@@ -27,6 +27,18 @@ export default function eleventyConfig(config) {
     } catch {
       return {
         "assets/styles/main.css": "/assets/styles/main.css",
+        "assets/js/app-constants.js": "/assets/js/app-constants.js",
+        "assets/js/app-utils.js": "/assets/js/app-utils.js",
+        "assets/js/article-data.js": "/assets/js/article-data.js",
+        "assets/js/dialogs.js": "/assets/js/dialogs.js",
+        "assets/js/core-ui.js": "/assets/js/core-ui.js",
+        "assets/js/sharing-and-tracking.js": "/assets/js/sharing-and-tracking.js",
+        "assets/js/newsletter.js": "/assets/js/newsletter.js",
+        "assets/js/comments.js": "/assets/js/comments.js",
+        "assets/js/popular-content.js": "/assets/js/popular-content.js",
+        "assets/js/reading-list.js": "/assets/js/reading-list.js",
+        "assets/js/reading-progress.js": "/assets/js/reading-progress.js",
+        "assets/js/search.js": "/assets/js/search.js",
         "assets/js/article-audio-player.js": "/assets/js/article-audio-player.js",
         "assets/js/audio-playlist.js": "/assets/js/audio-playlist.js",
         "assets/js/featured-photo.js": "/assets/js/featured-photo.js",

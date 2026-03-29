@@ -1,0 +1,16 @@
+export const newsletterVisitedStorageKey = "newsletterPageVisited";
+export const conditionalSubscriptionStateStorageKey = "conditionalSubscriptionState";
+export const newsletterSubscribedStorageKey = "newsletterSubscribed";
+export const newsletterEmailVerifiedStorageKey = "newsletterEmailVerified";
+export const visitedArticlesStorageKey = "visitedArticleIds";
+export const articleReadingProgressStorageKey = "articleReadingProgress";
+export const readingListStorageKey = "readingListArticles";
+export const conditionalSubscriptionVisitThreshold = 3;
+export const conditionalSubscriptionCooldownDays = 30;
+export const conditionalSubscriptionScrollThreshold = 0.3;
+export const articleReadingProgressSaveThreshold = 0.08;
+export const articleReadingProgressResumeThreshold = 0.12;
+export const articleReadingProgressCompletedThreshold = 0.98;
+export const articleReadingProgressResumeHideThreshold = 0.18;
+export const articleReadingAnchorSelector = "p, h2, h3, h4, h5, h6, li, blockquote, img, figure";
+export const articleReadingAnchorViewportOffset = 140;

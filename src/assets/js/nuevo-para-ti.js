@@ -1,3 +1,14 @@
+import { conditionalSubscriptionStateStorageKey } from "./app-constants.js";
+import { loadArticlesIndex } from "./article-data.js";
+import { getVisitedArticleIds, setVisitedArticleIds } from "./reading-progress.js";
+import {
+  escapeHtml,
+  formatReadingListDate,
+  safelyReadJsonFromLocalStorage,
+  safelyReadLocalStorage,
+  safelyWriteLocalStorage
+} from "./app-utils.js";
+
 const unreadCounterVisibilityStorageKey = "unreadCounterVisible";
 const unreadCounterAutoEnabledStorageKey = "unreadCounterAutoEnabled";
 const unreadCounterVisitThreshold = 4;
@@ -471,7 +482,7 @@ async function setupUnreadPage() {
   renderUnreadPage();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+export function setupNuevoParaTiFeatures() {
   syncUnreadIndicators();
   syncHomepageCatchup();
   setupUnreadPage();
@@ -480,4 +491,4 @@ document.addEventListener("DOMContentLoaded", () => {
     syncUnreadIndicators();
     syncHomepageCatchup();
   });
-});
+}

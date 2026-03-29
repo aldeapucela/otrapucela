@@ -776,10 +776,10 @@ body.menu-open {
 
   @media (max-width: 639px) {
     .article-body img {
-      width: 100vw;
-      max-width: none;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
+      width: 100%;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 

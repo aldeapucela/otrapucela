@@ -221,7 +221,7 @@ function setupFeaturedPhotoDialog(photo, onRequestAnotherPhoto = null) {
   };
 }
 
-async function setupFeaturedPhoto() {
+export async function setupFeaturedPhoto() {
   const sections = document.querySelectorAll("[data-featured-photo]");
 
   if (!sections.length) {
@@ -281,7 +281,3 @@ async function setupFeaturedPhoto() {
     // Keep the homepage stable if the photo feed is unavailable.
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  setupFeaturedPhoto();
-});

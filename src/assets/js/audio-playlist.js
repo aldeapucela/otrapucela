@@ -1,4 +1,4 @@
-window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
+export function setupAudioPlaylistPage() {
   const pageElement = document.querySelector("[data-audio-hub-page]");
 
   if (!pageElement) {
@@ -931,4 +931,4 @@ window.setupAudioPlaylistPage = function setupAudioPlaylistPage() {
   syncContinueButton();
   updateNavButtons();
   syncTransportPosition();
-};
+}

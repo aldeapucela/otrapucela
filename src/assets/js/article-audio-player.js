@@ -1,4 +1,4 @@
-window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
+export function setupArticleAudioPlayer() {
   const audioElement = document.querySelector(".js-article-audio");
 
   if (!audioElement) {
@@ -606,4 +606,4 @@ window.setupArticleAudioPlayer = function setupArticleAudioPlayer() {
   updatePlaybackRate(readSavedPlaybackRate());
   showDefaultActions();
   syncStickyVisibility();
-};
+}

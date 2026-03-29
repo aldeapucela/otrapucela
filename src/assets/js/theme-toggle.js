@@ -1,5 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+export function setupThemeToggle() {
   const themeToggleBtns = document.querySelectorAll('.js-theme-toggle');
+
+  if (!themeToggleBtns.length) {
+    return;
+  }
 
   const updateUI = (isDark) => {
     themeToggleBtns.forEach(btn => {
@@ -70,4 +74,4 @@ document.addEventListener('DOMContentLoaded', () => {
       notifyDiscourseTheme(nextDark);
     }
   });
-});
+}
