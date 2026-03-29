@@ -50,22 +50,46 @@ async function revFile(sourcePath, outputDirectory, { baseName, extension }) {
 async function revJavaScriptFiles() {
   const manifestEntries = {};
   const entries = await readdir(jsSourceRoot, { withFileTypes: true });
+  const sourceFiles = entries
+    .filter((entry) => entry.isFile() && path.extname(entry.name) === ".js")
+    .map((entry) => entry.name);
+  const sourceContents = new Map();
+  const fingerprintedNames = new Map();
 
   await ensureDirectory(jsOutputRoot);
 
-  for (const entry of entries) {
-    if (!entry.isFile() || path.extname(entry.name) !== ".js") {
-      continue;
-    }
+  for (const fileName of sourceFiles) {
+    const sourcePath = path.join(jsSourceRoot, fileName);
+    const contents = await readFile(sourcePath, "utf8");
+    const baseName = path.basename(fileName, ".js");
+    const fingerprint = buildFingerprint(contents);
+    const outputFileName = `${baseName}.${fingerprint}.js`;
 
-    const sourcePath = path.join(jsSourceRoot, entry.name);
-    const baseName = path.basename(entry.name, ".js");
-    const outputFileName = await revFile(sourcePath, jsOutputRoot, {
-      baseName,
-      extension: "js"
-    });
+    sourceContents.set(fileName, contents);
+    fingerprintedNames.set(fileName, outputFileName);
+  }
 
-    manifestEntries[`assets/js/${entry.name}`] = `/assets/js/${outputFileName}`;
+  for (const fileName of sourceFiles) {
+    const baseName = path.basename(fileName, ".js");
+    const outputFileName = fingerprintedNames.get(fileName);
+    const sourceContentsValue = sourceContents.get(fileName) ?? "";
+    const rewrittenContents = sourceContentsValue.replace(
+      /from\s+("|')(\.\/[^"']+\.js)\1/g,
+      (fullMatch, quote, importPath) => {
+        const importedFileName = importPath.replace(/^\.\//, "");
+        const rewrittenFileName = fingerprintedNames.get(importedFileName);
+
+        if (!rewrittenFileName) {
+          return fullMatch;
+        }
+
+        return `from ${quote}./${rewrittenFileName}${quote}`;
+      }
+    );
+
+    await removeOldFingerprintedFiles(jsOutputRoot, baseName);
+    await writeFile(path.join(jsOutputRoot, outputFileName), rewrittenContents);
+    manifestEntries[`assets/js/${fileName}`] = `/assets/js/${outputFileName}`;
   }
 
   return manifestEntries;
