@@ -1,3 +1,31 @@
+import {
+  safelyReadLocalStorage,
+  safelyWriteLocalStorage
+} from "./app-utils.js";
+
+const FEATURED_PHOTO_RANDOM_TRACKING_KEY = "featured-photo-random-click-last-tracked-on";
+
+function getTodayTrackingKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function shouldTrackFeaturedPhotoRandomClick() {
+  const todayKey = getTodayTrackingKey();
+  const lastTrackedOn = safelyReadLocalStorage(FEATURED_PHOTO_RANDOM_TRACKING_KEY);
+
+  if (lastTrackedOn === todayKey) {
+    return false;
+  }
+
+  safelyWriteLocalStorage(FEATURED_PHOTO_RANDOM_TRACKING_KEY, todayKey);
+  return true;
+}
+
 function normalizeFeaturedPhotoTitle(value = "", imageUrl = "") {
   const trimmedValue = String(value).trim();
 
@@ -262,7 +290,9 @@ export async function setupFeaturedPhoto() {
       }
 
       currentPhoto = nextPhoto;
-      trackFeaturedPhotoEvent("random_click", source);
+      if (shouldTrackFeaturedPhotoRandomClick()) {
+        trackFeaturedPhotoEvent("random_click", source);
+      }
       renderCurrentPhoto();
     }
 
