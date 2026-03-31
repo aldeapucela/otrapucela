@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    {% set resolvedCanonicalUrl = (canonicalUrl or page.url) | absoluteUrl(site.siteUrl) %}
+    {% set resolvedOgImage = (ogImage or site.defaultSocialImage) | absoluteUrl(site.siteUrl) %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Compartir artículo - La Otra Pucela" }}</title>
+    <meta name="description" content="{{ description or 'Comparte este artículo de La Otra Pucela con la aplicación que prefieras.' }}">
+    <meta name="robots" content="{{ robots or 'noindex,follow' }}">
+    <meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#151c21" media="(prefers-color-scheme: dark)">
+    <link rel="canonical" href="{{ resolvedCanonicalUrl }}">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+
+    <meta property="og:type" content="{{ ogType or 'website' }}">
+    <meta property="og:site_name" content="La Otra Pucela">
+    <meta property="og:title" content="{{ ogTitle or title or 'Compartir artículo - La Otra Pucela' }}">
+    <meta property="og:description" content="{{ ogDescription or description or 'Comparte este artículo de La Otra Pucela con la aplicación que prefieras.' }}">
+    <meta property="og:url" content="{{ resolvedCanonicalUrl }}">
+    <meta property="og:image" content="{{ resolvedOgImage }}">
+
+    <meta name="twitter:card" content="{{ twitterCard or 'summary_large_image' }}">
+    <meta name="twitter:title" content="{{ twitterTitle or ogTitle or title or 'Compartir artículo - La Otra Pucela' }}">
+    <meta name="twitter:description" content="{{ twitterDescription or ogDescription or description or 'Comparte este artículo de La Otra Pucela con la aplicación que prefieras.' }}">
+    <meta name="twitter:image" content="{{ resolvedOgImage }}">
+
+    <link rel="stylesheet" href="{{ assetManifest['assets/styles/main.css'] or '/assets/styles/main.css' }}">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    >
+    <script src="/assets/js/matomo.js" defer></script>
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+    <script src="/assets/js/share-page.js" defer></script>
+  </head>
+  <body class="min-h-screen bg-[#f4efe6] text-[#1f2937] antialiased transition-colors duration-200 dark:bg-[#151c21] dark:text-gray-200">
+    <main class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-6 sm:px-6 sm:py-8">
+      <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(201,176,132,0.24),_transparent_34%),linear-gradient(180deg,_rgba(255,255,255,0.5),_rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_top,_rgba(74,85,104,0.3),_transparent_30%),linear-gradient(180deg,_rgba(12,18,24,0.45),_rgba(12,18,24,0))]"></div>
+      {{ content | safe }}
+    </main>
+  </body>
+</html>
