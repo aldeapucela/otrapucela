@@ -46,20 +46,30 @@ function sanitizeImageUrl(rawValue) {
   }
 }
 
+function resolveThemeImage(content) {
+  const prefersDarkImage = document.documentElement.classList.contains("dark");
+  const candidate = prefersDarkImage ? content.imageDark || content.image : content.imageLight || content.image;
+  return sanitizeImageUrl(candidate);
+}
+
 function withShareCampaign(rawUrl) {
   const url = new URL(rawUrl, window.location.origin);
   url.searchParams.set("mtm_campaign", "share");
   return url.toString();
 }
 
-function createSharePayload(article) {
-  const safePublicPath = sanitizeInternalUrl(article.publicPath, window.location.pathname);
+function createSharePayload(content) {
+  const safePublicPath = sanitizeInternalUrl(content.publicPath, window.location.pathname);
+  const title = sanitizeText(content.title) || document.title;
+  const description = sanitizeText(content.description || content.excerpt || "");
+  const shareText = description ? `${title} - ${description}` : title;
 
   return {
-    title: sanitizeText(article.title) || document.title,
+    title,
+    text: shareText,
     url: withShareCampaign(safePublicPath || window.location.href),
-    eventName: String(article.id || "unknown"),
-    source: "share_landing"
+    eventName: String(content.eventName || content.id || "unknown"),
+    source: sanitizeText(content.source) || "share_landing"
   };
 }
 
@@ -85,7 +95,7 @@ function restoreShareButton(buttonElement) {
 }
 
 async function copySharePayload(sharePayload) {
-  const shareText = `${sharePayload.title}\n\n${sharePayload.url}`;
+  const shareText = `${sharePayload.text}\n\n${sharePayload.url}`;
   await navigator.clipboard.writeText(shareText);
 }
 
@@ -157,20 +167,26 @@ function renderError(message) {
   renderIntoRoot(shell.sectionElement);
 }
 
-function createImageBlock(articleImage, articleTitle) {
+function createImageBlock(articleImage, articleTitle, imageMode = "cover") {
   const imageWrapper = createElement(
     "div",
-    "relative aspect-[16/10] w-full overflow-hidden bg-[#e8e0d2] dark:bg-[#24313a]"
+    imageMode === "contain"
+      ? "relative aspect-[4/3] w-full overflow-hidden bg-[#f3ede1] p-6 dark:bg-[#202d34] sm:p-8"
+      : "relative aspect-[16/10] w-full overflow-hidden bg-[#e8e0d2] dark:bg-[#24313a]"
   );
   const imageElement = document.createElement("img");
   const overlayElement = createElement(
     "div",
-    "absolute inset-0 bg-gradient-to-t from-black/18 via-transparent to-transparent"
+    imageMode === "contain"
+      ? "pointer-events-none absolute inset-0 bg-gradient-to-b from-white/20 to-transparent dark:from-black/10"
+      : "absolute inset-0 bg-gradient-to-t from-black/18 via-transparent to-transparent"
   );
 
   imageElement.src = articleImage;
   imageElement.alt = articleTitle;
-  imageElement.className = "h-full w-full object-cover";
+  imageElement.className = imageMode === "contain"
+    ? "h-full w-full object-contain"
+    : "h-full w-full object-cover";
   imageElement.loading = "eager";
 
   imageWrapper.append(imageElement, overlayElement);
@@ -178,17 +194,18 @@ function createImageBlock(articleImage, articleTitle) {
   return imageWrapper;
 }
 
-function createShareButton() {
+function createShareButton(label = "Compartir este artículo") {
   const buttonElement = createElement(
     "button",
     "inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-[#20313a] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#16232b] dark:bg-[#e8dcc8] dark:text-[#1a2529] dark:hover:bg-[#dccbb0]"
   );
   const iconElement = createElement("i", "fa-solid fa-share-nodes text-base");
-  const labelElement = createElement("span", "", "Compartir este artículo");
+  const safeLabel = sanitizeText(label) || "Compartir";
+  const labelElement = createElement("span", "", safeLabel);
 
   buttonElement.type = "button";
   buttonElement.dataset.shareButton = "";
-  buttonElement.dataset.originalLabel = "Compartir este artículo";
+  buttonElement.dataset.originalLabel = safeLabel;
   buttonElement.dataset.originalIcon = "fa-solid fa-share-nodes text-base";
   iconElement.dataset.shareIcon = "";
   iconElement.setAttribute("aria-hidden", "true");
@@ -199,70 +216,27 @@ function createShareButton() {
   return buttonElement;
 }
 
-function createArticleLink(articlePath) {
+function createArticleLink(articlePath, label = "Ver artículo completo") {
   const linkElement = createElement(
     "a",
     "inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#d8cdbd] bg-[#fbf8f2] px-5 py-3 text-sm font-semibold text-[#43515d] transition-colors duration-200 hover:bg-[#f4eee4] hover:text-[#1f2937] dark:border-white/10 dark:bg-[#223038] dark:text-gray-200 dark:hover:bg-[#293841] dark:hover:text-white",
-    "Ver artículo completo"
+    label
   );
 
   linkElement.href = articlePath;
   return linkElement;
 }
 
-function renderArticle(article) {
-  const articleTitle = sanitizeText(article.title);
-  const articleExcerpt = sanitizeText(article.description || article.excerpt || "");
-  const articlePath = sanitizeInternalUrl(article.publicPath, "/");
-  const articleImage = sanitizeImageUrl(article.image);
-  const shell = createShell();
-  const contentElement = createElement("div", "flex flex-col gap-5 px-6 py-6 sm:px-8 sm:py-7");
-  const headingWrapElement = createElement("div", "flex flex-col gap-3 text-center");
-  const headingElement = createElement(
-    "h1",
-    "text-balance font-serif text-[1.6rem] font-semibold leading-[1.02] tracking-tight text-[#1c2731] dark:text-white sm:text-[1.9rem]",
-    articleTitle
-  );
-  const actionsElement = createElement("div", "flex flex-col gap-3");
-  const shareButtonElement = createShareButton();
-  const articleLinkElement = createArticleLink(articlePath);
-
-  headingWrapElement.append(headingElement);
-  actionsElement.append(shareButtonElement, articleLinkElement);
-  contentElement.append(headingWrapElement, actionsElement);
-
-  if (articleExcerpt) {
-    const excerptElement = createElement(
-      "p",
-      "mx-auto max-w-[34ch] text-pretty text-[0.96rem] leading-6 text-[#5b6470] dark:text-gray-300 sm:text-[0.98rem]",
-      articleExcerpt
-    );
-    contentElement.append(excerptElement);
-  }
-
-  if (articleImage) {
-    shell.articleElement.append(createImageBlock(articleImage, articleTitle));
-  }
-
-  shell.articleElement.append(contentElement);
-  renderIntoRoot(shell.sectionElement);
-
-  document.title = `Compartir: ${articleTitle} - La Otra Pucela`;
-
-  const descriptionElement = document.querySelector('meta[name="description"]');
-  if (descriptionElement) {
-    descriptionElement.setAttribute("content", articleExcerpt || "Comparte este artículo de La Otra Pucela.");
-  }
-
+function attachShareHandler(shareButtonElement, content) {
   shareButtonElement.addEventListener("click", async () => {
-    const sharePayload = createSharePayload(article);
+    const sharePayload = createSharePayload(content);
 
     try {
       if (navigator.share) {
         try {
           await navigator.share({
             title: sharePayload.title,
-            text: sharePayload.title,
+            text: sharePayload.text,
             url: sharePayload.url
           });
         } catch (error) {
@@ -295,9 +269,98 @@ function renderArticle(article) {
   });
 }
 
+function renderShareCard(content) {
+  const cardTitle = sanitizeText(content.title);
+  const cardExcerpt = sanitizeText(content.description || content.excerpt || "");
+  const cardPath = sanitizeInternalUrl(content.publicPath, "/");
+  const cardImage = resolveThemeImage(content);
+  const shell = createShell();
+  const contentElement = createElement("div", "flex flex-col gap-5 px-6 py-6 sm:px-8 sm:py-7");
+  const headingWrapElement = createElement("div", "flex flex-col gap-3 text-center");
+  const actionsElement = createElement("div", "flex flex-col gap-3");
+  const shareButtonElement = createShareButton(content.shareLabel || "Compartir este artículo");
+  const articleLinkElement = createArticleLink(cardPath, content.linkLabel || "Ver artículo completo");
+
+  if (!content.hideTitle) {
+    const headingElement = createElement(
+      "h1",
+      "text-balance font-serif text-[1.6rem] font-semibold leading-[1.02] tracking-tight text-[#1c2731] dark:text-white sm:text-[1.9rem]",
+      cardTitle
+    );
+    headingWrapElement.append(headingElement);
+  }
+
+  if (cardExcerpt && content.excerptPosition === "before-actions") {
+    const leadElement = createElement(
+      "p",
+      "mx-auto max-w-[34ch] text-pretty text-[0.96rem] leading-6 text-[#5b6470] dark:text-gray-300 sm:text-[0.98rem]",
+      cardExcerpt
+    );
+    headingWrapElement.append(leadElement);
+  }
+
+  actionsElement.append(shareButtonElement, articleLinkElement);
+  contentElement.append(headingWrapElement, actionsElement);
+
+  if (cardExcerpt && content.excerptPosition !== "before-actions") {
+    const excerptElement = createElement(
+      "p",
+      "mx-auto max-w-[34ch] text-pretty text-[0.96rem] leading-6 text-[#5b6470] dark:text-gray-300 sm:text-[0.98rem]",
+      cardExcerpt
+    );
+    contentElement.append(excerptElement);
+  }
+
+  if (cardImage) {
+    shell.articleElement.append(createImageBlock(cardImage, cardTitle, content.imageMode || "cover"));
+  }
+
+  shell.articleElement.append(contentElement);
+  renderIntoRoot(shell.sectionElement);
+
+  document.title = `Compartir: ${cardTitle} - La Otra Pucela`;
+
+  const descriptionElement = document.querySelector('meta[name="description"]');
+  if (descriptionElement) {
+    descriptionElement.setAttribute("content", cardExcerpt || "Comparte La Otra Pucela.");
+  }
+
+  attachShareHandler(shareButtonElement, content);
+}
+
+function renderArticle(article) {
+  renderShareCard({
+    ...article,
+    source: "share_landing",
+    eventName: article.id
+  });
+}
+
+function renderHomepageShare() {
+  renderShareCard({
+    title: "La Otra Pucela",
+    description: "Información vecinal, útil e independiente sobre Valladolid.",
+    publicPath: "/",
+    imageLight: "/assets/logo-wordmark.png",
+    imageDark: "/assets/logo-wordmark.dark.png",
+    imageMode: "contain",
+    hideTitle: true,
+    excerptPosition: "before-actions",
+    shareLabel: "Compartir esta web",
+    linkLabel: "Ir a la web",
+    source: "share_landing_homepage",
+    eventName: "homepage"
+  });
+}
+
 async function loadSharePage() {
   const searchParams = new URLSearchParams(window.location.search);
   const rawId = (searchParams.get("id") || "").trim();
+
+  if (!rawId) {
+    renderHomepageShare();
+    return;
+  }
 
   if (!/^\d+$/.test(rawId)) {
     renderError("Usa un enlace con un identificador numérico válido, por ejemplo /compartir/?id=123.");
