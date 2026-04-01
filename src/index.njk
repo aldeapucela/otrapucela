@@ -340,8 +340,8 @@ canonicalUrl: /
         </div>
       </section>
       {% endif %}
-      <article class="border-b border-[#EEE] dark:border-gray-800 pb-8">
-        <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
+      <article class="flex h-full flex-col border-b border-[#EEE] dark:border-gray-800 pb-8">
+        <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="flex h-full flex-col">
           {% if articulo.image %}
           <div class="mb-4 overflow-hidden bg-gray-100 dark:bg-gray-800">
             <img
@@ -362,17 +362,17 @@ canonicalUrl: /
           </h2>
 
           {% if articulo.description and not (articulo.createdAt | olderThanMonths(1)) %}
-          <p class="mt-3 text-[0.95rem] leading-[1.55] text-gray-600 dark:text-gray-400">
+          <p class="home-grid-excerpt mt-3 text-[0.95rem] leading-[1.55] text-gray-600 dark:text-gray-400">
             {{ articulo.description }}
           </p>
           {% elif articulo.excerpt and not (articulo.createdAt | olderThanMonths(1)) %}
-          <p class="mt-3 text-[0.95rem] leading-[1.55] text-gray-600 dark:text-gray-400 [&_*]:dark:!text-gray-400">
+          <p class="home-grid-excerpt mt-3 text-[0.95rem] leading-[1.55] text-gray-600 dark:text-gray-400 [&_*]:dark:!text-gray-400">
             {{ articulo.excerpt }}
           </p>
           {% endif %}
 
           {% if articulo.author and articulo.author.name %}
-          <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          <p class="mt-auto pt-2 text-sm text-gray-500 dark:text-gray-400">
             <a href="{{ articulo.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:text-gray-300">
               {{ articulo.author.name }}
             </a>

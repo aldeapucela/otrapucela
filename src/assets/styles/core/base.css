@@ -26,6 +26,13 @@ body.menu-open {
 }
 
 @layer components {
+  .home-grid-excerpt {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
   .reading-list-toast {
     @apply pointer-events-none fixed inset-x-4 top-1/2 z-[70] flex justify-center opacity-0 transition-all duration-300;
     transform: translateY(calc(-50% + 0.75rem));
