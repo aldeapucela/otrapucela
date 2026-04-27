@@ -41,6 +41,25 @@ function normalizePeerTubeWatchUrl(embedUrl = "") {
   }
 }
 
+function detectDirectVideoUrl(mediaUrl = "") {
+  if (!mediaUrl) {
+    return null;
+  }
+
+  try {
+    const parsedUrl = new URL(mediaUrl);
+    if (/\.(mp4|m4v|webm|mov)(\?|#|$)/i.test(parsedUrl.pathname)) {
+      return parsedUrl.toString();
+    }
+  } catch {
+    if (/\.(mp4|m4v|webm|mov)(\?|#|$)/i.test(mediaUrl)) {
+      return mediaUrl;
+    }
+  }
+
+  return null;
+}
+
 async function fetchPeerTubePreviewImage(embedUrl = "") {
   const watchUrl = normalizePeerTubeWatchUrl(embedUrl);
 
@@ -137,6 +156,7 @@ async function fetchTopicDetail(topic) {
       image: originalImage,
       previewImage,
       mediaUrl: iframeSrc || null,
+      directVideoUrl: detectDirectVideoUrl(iframeSrc),
       author: normalizeAuthor(firstPost ?? topicPayload.details?.created_by ?? {}),
       postNumber: firstPost?.post_number ?? 1,
       raw: firstPost?.raw ?? ""
@@ -149,6 +169,7 @@ async function fetchTopicDetail(topic) {
       image: null,
       previewImage: null,
       mediaUrl: null,
+      directVideoUrl: null,
       author: normalizeAuthor(),
       postNumber: 1,
       raw: "",
@@ -184,6 +205,7 @@ function normalizeTopicItem(topic, detail, updatedAt, tags) {
     image: detail.image ?? topic.image_url ?? null,
     previewImage: detail.previewImage ?? null,
     mediaUrl: detail.mediaUrl ?? null,
+    directVideoUrl: detail.directVideoUrl ?? null,
     postNumber: detail.postNumber,
     source: {
       categoryUrl,
@@ -282,6 +304,7 @@ export default async function vineta() {
           image: normalizeDiscourseImageUrl(cachedItem.image ?? topic.image_url ?? null),
           previewImage: cachedItem.previewImage ?? null,
           mediaUrl: cachedItem.mediaUrl ?? null,
+          directVideoUrl: cachedItem.directVideoUrl ?? null,
           publicPath: `/p/${topic.id}/${topic.slug}/`,
           source: {
             categoryUrl,

@@ -12,22 +12,55 @@ eleventyExcludeFromCollections: true
     <lastBuildDate>{{ vineta.generatedAt | date("rfc2822") }}</lastBuildDate>
     <atom:link href="{{ site.siteUrl }}{{ site.vinetaFeedPath }}" rel="self" type="application/rss+xml" />
     {% for pieza in vineta.items %}
+    {% set piecePageUrl = site.siteUrl + pieza.publicPath %}
     {% set pieceImageUrl = pieza.image %}
     {% if pieceImageUrl and pieceImageUrl[0] == "/" %}
     {% set pieceImageUrl = site.siteUrl + pieceImageUrl %}
     {% endif %}
+    {% set piecePreviewUrl = pieza.previewImage %}
+    {% if piecePreviewUrl and piecePreviewUrl[0] == "/" %}
+    {% set piecePreviewUrl = site.siteUrl + piecePreviewUrl %}
+    {% endif %}
     <item>
       <title>{{ pieza.title | escape }}</title>
-      <link>{{ site.siteUrl }}{{ pieza.publicPath }}</link>
-      <guid isPermaLink="true">{{ site.siteUrl }}{{ pieza.publicPath }}</guid>
+      <link>{{ piecePageUrl }}</link>
+      <guid isPermaLink="true">{{ piecePageUrl }}</guid>
       <pubDate>{{ pieza.createdAt | date("rfc2822") }}</pubDate>
-      {% if pieceImageUrl %}
+      {% if pieza.isVideo %}
+        {% if pieza.directVideoUrl %}
+      <enclosure url="{{ pieza.directVideoUrl | escape }}" type="video/mp4" />
+      <media:content url="{{ pieza.directVideoUrl | escape }}" medium="video" />
+        {% elif piecePreviewUrl %}
+      <enclosure url="{{ piecePreviewUrl | escape }}" type="image/*" />
+      <media:content url="{{ piecePreviewUrl | escape }}" medium="image" />
+      <media:thumbnail url="{{ piecePreviewUrl | escape }}" />
+        {% endif %}
+      {% elif pieceImageUrl %}
       <enclosure url="{{ pieceImageUrl | escape }}" type="image/*" />
-      <media:content url="{{ pieceImageUrl | escape }}" medium="image" />
       <media:thumbnail url="{{ pieceImageUrl | escape }}" />
       {% endif %}
-      <description><![CDATA[{{ pieza.description | escape }}]]></description>
-      <content:encoded><![CDATA[{{ pieza.contentHtml | safe }}]]></content:encoded>
+      <description><![CDATA[
+        {% if pieza.isVideo %}
+          {{ (pieza.description or pieza.excerpt or pieza.title) | escape }}
+          {% if pieza.mediaUrl %} - Ver vídeo: {{ piecePageUrl }}{% endif %}
+        {% else %}
+          {{ (pieza.description or pieza.excerpt or pieza.title) | escape }}
+        {% endif %}
+      ]]></description>
+      <content:encoded><![CDATA[
+        <p>{{ (pieza.description or pieza.excerpt or pieza.title) | escape }}</p>
+        <p><a href="{{ piecePageUrl }}">Abrir viñeta en La Otra Pucela</a></p>
+        {% if pieza.isVideo %}
+          {% if pieza.directVideoUrl %}
+        <p><a href="{{ pieza.directVideoUrl }}">Ver vídeo directamente</a></p>
+          {% elif pieza.previewImage %}
+        <p><img src="{{ piecePreviewUrl }}" alt="{{ pieza.title | escape }}" /></p>
+        <p><a href="{{ piecePageUrl }}">Ver vídeo</a></p>
+          {% endif %}
+        {% elif pieceImageUrl %}
+        <p><img src="{{ pieceImageUrl }}" alt="{{ pieza.title | escape }}" /></p>
+        {% endif %}
+      ]]></content:encoded>
       {% if pieza.author and pieza.author.name %}
       <author>{{ pieza.author.name | escape }}</author>
       {% endif %}
