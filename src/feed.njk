@@ -11,7 +11,7 @@ eleventyExcludeFromCollections: true
     <language>es-ES</language>
     <lastBuildDate>{{ articulos.generatedAt | date("rfc2822") }}</lastBuildDate>
     <atom:link href="{{ site.siteUrl }}{{ site.feedPath }}" rel="self" type="application/rss+xml" />
-    {% for articulo in articulos.items | feedItems %}
+    {% for articulo in articulos.items | excludeVineta | excludeIds(vinetaIds) | feedItems %}
     {% set articleImageUrl = articulo.image %}
     {% if articleImageUrl and articleImageUrl[0] == "/" %}
     {% set articleImageUrl = site.siteUrl + articleImageUrl %}
