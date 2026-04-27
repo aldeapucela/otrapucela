@@ -64,6 +64,14 @@ eleventyComputed:
       <header class="border-b border-[#EEE] dark:border-gray-800 pb-8">
         {% if articulo.tags.length %}
         <div class="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400">
+          {% if vinetaIds and vinetaIds.includes(articulo.id) %}
+          <a
+            href="{{ site.vinetaPath }}"
+            class="transition-colors duration-200 hover:text-gray-900 dark:text-white"
+          >
+            La viñeta
+          </a>
+          {% endif %}
           {% for tag in articulo.tags %}
           <a
             href="/tema/{{ tag.slug }}/"
@@ -163,9 +171,28 @@ eleventyComputed:
       </header>
     </div>
 
-    <div class="article-body prose dark:prose-invert prose-lg prose-gray mx-auto mt-10 w-full max-w-prose text-lg leading-relaxed text-gray-800 dark:text-gray-200 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:my-5 prose-li:my-1 prose-img:my-6 prose-img:rounded-none prose-img:shadow-sm prose-hr:my-10 [&_.emoji]:my-0 [&_.emoji]:inline-block [&_.emoji]:h-[1.1em] [&_.emoji]:w-[1.1em] [&_.emoji]:align-[-0.15em] [&_.emoji]:rounded-none [&_.emoji]:shadow-none">
+    {% if articulo.isVideo %}
+    <div class="article-video-player mx-auto mt-10 w-full max-w-4xl">
+      <div class="overflow-hidden rounded-[1.35rem] border border-[#E6DDCF] dark:border-gray-700 bg-gray-100 shadow-sm">
+        <div class="article-video-player__frame relative w-full overflow-hidden">
+          <iframe
+            src="{{ articulo.mediaUrl }}"
+            title="{{ articulo.title }}"
+            class="article-video-player__iframe absolute inset-0 block h-full w-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if articulo.bodyHtml or articulo.contentHtml %}
+    <div class="article-body {% if articulo.isVideo %}article-body--video {% endif %}prose dark:prose-invert prose-lg prose-gray mx-auto mt-10 w-full max-w-prose text-lg leading-relaxed text-gray-800 dark:text-gray-200 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:my-5 prose-li:my-1 prose-img:my-6 prose-img:rounded-none prose-img:shadow-sm prose-hr:my-10 [&_.emoji]:my-0 [&_.emoji]:inline-block [&_.emoji]:h-[1.1em] [&_.emoji]:w-[1.1em] [&_.emoji]:align-[-0.15em] [&_.emoji]:rounded-none [&_.emoji]:shadow-none">
       {{ (articulo.bodyHtml or articulo.contentHtml) | safe }}
     </div>
+    {% endif %}
   </article>
 
   <div class="mx-auto mb-10 hidden max-w-prose justify-end lg:flex">

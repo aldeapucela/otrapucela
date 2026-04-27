@@ -27,12 +27,42 @@
     margin-right: auto;
   }
 
+  .article-video-player {
+    overflow-x: clip;
+  }
+
+  .article-video-player__frame {
+    aspect-ratio: 4 / 3;
+  }
+
+  .article-video-player__iframe,
+  .vineta-video-player__frame iframe {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    border: 0;
+  }
+
+  @media (min-width: 640px) {
+    .article-video-player__frame {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  .vineta-page {
+    overflow-x: clip;
+  }
+
   .article-card-image,
   .article-body img {
     transition: filter 180ms ease;
   }
 
-  .article-body img[data-lightbox-image] {
+  .article-body img[data-lightbox-image],
+  .vineta-page img[data-lightbox-image] {
     cursor: zoom-in;
     transition:
       filter 180ms ease,
@@ -40,11 +70,13 @@
       opacity 220ms ease;
   }
 
-  .article-body img[data-lightbox-image]:hover {
+  .article-body img[data-lightbox-image]:hover,
+  .vineta-page img[data-lightbox-image]:hover {
     transform: translateY(-1px);
   }
 
-  .article-body img[data-lightbox-image]:focus-visible {
+  .article-body img[data-lightbox-image]:focus-visible,
+  .vineta-page img[data-lightbox-image]:focus-visible {
     outline: 2px solid #2f3e46;
     outline-offset: 4px;
   }
@@ -54,12 +86,13 @@
     filter: brightness(0.9);
   }
 
-  .dark .article-body img[data-lightbox-image]:focus-visible {
+  .dark .article-body img[data-lightbox-image]:focus-visible,
+  .dark .vineta-page img[data-lightbox-image]:focus-visible {
     outline-color: #d8e1d6;
   }
 
   @media (max-width: 639px) {
-    .article-body img:not(.emoji) {
+    .article-body:not(.article-body--video) img:not(.emoji) {
       display: block;
       width: 100vw;
       max-width: none;

@@ -2,4 +2,4 @@
 permalink: /api/articulos.json
 eleventyExcludeFromCollections: true
 ---
-{{ articulos | dump(2) | safe }}
+{{ articulos | excludeVineta | excludeIds(vinetaIds) | dump(2) | safe }}

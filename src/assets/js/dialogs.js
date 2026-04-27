@@ -189,13 +189,15 @@ function setupInstallPrompt() {
 
 function setupArticleImageLightbox() {
   const articleBody = document.querySelector(".article-body");
-
-  if (!articleBody) {
-    return;
-  }
-
-  const imageElements = Array.from(articleBody.querySelectorAll("img"))
-    .filter((imageElement) => !imageElement.classList.contains("emoji"));
+  const imageElements = Array.from(
+    new Set([
+      ...(articleBody
+        ? Array.from(articleBody.querySelectorAll("img"))
+          .filter((imageElement) => !imageElement.classList.contains("emoji"))
+        : []),
+      ...Array.from(document.querySelectorAll("img[data-lightbox-image]"))
+    ])
+  );
 
   if (!imageElements.length) {
     return;
@@ -316,7 +318,9 @@ function setupArticleImageLightbox() {
 
   imageElements.forEach((imageElement) => {
     const caption = getImageCaption(imageElement);
-    injectInlineCaption(imageElement, caption);
+    if (articleBody?.contains(imageElement)) {
+      injectInlineCaption(imageElement, caption);
+    }
 
     imageElement.dataset.lightboxImage = "true";
     imageElement.tabIndex = 0;
@@ -369,6 +373,7 @@ function setupRssDialog() {
   const podcastServiceLinks = dialogElement.querySelectorAll("[data-podcast-service]");
   const feedUrl = primaryTriggerElement.dataset.feedUrl || primaryTriggerElement.href;
   const podcastUrl = primaryTriggerElement.dataset.podcastUrl || "";
+  const vinetaUrl = primaryTriggerElement.dataset.vinetaUrl || "";
   let lastTriggerElement = primaryTriggerElement;
   const dialogController = bindDialogInteractions(dialogElement, {
     onAfterClose() {
@@ -383,7 +388,8 @@ function setupRssDialog() {
 
   const feedUrls = {
     rss: feedUrl,
-    podcast: podcastUrl
+    podcast: podcastUrl,
+    vineta: vinetaUrl
   };
 
   feedInputs.forEach((inputElement) => {

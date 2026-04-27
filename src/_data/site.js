@@ -7,7 +7,14 @@ export default {
   name: "La Otra Pucela",
   description: "Información vecinal, útil e independiente sobre Valladolid.",
   feedPath: "/feed.xml",
+  vinetaPath: "/vineta/",
+  vinetaFeedPath: "/vineta/feed.xml",
   podcastPath: "/podcast.xml",
+  vineta: {
+    title: "La viñeta",
+    description: "Humor para reflexionar",
+    subtitle: "Viñetas y piezas de animación con mirada satírica sobre la ciudad."
+  },
   defaultSocialImage: "/assets/social-preview.png",
   podcast: {
     title: "La Otra Pucela en audio",

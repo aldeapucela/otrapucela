@@ -255,8 +255,35 @@ export default function eleventyConfig(config) {
     }
 
     return items
+      .filter((item) => item?.source?.categoryUrl !== "https://foro.aldeapucela.org/c/otra-pucela/la-vineta/11.json")
       .filter((item) => item?.slug !== "acerca-de-la-categoria-plataforma-integracion-ferroviaria")
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  });
+
+  config.addFilter("excludeVineta", (items = []) => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    return items.filter((item) => item?.source?.categoryUrl !== "https://foro.aldeapucela.org/c/otra-pucela/la-vineta/11.json");
+  });
+
+  config.addFilter("excludeIds", (items = [], ids = []) => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    const excludedIds = new Set(
+      Array.isArray(ids)
+        ? ids.map((id) => String(id))
+        : []
+    );
+
+    if (!excludedIds.size) {
+      return items;
+    }
+
+    return items.filter((item) => !excludedIds.has(String(item?.id)));
   });
 
   config.addFilter("withAudio", (items = []) => {

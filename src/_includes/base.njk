@@ -33,6 +33,7 @@
     <meta name="twitter:image" content="{{ resolvedOgImage }}">
 
     <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS" href="{{ site.feedPath }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.vineta.title }} RSS" href="{{ site.vinetaFeedPath }}">
     <link rel="alternate" type="application/rss+xml" title="{{ site.podcast.title }} Podcast" href="{{ site.podcastPath }}">
     <link rel="stylesheet" href="{{ assetManifest['assets/styles/main.css'] or '/assets/styles/main.css' }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -111,6 +112,12 @@
             </a>
             {% endfor %}
             <a
+              href="{{ site.vinetaPath }}"
+              class="whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white"
+            >
+              La viñeta
+            </a>
+            <a
               href="/temas/"
               class="whitespace-nowrap text-sm font-semibold text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:text-gray-900 dark:text-white"
             >
@@ -146,6 +153,12 @@
               {{ tag.name | themeName }}
             </a>
             {% endfor %}
+            <a
+              href="{{ site.vinetaPath }}"
+              class="whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white"
+            >
+              La viñeta
+            </a>
             <a
               href="/temas/"
               class="whitespace-nowrap text-sm font-semibold text-gray-500 dark:text-gray-400 transition-colors duration-200 hover:text-gray-900 dark:text-white"
@@ -214,6 +227,12 @@
                   class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == '/audios/' or page.url == '/barra-audio/' %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white{% endif %}"
                 >
                   Audios
+                </a>
+                <a
+                  href="{{ site.vinetaPath }}"
+                  class="text-sm font-semibold uppercase tracking-[0.08em] {% if page.url == site.vinetaPath %}text-gray-900 dark:text-white{% else %}text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:text-gray-900 dark:text-white{% endif %}"
+                >
+                  La viñeta
                 </a>
                 <a
                   href="/lista-de-lectura/"
@@ -410,6 +429,7 @@
           <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             {% set absoluteFeedUrl = site.siteUrl + site.feedPath %}
             {% set absolutePodcastUrl = site.podcastFeedUrl %}
+            {% set absoluteVinetaFeedUrl = site.siteUrl + site.vinetaFeedPath %}
             <a
               href="/audios/"
               class="inline-flex min-h-11 items-center gap-2 font-medium text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:text-gray-950"
@@ -423,6 +443,7 @@
               data-rss-trigger
               data-feed-url="{{ absoluteFeedUrl }}"
               data-podcast-url="{{ absolutePodcastUrl }}"
+              data-vineta-url="{{ absoluteVinetaFeedUrl }}"
               data-default-feed="rss"
               aria-haspopup="dialog"
             >
@@ -615,9 +636,37 @@
                     </div>
                   </div>
                 </div>
+
+                <div class="py-5 sm:py-6" data-rss-feed-section="vineta">
+                  <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-pen-nib mt-1 text-[1.2rem] text-[#7A6B57] dark:text-[#B8AE9F]" aria-hidden="true"></i>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-base font-semibold leading-tight text-[#2F3E46] dark:text-gray-200">Feed de La viñeta</p>
+                      <p class="mt-1 text-sm leading-[1.6] text-gray-500 dark:text-gray-400 sm:text-base">
+                        Solo las viñetas y piezas de animación de esta sección.
+                      </p>
+                      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                        <input
+                          type="text"
+                          readonly
+                          class="min-h-12 flex-1 rounded-2xl border border-[#D7D0C3] dark:border-gray-700 bg-white dark:bg-[#11181b] px-4 py-3 text-sm leading-[1.5] text-gray-800 dark:text-gray-200 outline-none ring-0 sm:text-base"
+                          data-rss-feed-input="vineta"
+                        >
+                        <button
+                          type="button"
+                          class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#2F3E46] px-5 py-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#253138] focus:outline-none focus:ring-2 focus:ring-[#2F3E46]/30 sm:w-auto sm:min-w-[8.5rem]"
+                          data-rss-copy="vineta"
+                        >
+                          <i class="fa-regular fa-copy text-base" aria-hidden="true"></i>
+                          <span data-rss-copy-label="vineta">Copiar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <p class="mt-4 text-sm leading-[1.6] text-gray-500 dark:text-gray-400 sm:text-base">
-                Usa el RSS general para lectura y el feed de podcast si quieres escuchar los artículos en una app de podcasts.
+                Usa el RSS general para lectura, el feed de podcast si quieres escuchar los artículos en una app de podcasts y el de La viñeta si solo quieres seguir esa sección.
               </p>
             </section>
 

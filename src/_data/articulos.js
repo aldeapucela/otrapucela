@@ -1,6 +1,16 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import * as cheerio from "cheerio";
+import {
+  bodyHtmlFromContent as sharedBodyHtmlFromContent,
+  detectContentType,
+  excerptFromHtml as sharedExcerptFromHtml,
+  excerptFromText as sharedExcerptFromText,
+  extractPrimaryMediaFromHtml,
+  normalizeDiscourseImageUrl,
+  normalizeImageSourcesInHtml,
+  sanitizeDiscourseHtml as sharedSanitizeDiscourseHtml
+} from "./discourse-utils.js";
+import vinetaIds from "./vinetaIds.js";
 
 const discourseBaseUrl = "https://foro.aldeapucela.org";
 const categoryUrl = `${discourseBaseUrl}/c/9.json`;
@@ -17,316 +27,6 @@ const remoteAudioBaseUrl = "https://media.aldeapucela.org/public.php/dav/files/q
 const defaultAudioManifestUrl = `${remoteAudioBaseUrl}/audio-manifest.json`;
 const audioManifestUrl = process.env.AUDIO_MANIFEST_URL?.trim() || defaultAudioManifestUrl;
 const audioManifestTtlMs = Number.parseInt(process.env.AUDIO_MANIFEST_TTL_MS ?? "", 10) || (10 * 60 * 1000);
-
-function stripHtml(html = "") {
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function normalizeExcerptText(text = "") {
-  return text.replace(/\u00ad/g, "").replace(/\s+/g, " ").trim();
-}
-
-function ensureExcerptEnding(text = "") {
-  if (!text) {
-    return "";
-  }
-
-  return /[.!?…]$/.test(text) ? text : `${text}.`;
-}
-
-function normalizeExcerptComparisonText(text = "") {
-  return normalizeExcerptText(text)
-    .replace(/[.!?…:;,]+$/g, "")
-    .replace(/[“”"'"'«»]/g, "")
-    .trim()
-    .toLowerCase();
-}
-
-function removeExcerptPrefix(paragraphText = "", excerpt = "") {
-  const normalizedParagraph = normalizeExcerptText(paragraphText);
-  const normalizedExcerpt = normalizeExcerptText(excerpt);
-
-  if (!normalizedParagraph || !normalizedExcerpt) {
-    return normalizedParagraph;
-  }
-
-  if (normalizedParagraph === normalizedExcerpt) {
-    return "";
-  }
-
-  if (!normalizedParagraph.startsWith(normalizedExcerpt)) {
-    return normalizedParagraph;
-  }
-
-  return normalizedParagraph
-    .slice(normalizedExcerpt.length)
-    .replace(/^[\s.!?…:;,"'“”«»\-–—]+/, "")
-    .trim();
-}
-
-function sanitizeDiscourseHtml(html = "") {
-  if (!html) {
-    return "";
-  }
-
-  const $ = cheerio.load(html);
-
-  $("a.anchor").remove();
-  $(".meta").remove();
-  $(".filename").remove();
-  $(".informations").remove();
-
-  $(".lightbox-wrapper").each((_, element) => {
-    $(element).replaceWith($(element).html() || "");
-  });
-
-  $(".lightbox").each((_, element) => {
-    const imageElement = $(element).find("img").first();
-
-    if (imageElement.length) {
-      imageElement.attr("loading", "lazy");
-      imageElement.removeAttr("width");
-      imageElement.removeAttr("height");
-      $(element).replaceWith(imageElement);
-      return;
-    }
-
-    $(element).replaceWith($(element).html() || "");
-  });
-
-  $(".d-wrap").each((_, element) => {
-    $(element).replaceWith($(element).html() || "");
-  });
-
-  $("aside.onebox").each((_, element) => {
-    const onebox = $(element);
-    const sourceUrl = onebox.attr("data-onebox-src")
-      || onebox.find("h3 a").attr("href")
-      || onebox.find("header.source a").attr("href")
-      || "";
-    const title = onebox.find("h3 a").first().text().replace(/\s+/g, " ").trim()
-      || onebox.find("header.source a").first().text().replace(/\s+/g, " ").trim()
-      || sourceUrl;
-    const description = onebox.find(".onebox-body p").first().text().replace(/\s+/g, " ").trim();
-    const hostname = (() => {
-      try {
-        return sourceUrl ? new URL(sourceUrl).hostname : "";
-      } catch {
-        return "";
-      }
-    })();
-    const imageElement = onebox.find("img.thumbnail").first();
-
-    const wrapper = $("<blockquote></blockquote>");
-
-    if (imageElement.length && imageElement.attr("src")) {
-      const imageClone = imageElement.clone();
-      imageClone.attr("loading", "lazy");
-      imageClone.removeAttr("width");
-      imageClone.removeAttr("height");
-      imageClone.removeAttr("srcset");
-      wrapper.append(imageClone);
-    }
-
-    if (title && sourceUrl) {
-      wrapper.append(
-        `<p><strong><a href="${sourceUrl}" target="_blank" rel="noreferrer">${title}</a></strong></p>`
-      );
-    } else if (sourceUrl) {
-      wrapper.append(
-        `<p><strong><a href="${sourceUrl}" target="_blank" rel="noreferrer">${sourceUrl}</a></strong></p>`
-      );
-    }
-
-    if (description) {
-      wrapper.append(`<p>${description}</p>`);
-    }
-
-    if (hostname && sourceUrl) {
-      wrapper.append(
-        `<p><a href="${sourceUrl}" target="_blank" rel="noreferrer">${hostname}</a></p>`
-      );
-    }
-
-    onebox.replaceWith(wrapper);
-  });
-
-  $("div[align='center']").each((_, element) => {
-    $(element).replaceWith($(element).html() || "");
-  });
-
-  $("br").each((_, element) => {
-    const previousNode = $(element).prev();
-    const nextNode = $(element).next();
-
-    if (!previousNode.length || !nextNode.length) {
-      $(element).remove();
-    }
-  });
-
-  $("img").each((_, element) => {
-    $(element).attr("loading", "lazy");
-    $(element).removeAttr("width");
-    $(element).removeAttr("height");
-    $(element).removeAttr("srcset");
-    $(element).removeAttr("data-base62-sha1");
-    $(element).removeAttr("data-dominant-color");
-  });
-
-  $("p").each((_, element) => {
-    const paragraph = $(element);
-    const cleanText = normalizeExcerptText(paragraph.text());
-    const isDimensionCaption = /^\d+\s*[×x]\s*\d+(\s+\d+([.,]\d+)?\s*(KB|MB|GB))?$/i.test(cleanText)
-      || /^\d+\s*[×x]\s*\d+\s+\d+([.,]\d+)?\s*(KB|MB|GB)$/i.test(cleanText);
-
-    if ((!cleanText || isDimensionCaption) && paragraph.find("img, a, strong, em, iframe").length === 0) {
-      paragraph.remove();
-    }
-  });
-
-  $("figcaption").remove();
-  $("span.informations").remove();
-
-  return $.root().html() || "";
-}
-
-function excerptFromText(text = "", maxLength = 220) {
-  if (!text) {
-    return "";
-  }
-
-  const normalizedText = text.replace(/\s+/g, " ").trim();
-
-  if (!normalizedText) {
-    return "";
-  }
-
-  const sentences = [];
-  let sentenceStart = 0;
-
-  for (let index = 0; index < normalizedText.length; index += 1) {
-    const character = normalizedText[index];
-
-    if (!".!?…".includes(character)) {
-      continue;
-    }
-
-    const previousCharacter = normalizedText[index - 1] ?? "";
-    const nextCharacter = normalizedText[index + 1] ?? "";
-    const isNumericSeparator = /\d/.test(previousCharacter) && /\d/.test(nextCharacter);
-
-    if (isNumericSeparator) {
-      continue;
-    }
-
-    const sentence = normalizedText.slice(sentenceStart, index + 1).trim();
-
-    if (sentence) {
-      sentences.push(sentence);
-    }
-
-    sentenceStart = index + 1;
-  }
-
-  if (sentenceStart < normalizedText.length) {
-    const trailingSentence = normalizedText.slice(sentenceStart).trim();
-
-    if (trailingSentence) {
-      sentences.push(trailingSentence);
-    }
-  }
-
-  if (sentences.length) {
-    let excerpt = "";
-
-    for (const sentence of sentences) {
-      const nextExcerpt = excerpt ? `${excerpt} ${sentence}` : sentence;
-
-      if (nextExcerpt.length > maxLength && excerpt) {
-        break;
-      }
-
-      excerpt = nextExcerpt;
-
-      if (excerpt.length >= maxLength) {
-        break;
-      }
-    }
-
-    return excerpt || sentences[0];
-  }
-
-  return normalizedText;
-}
-
-function excerptFromHtml(html = "", maxLength = 220) {
-  if (!html) {
-    return "";
-  }
-
-  const $ = cheerio.load(html);
-  const firstParagraph = $("p").toArray().find((element) => {
-    const text = normalizeExcerptText($(element).text());
-
-    return text && !/^compartir en redes y grupos$/i.test(text);
-  });
-
-  if (firstParagraph) {
-    const paragraphText = normalizeExcerptText($(firstParagraph).text());
-
-    if (paragraphText.length <= maxLength) {
-      return ensureExcerptEnding(paragraphText);
-    }
-
-    return ensureExcerptEnding(excerptFromText(paragraphText, maxLength));
-  }
-
-  return ensureExcerptEnding(excerptFromText(stripHtml(html), maxLength));
-}
-
-function bodyHtmlFromContent(html = "", excerpt = "") {
-  if (!html) {
-    return "";
-  }
-
-  const $ = cheerio.load(html);
-  const normalizedExcerpt = normalizeExcerptComparisonText(excerpt);
-  const firstParagraph = $("p").first();
-
-  if (firstParagraph.length) {
-    const rawFirstParagraphText = firstParagraph.text();
-    const firstParagraphText = normalizeExcerptComparisonText(rawFirstParagraphText);
-
-    const excerptMatchesFirstParagraph = normalizedExcerpt
-      && firstParagraphText
-      && (
-        firstParagraphText === normalizedExcerpt
-        || firstParagraphText.startsWith(normalizedExcerpt)
-      );
-
-    if (excerptMatchesFirstParagraph) {
-      const remainingParagraphText = removeExcerptPrefix(rawFirstParagraphText, excerpt);
-
-      if (remainingParagraphText) {
-        firstParagraph.text(remainingParagraphText);
-      } else {
-        firstParagraph.remove();
-      }
-
-      const nextElement = $("body").children().first();
-
-      if (nextElement.length && nextElement.is("hr")) {
-        nextElement.remove();
-      }
-    }
-  }
-
-  return $.root().html() || "";
-}
-
 function normalizeCommentCount(topic) {
   const postsCount = topic.posts_count ?? 0;
   return Math.max(postsCount - 1, 0);
@@ -746,7 +446,7 @@ function buildTagsFromItems(items = []) {
   );
 }
 
-function buildFallbackDataFromCache(cache, authorsCache, error) {
+function buildFallbackDataFromCache(cache, authorsCache, error, vinetaIdSet = new Set()) {
   const items = Object.values(cache.itemsById ?? {})
     .map((item) => {
       const cachedAuthor = item.author?.username
@@ -759,11 +459,15 @@ function buildFallbackDataFromCache(cache, authorsCache, error) {
         replies: Number(item.replies ?? 0),
         views: Number(item.views ?? 0),
         likeCount: Number(item.likeCount ?? 0),
+        contentType: item.contentType ?? "image",
+        isVideo: item.isVideo === true,
+        mediaUrl: item.mediaUrl ?? null,
+        previewImage: item.previewImage ?? null,
+        audio: vinetaIdSet.has(Number(item.id)) ? null : buildArticleAudioFromCachedItem(item),
         author: normalizeAuthor({
           ...item.author,
           ...cachedAuthor
         }),
-        audio: buildArticleAudioFromCachedItem(item),
         fetchError: item.fetchError ?? error.message
       };
     })
@@ -857,28 +561,46 @@ async function fetchTopicDetail(topic) {
   try {
     const topicPayload = await fetchJson(topicUrl);
     const firstPost = topicPayload.post_stream?.posts?.[0];
-    const cooked = sanitizeDiscourseHtml(firstPost?.cooked ?? "");
+    const cooked = sharedSanitizeDiscourseHtml(firstPost?.cooked ?? "");
+    const cookedWithOriginalImages = normalizeImageSourcesInHtml(cooked);
+    const contentType = detectContentType({
+      raw: firstPost?.raw ?? "",
+      html: cookedWithOriginalImages
+    });
+    const primaryMedia = contentType === "video"
+      ? extractPrimaryMediaFromHtml(cookedWithOriginalImages)
+      : { mediaUrl: null, bodyHtml: cookedWithOriginalImages };
+    const excerpt = sharedExcerptFromHtml(cookedWithOriginalImages);
 
     return {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
-      html: cooked,
-      excerpt: excerptFromHtml(cooked),
-      bodyHtml: bodyHtmlFromContent(cooked, excerptFromHtml(cooked)),
-      image: topicPayload.image_url ?? null,
+      html: cookedWithOriginalImages,
+      excerpt,
+      bodyHtml: sharedBodyHtmlFromContent(primaryMedia.bodyHtml, excerpt),
+      image: normalizeDiscourseImageUrl(topicPayload.image_url ?? null),
+      previewImage: null,
+      mediaUrl: primaryMedia.mediaUrl,
       author: normalizeAuthor(firstPost ?? topicPayload.details?.created_by ?? {}),
       postNumber: firstPost?.post_number ?? 1,
-      raw: firstPost?.raw ?? ""
+      raw: firstPost?.raw ?? "",
+      contentType,
+      isVideo: contentType === "video"
     };
   } catch (error) {
     return {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
       html: "",
-      excerpt: excerptFromText(topic.excerpt ?? ""),
+      excerpt: sharedExcerptFromText(topic.excerpt ?? ""),
+      bodyHtml: "",
       image: null,
+      previewImage: null,
+      mediaUrl: null,
       author: normalizeAuthor(),
       postNumber: 1,
       raw: "",
-      fetchError: error.message
+      fetchError: error.message,
+      contentType: "image",
+      isVideo: false
     };
   }
 }
@@ -925,6 +647,7 @@ async function fetchAuthorDetail(author) {
 export default async function articulos() {
   const cache = readCache();
   const authorsCache = readAuthorsCache();
+  const vinetaIdSet = new Set(await vinetaIds());
   let payload;
 
   try {
@@ -937,7 +660,7 @@ export default async function articulos() {
         `[articulos] No se pudo actualizar Discourse; usando cache local (${cachedItems.length} articulos).`,
         error
       );
-      return buildFallbackDataFromCache(cache, authorsCache, error);
+      return buildFallbackDataFromCache(cache, authorsCache, error, vinetaIdSet);
     }
 
     throw error;
@@ -961,8 +684,16 @@ export default async function articulos() {
         && cachedAuthor.name !== "Aldea Pucela";
 
       if (canReuseCachedItem) {
-        const sanitizedCachedHtml = sanitizeDiscourseHtml(cachedItem.contentHtml ?? "");
-        const normalizedExcerpt = excerptFromHtml(sanitizedCachedHtml);
+        const sanitizedCachedHtml = sharedSanitizeDiscourseHtml(cachedItem.contentHtml ?? "");
+        const cachedHtmlWithOriginalImages = normalizeImageSourcesInHtml(sanitizedCachedHtml);
+        const contentType = detectContentType({
+          raw: cachedItem.raw ?? "",
+          html: cachedHtmlWithOriginalImages
+        });
+        const primaryMedia = contentType === "video"
+          ? extractPrimaryMediaFromHtml(cachedHtmlWithOriginalImages)
+          : { mediaUrl: cachedItem.mediaUrl ?? null, bodyHtml: cachedHtmlWithOriginalImages };
+        const normalizedExcerpt = sharedExcerptFromHtml(cachedHtmlWithOriginalImages);
 
         return {
           ...cachedItem,
@@ -977,10 +708,14 @@ export default async function articulos() {
           updatedAt,
           author: cachedAuthor,
           excerpt: normalizedExcerpt,
-          description: normalizedExcerpt || excerptFromText(topic.excerpt ?? ""),
-          bodyHtml: bodyHtmlFromContent(sanitizedCachedHtml, normalizedExcerpt),
-          contentHtml: sanitizedCachedHtml,
-          image: cachedItem.image ?? topic.image_url ?? null,
+          description: normalizedExcerpt || sharedExcerptFromText(topic.excerpt ?? ""),
+          bodyHtml: sharedBodyHtmlFromContent(primaryMedia.bodyHtml, normalizedExcerpt),
+          contentHtml: cachedHtmlWithOriginalImages,
+          image: normalizeDiscourseImageUrl(cachedItem.image ?? topic.image_url ?? null),
+          previewImage: cachedItem.previewImage ?? null,
+          mediaUrl: primaryMedia.mediaUrl,
+          contentType,
+          isVideo: contentType === "video",
           audio: buildArticleAudio(topic.id),
           source: {
             categoryUrl,
@@ -1008,12 +743,16 @@ export default async function articulos() {
         updatedAt,
         author: detail.author,
         excerpt: detail.excerpt,
-        description: detail.excerpt || excerptFromText(topic.excerpt ?? ""),
-        bodyHtml: bodyHtmlFromContent(detail.html, detail.excerpt),
-        contentHtml: detail.html,
+        description: detail.excerpt || sharedExcerptFromText(topic.excerpt ?? ""),
+        bodyHtml: detail.bodyHtml,
+        contentHtml: normalizeImageSourcesInHtml(detail.html),
         discourseTopicUrl: detail.canonicalUrl,
         publicPath: `/p/${topic.id}/${topic.slug}/`,
-        image: detail.image ?? topic.image_url ?? null,
+        image: normalizeDiscourseImageUrl(detail.image ?? topic.image_url ?? null),
+        previewImage: detail.previewImage ?? null,
+        mediaUrl: detail.mediaUrl ?? null,
+        contentType: detail.contentType ?? "image",
+        isVideo: detail.isVideo === true,
         audio: buildArticleAudio(topic.id),
         postNumber: detail.postNumber,
         source: {
@@ -1030,6 +769,9 @@ export default async function articulos() {
 
   items.forEach((item) => {
     item.audio = audioAvailabilityMap.get(String(item.id)) ?? null;
+    if (vinetaIdSet.has(Number(item.id))) {
+      item.audio = null;
+    }
   });
 
   items.sort((a, b) => {

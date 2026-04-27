@@ -1,0 +1,226 @@
+---
+layout: base.njk
+title: La viñeta - La Otra Pucela
+description: Humor para reflexionar.
+ogTitle: La viñeta - La Otra Pucela
+ogDescription: Humor para reflexionar.
+canonicalUrl: "/vineta/"
+---
+{% set vinetaItems = vineta.items %}
+{% set featuredVineta = null %}
+{% for item in vinetaItems %}
+{% if not featuredVineta and not item.featured %}
+{% set featuredVineta = item %}
+{% endif %}
+{% endfor %}
+{% if not featuredVineta %}
+{% set featuredVineta = vinetaItems | first %}
+{% endif %}
+{% set vinetaSecondaryItems = vinetaItems | excludeArticle(featuredVineta.id if featuredVineta else null) %}
+{% set vinetaVideoItems = vinetaItems | selectattr("isVideo") %}
+{% macro videoThumbnail(imageUrl, title, sizeClass = "w-full") %}
+<div class="relative overflow-hidden rounded-[0.95rem] bg-black/5 dark:bg-black/20 {{ sizeClass }}">
+  {% if imageUrl %}
+  <img
+    src="{{ imageUrl }}"
+    alt="{{ title }}"
+    class="h-full w-full object-cover"
+    loading="lazy"
+  >
+  {% else %}
+  <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1F2937] to-[#0F172A] text-center text-white">
+    <span class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">Vídeo</span>
+  </div>
+  {% endif %}
+  <div class="absolute inset-0 flex items-center justify-center bg-black/10 text-white">
+    <div class="flex h-11 w-11 items-center justify-center rounded-full border border-white/45 bg-black/22">
+      <i class="fa-solid fa-play text-[0.88rem] text-white" aria-hidden="true"></i>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+<section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+  <div class="max-w-3xl">
+    <h1 class="font-serif text-[2.6rem] font-semibold leading-[1] tracking-tight text-gray-900 dark:text-white sm:text-[3.5rem] lg:text-[4rem]">
+      La viñeta
+    </h1>
+    <p class="mt-3 max-w-2xl font-['Montserrat',sans-serif] text-[0.86rem] font-semibold uppercase tracking-[0.18em] text-[#8A7F6B] dark:text-[#B4AA9A] sm:text-[0.9rem]">
+      Humor gráfico municipal para reflexionar
+    </p>
+  </div>
+
+  {% if featuredVineta %}
+  <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+    <article class="overflow-hidden rounded-[1.5rem] border border-[#E6DDCF] dark:border-gray-700 bg-[#FBF8F2] dark:bg-[#1A2328] shadow-sm lg:col-span-7">
+      <a href="/p/{{ featuredVineta.id }}/{{ featuredVineta.slug }}/" class="block">
+        {% set featuredMediaImage = featuredVineta.previewImage or featuredVineta.image %}
+        {% if featuredMediaImage %}
+        {% if featuredVineta.isVideo %}
+        {{ videoThumbnail(featuredMediaImage, featuredVineta.title, "aspect-[16/10]") }}
+        {% else %}
+        <div class="overflow-hidden bg-black/5 dark:bg-black/20">
+          <img
+            src="{{ featuredMediaImage }}"
+            alt="{{ featuredVineta.title }}"
+            class="aspect-[16/10] w-full object-cover"
+            loading="eager"
+          >
+        </div>
+        {% endif %}
+        {% elif featuredVineta.isVideo %}
+        <div class="flex aspect-[16/10] w-full items-center justify-center bg-gradient-to-br from-[#1F2937] to-[#0F172A] px-6 text-center text-white">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Vídeo</p>
+            <p class="mt-3 font-serif text-[1.8rem] font-semibold leading-[1.08] tracking-tight">
+              Animación satírica
+            </p>
+          </div>
+        </div>
+        {% else %}
+        <div class="flex aspect-[16/10] w-full items-center justify-center bg-gradient-to-br from-[#F6F1E7] via-[#ECE4D7] to-[#D8CCB5] px-6 text-center dark:from-[#2A2622] dark:via-[#1E1A17] dark:to-[#121010]">
+          <div class="max-w-sm">
+            <p class="mt-3 font-serif text-[1.8rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
+              Humor para reflexionar
+            </p>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
+          <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#7A6B57] dark:text-[#B8AE9F]">
+            <time datetime="{{ featuredVineta.createdAt }}">{{ featuredVineta.createdAt | date("d MMM yyyy") }}</time>
+          </div>
+          <h2 class="font-serif text-[1.75rem] font-semibold leading-[1.04] tracking-tight text-gray-900 dark:text-white sm:text-[2.15rem] lg:text-[2.25rem]">
+            {{ featuredVineta.title }}
+          </h2>
+          {% if featuredVineta.author and featuredVineta.author.name %}
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <a href="{{ featuredVineta.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-900 dark:hover:text-white">
+              {{ featuredVineta.author.name }}
+            </a>
+          </p>
+          {% endif %}
+        </div>
+      </a>
+    </article>
+
+    <aside class="lg:col-span-5 space-y-5">
+      {% if vinetaVideoItems.length %}
+      <div class="rounded-[1.5rem] border border-[#E6DDCF] dark:border-gray-700 bg-white dark:bg-[#11181b] p-5 shadow-sm sm:p-6">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-lg font-semibold uppercase tracking-[0.04em] text-gray-900 dark:text-white">VÍDEOS</h2>
+        </div>
+        <div class="mt-5 space-y-3 lg:hidden">
+          {% for articulo in vinetaVideoItems.slice(0, 3) %}
+          <article class="overflow-hidden rounded-[1.15rem] border border-[#EEE3D0] dark:border-gray-700 bg-[#FBF8F2] dark:bg-[#11181b]">
+            <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="flex items-stretch gap-3 p-3">
+              <div class="w-24 shrink-0 overflow-hidden rounded-[0.95rem] bg-black/5 dark:bg-black/20 sm:w-28">
+                {% if articulo.previewImage %}
+                {{ videoThumbnail(articulo.previewImage, articulo.title, "aspect-[4/5]") }}
+                {% elif articulo.image %}
+                {{ videoThumbnail(articulo.image, articulo.title, "aspect-[4/5]") }}
+                {% else %}
+                <div class="flex aspect-[4/5] h-full w-full items-center justify-center bg-gradient-to-br from-[#1F2937] to-[#0F172A] text-center text-white">
+                  <span class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">Vídeo</span>
+                </div>
+                {% endif %}
+              </div>
+              <div class="min-w-0 flex-1 py-1.5 pr-1">
+                <h3 class="font-serif text-[1rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
+                  {{ articulo.title }}
+                </h3>
+                {% if articulo.author and articulo.author.name %}
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {{ articulo.author.name }}
+                </p>
+                {% endif %}
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+
+        <div class="mt-5 hidden space-y-3 lg:block">
+          {% for articulo in vinetaVideoItems.slice(0, 5) %}
+          <article class="overflow-hidden rounded-[1.15rem] border border-[#EEE3D0] dark:border-gray-700 bg-[#FBF8F2] dark:bg-[#11181b]">
+            <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="flex items-stretch gap-3 p-3">
+              <div class="w-28 shrink-0 overflow-hidden rounded-[0.95rem] bg-black/5 dark:bg-black/20">
+                {% if articulo.previewImage %}
+                {{ videoThumbnail(articulo.previewImage, articulo.title, "aspect-[4/5]") }}
+                {% elif articulo.image %}
+                {{ videoThumbnail(articulo.image, articulo.title, "aspect-[4/5]") }}
+                {% else %}
+                <div class="flex aspect-[4/5] h-full w-full items-center justify-center bg-gradient-to-br from-[#1F2937] to-[#0F172A] text-center text-white">
+                  <span class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">Vídeo</span>
+                </div>
+                {% endif %}
+              </div>
+              <div class="min-w-0 flex-1 py-1.5 pr-1">
+                <h3 class="font-serif text-[1rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
+                  {{ articulo.title }}
+                </h3>
+                {% if articulo.author and articulo.author.name %}
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {{ articulo.author.name }}
+                </p>
+                {% endif %}
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+
+  <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+    {% for articulo in vinetaSecondaryItems %}
+    <article class="overflow-hidden rounded-[1.35rem] border border-[#E6DDCF] dark:border-gray-700 bg-white dark:bg-[#11181b] shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
+      <a href="/p/{{ articulo.id }}/{{ articulo.slug }}/" class="block">
+        {% set articleMediaImage = articulo.previewImage or articulo.image %}
+        {% if articleMediaImage %}
+        <div class="overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <img
+            src="{{ articleMediaImage }}"
+            alt="{{ articulo.title }}"
+            class="aspect-[4/3] w-full object-cover"
+            loading="lazy"
+          >
+        </div>
+        {% elif articulo.isVideo %}
+        <div class="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-[#1F2937] to-[#0F172A] px-5 text-center text-white">
+          <div>
+            <p class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-white/70">Vídeo</p>
+            <p class="mt-2 font-serif text-[1.15rem] font-semibold leading-[1.1] tracking-tight">
+              Animación satírica
+            </p>
+          </div>
+        </div>
+        {% endif %}
+        <div class="space-y-3 p-5">
+          <div class="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#8A7F6B] dark:text-[#B4AA9A]">
+            <span>{% if articulo.isVideo %}Vídeo{% else %}Viñeta{% endif %}</span>
+            <span aria-hidden="true">•</span>
+            <time datetime="{{ articulo.createdAt }}">{{ articulo.createdAt | date("d MMM yyyy") }}</time>
+          </div>
+          <h2 class="font-serif text-[1.35rem] font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
+            {{ articulo.title }}
+          </h2>
+          {% if articulo.description %}
+          <p class="text-[0.98rem] leading-[1.65] text-gray-600 dark:text-gray-400">
+            {{ articulo.description }}
+          </p>
+          {% endif %}
+          {% if articulo.author and articulo.author.name %}
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ articulo.author.name }}
+          </p>
+          {% endif %}
+        </div>
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>

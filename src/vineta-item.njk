@@ -1,0 +1,183 @@
+---
+layout: base.njk
+pagination:
+  data: vineta.items
+  size: 1
+  alias: pieza
+permalink: false
+eleventyComputed:
+  title: "{{ pieza.title }} - La viñeta - La Otra Pucela"
+  description: "{{ pieza.description or 'La viñeta de La Otra Pucela.' }}"
+  ogType: "article"
+  ogTitle: "{{ pieza.title }} - La viñeta - La Otra Pucela"
+  ogDescription: "{{ pieza.description or 'La viñeta de La Otra Pucela.' }}"
+  ogImage: "{{ pieza.image or site.defaultSocialImage }}"
+  canonicalUrl: "{{ pieza.publicPath }}"
+---
+<section class="vineta-page mx-auto max-w-6xl px-4 pb-32 pt-8 sm:px-6 md:pb-24 lg:px-8 lg:pt-12">
+  <article class="mx-auto w-full max-w-4xl" data-vineta-id="{{ pieza.id }}">
+    <header class="border-b border-[#EDE3D3] dark:border-gray-800 pb-8">
+      <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#8A7F6B] dark:text-[#B4AA9A]">
+        <a
+          href="/vineta/"
+          class="inline-flex min-h-8 items-center rounded-full border border-[#DDD3C0] bg-white px-3 transition-colors duration-200 hover:border-[#CBBEA8] hover:bg-[#F7F2E8] hover:text-gray-900 dark:border-gray-600 dark:bg-[#11181b] dark:hover:border-gray-500 dark:hover:bg-[#1a2328] dark:hover:text-white"
+        >
+          La viñeta
+        </a>
+        <span
+          class="inline-flex min-h-8 items-center rounded-full border border-[#DDD3C0] bg-white px-3 dark:border-gray-600 dark:bg-[#11181b]"
+        >
+          {% if pieza.isVideo %}Vídeo{% else %}Viñeta{% endif %}
+        </span>
+      </div>
+
+      <h1 class="mt-4 font-serif text-[2rem] font-semibold leading-[1.02] tracking-tight text-gray-900 dark:text-white md:text-[3.1rem]">
+        {{ pieza.title }}
+      </h1>
+
+      {% if pieza.description or pieza.excerpt %}
+      <p class="mt-5 max-w-3xl text-[1.08rem] leading-[1.65] text-gray-600 dark:text-gray-400 md:text-[1.35rem] md:leading-[1.5]">
+        {{ pieza.description or pieza.excerpt }}
+      </p>
+      {% endif %}
+
+      <div class="mt-7 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+        {% if pieza.author.avatarUrl %}
+        <img
+          src="{{ pieza.author.avatarUrl }}"
+          alt="{{ pieza.author.name }}"
+          class="h-10 w-10 rounded-full object-cover"
+          loading="lazy"
+        >
+        {% else %}
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          {{ pieza.author.name[0] }}
+        </div>
+        {% endif %}
+        <div class="min-w-0">
+          <div class="text-base font-medium text-gray-900 dark:text-white">
+            <a href="{{ pieza.author.publicPath }}" class="transition-colors duration-200 hover:text-gray-700 dark:hover:text-gray-300">
+              {{ pieza.author.name }}
+            </a>
+          </div>
+          <time datetime="{{ pieza.createdAt }}" class="mt-1 block text-sm text-gray-500 dark:text-gray-400">{{ pieza.createdAt | date("d MMMM yyyy") }}</time>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap items-center gap-6 pl-[0.7rem] text-sm text-gray-700 dark:text-gray-300 sm:pl-[0.85rem]">
+        <a
+          href="#comentarios"
+          class="inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900 dark:text-white"
+        >
+          <i class="fa-regular fa-comment w-4 text-center text-sm" aria-hidden="true"></i>
+          <span class="js-comment-count hidden" aria-live="polite"></span>
+        </a>
+        <button
+          type="button"
+          class="js-share-btn inline-flex min-h-11 items-center gap-2 font-medium transition-colors duration-200 hover:text-gray-900 dark:text-white"
+          data-share-source="vineta-header"
+          data-share-content-type="vineta"
+          data-share-content-id="{{ pieza.id }}"
+          data-url="{{ pieza.publicPath }}"
+          data-title="{{ pieza.title }}"
+          aria-label="Compartir viñeta"
+        >
+          <i class="fa-solid fa-share-nodes js-share-btn-icon w-4 text-center text-sm" aria-hidden="true"></i>
+          <span class="js-share-btn-label">Compartir</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="mx-auto mt-10 max-w-3xl">
+      {% if pieza.isVideo %}
+      <div class="vineta-video-player overflow-hidden rounded-[1.35rem] border border-[#E6DDCF] dark:border-gray-700 bg-gray-100 shadow-sm">
+        {% if pieza.mediaUrl %}
+        <div class="vineta-video-player__frame relative aspect-[4/3] w-full overflow-hidden sm:aspect-[16/9]">
+          <iframe
+            src="{{ pieza.mediaUrl }}"
+            title="{{ pieza.title }}"
+            class="absolute inset-0 block h-full w-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+        {% else %}
+        {% if pieza.previewImage %}
+        <img
+          src="{{ pieza.previewImage }}"
+          alt="{{ pieza.title }}"
+          class="aspect-[16/9] w-full object-cover"
+          loading="eager"
+        >
+        {% else %}
+        {{ (pieza.contentHtml or pieza.bodyHtml) | safe }}
+        {% endif %}
+        {% endif %}
+      </div>
+      {% elif pieza.image %}
+      <div class="mx-auto overflow-hidden rounded-[1.35rem] border border-[#E6DDCF] dark:border-gray-700 bg-gray-100 shadow-sm">
+        <img
+          src="{{ pieza.image }}"
+          alt="{{ pieza.title }}"
+          class="w-full max-h-[32rem] object-contain bg-white"
+          data-lightbox-image
+          loading="eager"
+        >
+      </div>
+      {% endif %}
+    </div>
+
+    {% if pieza.contentHtml and not pieza.isVideo and not pieza.image %}
+    <div class="article-body prose dark:prose-invert prose-lg prose-gray mx-auto mt-10 w-full max-w-prose text-lg leading-relaxed text-gray-800 dark:text-gray-200 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:my-5 prose-li:my-1 prose-img:my-6 prose-img:rounded-none prose-img:shadow-sm prose-hr:my-10 [&_.emoji]:my-0 [&_.emoji]:inline-block [&_.emoji]:h-[1.1em] [&_.emoji]:w-[1.1em] [&_.emoji]:align-[-0.15em] [&_.emoji]:rounded-none [&_.emoji]:shadow-none">
+      {{ (pieza.bodyHtml or pieza.contentHtml) | safe }}
+    </div>
+    {% endif %}
+
+    <section
+      id="comentarios"
+      class="js-comments-root mx-auto mt-16 w-full max-w-6xl border-t border-[#EEE] dark:border-gray-800 bg-white dark:bg-[#1a2529] px-4 py-8 sm:px-0"
+      data-discourse-url="https://foro.aldeapucela.org/"
+      data-topic-id="{{ pieza.id }}"
+      data-topic-url="{{ pieza.discourseTopicUrl }}"
+      data-topic-json-url="{{ pieza.source.topicJsonUrl }}"
+      data-initial-replies="{{ pieza.replies }}"
+    >
+      <div class="mx-auto w-full max-w-prose">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div class="w-full text-left">
+            <h2 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white uppercase">Comentarios</h2>
+            <p class="mt-0 text-xs leading-[1.6] text-gray-400 dark:text-gray-400">con tecnología de Aldea Pucela</p>
+          </div>
+          <a
+            href="{{ pieza.discourseTopicUrl }}/2"
+            class="js-add-comment-link{% if pieza.replies == 0 %} hidden{% endif %} inline-flex min-h-11 items-center justify-center self-center rounded-full border border-gray-200 dark:border-gray-800 bg-gray-900 px-4 py-2 text-xs font-semibold text-white transition-colors duration-200 hover:bg-gray-700 sm:self-auto"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Añadir comentario
+          </a>
+        </div>
+
+        <div class="js-comments-embed-wrapper hidden mt-10 overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 sm:p-8">
+          <div id="discourse-comments" class="js-comments-embed bg-white"></div>
+        </div>
+
+        <div class="js-comments-empty-state{% if pieza.replies > 0 %} hidden{% endif %} mt-6 bg-white dark:bg-[#1a2529] text-left">
+          <p class="text-xl font-semibold text-gray-700 dark:text-gray-300">¿Qué piensas de esta viñeta?</p>
+          <p class="mt-2 leading-relaxed text-gray-600 dark:text-gray-400">
+            La conversación sigue en el foro y se carga aquí automáticamente cuando hay comentarios.
+          </p>
+          <a
+            href="{{ pieza.discourseTopicUrl }}/2"
+            class="mx-auto mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-700"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Añadir un comentario
+          </a>
+        </div>
+      </div>
+    </section>
+  </article>
+</section>
