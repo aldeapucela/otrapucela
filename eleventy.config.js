@@ -21,6 +21,7 @@ export default function eleventyConfig(config) {
   config.addPassthroughCopy({ "src/assets/logo-wordmark.dark.png": "assets/logo-wordmark.dark.png" });
   config.addPassthroughCopy({ "src/assets/logo-wordmark.svg": "assets/logo-wordmark.svg" });
   config.addPassthroughCopy({ "src/assets/social-preview.png": "assets/social-preview.png" });
+  config.addPassthroughCopy({ "src/assets/social-preview-vineta.png": "assets/social-preview-vineta.png" });
   config.addPassthroughCopy({ "src/assets/podcast-cover.png": "assets/podcast-cover.png" });
   config.addPassthroughCopy({ "src/service-worker.js": "service-worker.js" });
   config.addPassthroughCopy({ "src/assets/js": "assets/js" });

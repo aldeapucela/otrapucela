@@ -1,9 +1,13 @@
 ---
 layout: base.njk
 title: La viñeta - La Otra Pucela
-description: Humor para reflexionar.
+description: Humor gráfico municipal para reflexionar.
 ogTitle: La viñeta - La Otra Pucela
-ogDescription: Humor para reflexionar.
+ogDescription: Humor gráfico municipal para reflexionar.
+ogImage: "{{ site.vineta.socialImage or site.defaultSocialImage }}"
+twitterCard: summary_large_image
+twitterTitle: La viñeta - La Otra Pucela
+twitterDescription: Humor gráfico municipal para reflexionar.
 canonicalUrl: "/vineta/"
 ---
 {% set vinetaItems = vineta.items %}

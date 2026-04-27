@@ -12,8 +12,9 @@ export default {
   podcastPath: "/podcast.xml",
   vineta: {
     title: "La viñeta",
-    description: "Humor para reflexionar",
-    subtitle: "Viñetas y piezas de animación con mirada satírica sobre la ciudad."
+    description: "Humor gráfico municipal para reflexionar.",
+    subtitle: "Viñetas y piezas de animación con mirada satírica sobre la ciudad.",
+    socialImage: "/assets/social-preview-vineta.png"
   },
   defaultSocialImage: "/assets/social-preview.png",
   podcast: {
