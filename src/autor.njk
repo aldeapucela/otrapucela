@@ -100,10 +100,11 @@ eleventyComputed:
 
     <article class="order-1 lg:order-2">
       <a href="{{ featuredArticle.publicPath }}" class="block">
-        {% if featuredArticle.image %}
+        {% set featuredArticleImage = featuredArticle.previewImage or featuredArticle.image %}
+        {% if featuredArticleImage %}
         <div class="overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm">
           <img
-            src="{{ featuredArticle.image }}"
+            src="{{ featuredArticleImage }}"
             alt="{{ featuredArticle.title }}"
             class="aspect-[21/11] w-full object-cover"
             loading="lazy"
@@ -120,10 +121,11 @@ eleventyComputed:
     {% for articulo in secondaryArticles %}
     <article class="border-b border-gray-200 dark:border-gray-800 pb-8">
       <a href="{{ articulo.publicPath }}" class="block">
-        {% if articulo.image %}
+        {% set articleImage = articulo.previewImage or articulo.image %}
+        {% if articleImage %}
         <div class="mb-5 overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm">
           <img
-            src="{{ articulo.image }}"
+            src="{{ articleImage }}"
             alt="{{ articulo.title }}"
             class="aspect-[16/10] w-full object-cover"
             loading="lazy"

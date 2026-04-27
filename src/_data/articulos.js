@@ -10,6 +10,7 @@ import {
   normalizeImageSourcesInHtml,
   sanitizeDiscourseHtml as sharedSanitizeDiscourseHtml
 } from "./discourse-utils.js";
+import vineta from "./vineta.js";
 import vinetaIds from "./vinetaIds.js";
 
 const discourseBaseUrl = "https://foro.aldeapucela.org";
@@ -648,6 +649,9 @@ export default async function articulos() {
   const cache = readCache();
   const authorsCache = readAuthorsCache();
   const vinetaIdSet = new Set(await vinetaIds());
+  const vinetaPreviewById = new Map(
+    (await vineta()).items.map((item) => [String(item.id), item.previewImage ?? item.image ?? null])
+  );
   let payload;
 
   try {
@@ -712,7 +716,7 @@ export default async function articulos() {
           bodyHtml: sharedBodyHtmlFromContent(primaryMedia.bodyHtml, normalizedExcerpt),
           contentHtml: cachedHtmlWithOriginalImages,
           image: normalizeDiscourseImageUrl(cachedItem.image ?? topic.image_url ?? null),
-          previewImage: cachedItem.previewImage ?? null,
+          previewImage: cachedItem.previewImage ?? vinetaPreviewById.get(String(topic.id)) ?? null,
           mediaUrl: primaryMedia.mediaUrl,
           contentType,
           isVideo: contentType === "video",
@@ -749,7 +753,7 @@ export default async function articulos() {
         discourseTopicUrl: detail.canonicalUrl,
         publicPath: `/p/${topic.id}/${topic.slug}/`,
         image: normalizeDiscourseImageUrl(detail.image ?? topic.image_url ?? null),
-        previewImage: detail.previewImage ?? null,
+        previewImage: detail.previewImage ?? vinetaPreviewById.get(String(topic.id)) ?? null,
         mediaUrl: detail.mediaUrl ?? null,
         contentType: detail.contentType ?? "image",
         isVideo: detail.isVideo === true,

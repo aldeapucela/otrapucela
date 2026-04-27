@@ -239,7 +239,7 @@ export default function eleventyConfig(config) {
       return null;
     }
 
-    return items.find((item) => item?.image) || items[0] || null;
+    return items.find((item) => item?.previewImage || item?.image) || items[0] || null;
   });
 
   config.addFilter("excludeArticle", (items = [], articleId) => {
