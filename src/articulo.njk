@@ -172,8 +172,8 @@ eleventyComputed:
     </div>
 
     {% if articulo.isVideo %}
-    <div class="article-video-player mx-auto mt-10 w-full max-w-4xl">
-      <div class="overflow-hidden rounded-[1.35rem] border border-[#E6DDCF] dark:border-gray-700 bg-gray-100 shadow-sm">
+    <div class="article-video-player mt-10">
+      <div class="article-video-player__surface">
         <div class="article-video-player__frame relative w-full overflow-hidden">
           <iframe
             src="{{ articulo.mediaUrl }}"
@@ -181,7 +181,7 @@ eleventyComputed:
             class="article-video-player__iframe absolute inset-0 block h-full w-full border-0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
-            loading="lazy"
+            loading="eager"
           ></iframe>
         </div>
       </div>
