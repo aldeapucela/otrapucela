@@ -6,6 +6,7 @@ import {
   detectContentType,
   excerptFromHtml,
   excerptFromText,
+  fetchAllCategoryTopics,
   fetchJsonFactory,
   mapWithConcurrencyFactory,
   normalizeAuthor,
@@ -249,10 +250,12 @@ function buildFallbackDataFromCache(cache, error) {
 
 export default async function vineta() {
   const cache = readCache();
-  let payload;
+  let topics;
 
   try {
-    payload = await fetchJson(categoryUrl);
+    topics = await fetchAllCategoryTopics(categoryUrl, fetchJson, {
+      label: "vineta"
+    });
   } catch (error) {
     const cachedItems = Object.values(cache.itemsById ?? {});
 
@@ -266,8 +269,6 @@ export default async function vineta() {
 
     throw error;
   }
-
-  const topics = payload.topic_list?.topics ?? [];
 
   const items = await mapWithConcurrency(
     topics,

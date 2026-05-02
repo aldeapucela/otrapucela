@@ -487,6 +487,60 @@ export function fetchJsonFactory(maxFetchAttempts = 4, baseRetryDelayMs = 1200) 
   };
 }
 
+export async function fetchAllCategoryTopics(categoryUrl, fetchJson, options = {}) {
+  const {
+    logger = console,
+    label = "discourse"
+  } = options;
+  const topicsById = new Map();
+  const visitedPageUrls = new Set();
+  let nextPageUrl = categoryUrl;
+  let pageCount = 0;
+
+  while (nextPageUrl && !visitedPageUrls.has(nextPageUrl)) {
+    visitedPageUrls.add(nextPageUrl);
+
+    let payload;
+
+    try {
+      payload = await fetchJson(nextPageUrl);
+    } catch (error) {
+      if (pageCount > 0) {
+        logger.warn(
+          `[${label}] No se pudo cargar la pagina ${pageCount + 1} de la categoria; se conservan ${topicsById.size} topics ya recuperados.`,
+          error
+        );
+      }
+
+      throw error;
+    }
+
+    pageCount += 1;
+
+    const topics = payload?.topic_list?.topics ?? [];
+
+    for (const topic of topics) {
+      if (topic?.id != null && !topicsById.has(String(topic.id))) {
+        topicsById.set(String(topic.id), topic);
+      }
+    }
+
+    const moreTopicsPath = payload?.topic_list?.more_topics_url;
+
+    nextPageUrl = moreTopicsPath
+      ? new URL(moreTopicsPath, discourseBaseUrl).toString()
+      : null;
+  }
+
+  if (pageCount > 1) {
+    logger.info(
+      `[${label}] Categoria paginada: ${pageCount} paginas, ${topicsById.size} topics recuperados.`
+    );
+  }
+
+  return Array.from(topicsById.values());
+}
+
 export function mapWithConcurrencyFactory() {
   return async function mapWithConcurrency(items, concurrency, mapper) {
     const results = new Array(items.length);

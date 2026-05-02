@@ -6,6 +6,9 @@ import {
   excerptFromHtml as sharedExcerptFromHtml,
   excerptFromText as sharedExcerptFromText,
   extractPrimaryMediaFromHtml,
+  fetchAllCategoryTopics,
+  fetchJsonFactory,
+  mapWithConcurrencyFactory,
   normalizeDiscourseImageUrl,
   normalizeImageSourcesInHtml,
   sanitizeDiscourseHtml as sharedSanitizeDiscourseHtml
@@ -28,6 +31,8 @@ const remoteAudioBaseUrl = "https://media.aldeapucela.org/public.php/dav/files/q
 const defaultAudioManifestUrl = `${remoteAudioBaseUrl}/audio-manifest.json`;
 const audioManifestUrl = process.env.AUDIO_MANIFEST_URL?.trim() || defaultAudioManifestUrl;
 const audioManifestTtlMs = Number.parseInt(process.env.AUDIO_MANIFEST_TTL_MS ?? "", 10) || (10 * 60 * 1000);
+const fetchJson = fetchJsonFactory(maxFetchAttempts, baseRetryDelayMs);
+const mapWithConcurrency = mapWithConcurrencyFactory();
 function normalizeCommentCount(topic) {
   const postsCount = topic.posts_count ?? 0;
   return Math.max(postsCount - 1, 0);
@@ -495,67 +500,6 @@ function buildFallbackDataFromCache(cache, authorsCache, error, vinetaIdSet = ne
   };
 }
 
-async function fetchJson(url) {
-  let lastError = null;
-
-  for (let attempt = 1; attempt <= maxFetchAttempts; attempt += 1) {
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json"
-      }
-    });
-
-    if (response.ok) {
-      return response.json();
-    }
-
-    const isRetryable = response.status === 429 || response.status >= 500;
-    lastError = new Error(`Discourse respondio con ${response.status} en ${url}`);
-
-    if (!isRetryable || attempt === maxFetchAttempts) {
-      throw lastError;
-    }
-
-    const retryAfterHeader = response.headers.get("retry-after");
-    const retryAfterMs = Number(retryAfterHeader) * 1000;
-    const delayMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0
-      ? retryAfterMs
-      : baseRetryDelayMs * attempt;
-
-    await wait(delayMs);
-  }
-
-  throw lastError;
-}
-
-function wait(delayMs) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, delayMs);
-  });
-}
-
-async function mapWithConcurrency(items, concurrency, mapper) {
-  const results = new Array(items.length);
-  let currentIndex = 0;
-
-  async function worker() {
-    while (currentIndex < items.length) {
-      const itemIndex = currentIndex;
-      currentIndex += 1;
-      results[itemIndex] = await mapper(items[itemIndex], itemIndex);
-    }
-  }
-
-  const workers = Array.from(
-    { length: Math.min(concurrency, items.length) },
-    () => worker()
-  );
-
-  await Promise.all(workers);
-
-  return results;
-}
-
 async function fetchTopicDetail(topic) {
   const topicUrl = `${discourseBaseUrl}/t/${topic.slug}/${topic.id}.json`;
 
@@ -652,10 +596,12 @@ export default async function articulos() {
   const vinetaPreviewById = new Map(
     (await vineta()).items.map((item) => [String(item.id), item.previewImage ?? item.image ?? null])
   );
-  let payload;
+  let topics;
 
   try {
-    payload = await fetchJson(categoryUrl);
+    topics = await fetchAllCategoryTopics(categoryUrl, fetchJson, {
+      label: "articulos"
+    });
   } catch (error) {
     const cachedItems = Object.values(cache.itemsById ?? {});
 
@@ -669,8 +615,6 @@ export default async function articulos() {
 
     throw error;
   }
-
-  const topics = payload.topic_list?.topics ?? [];
 
   const items = await mapWithConcurrency(
     topics,
