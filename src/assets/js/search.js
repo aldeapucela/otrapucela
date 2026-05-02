@@ -29,6 +29,19 @@ function hasWholeWordMatch(value = "", token = "") {
   return pattern.test(value);
 }
 
+function hasWordPrefixMatch(value = "", token = "") {
+  if (!value || !token) {
+    return false;
+  }
+
+  const pattern = new RegExp(`(^|\\s)${escapeRegExp(token)}[a-z0-9-]*\\b`);
+  return pattern.test(value);
+}
+
+function hasSearchTokenMatch(value = "", token = "") {
+  return hasWholeWordMatch(value, token) || hasWordPrefixMatch(value, token);
+}
+
 function stripHtmlTags(value = "") {
   return String(value).replace(/<[^>]+>/g, " ");
 }
@@ -64,13 +77,13 @@ function scoreSearchMatch(searchDocument, tokens) {
   for (const token of tokens) {
     let tokenScore = 0;
 
-    if (hasWholeWordMatch(searchDocument.title, token)) tokenScore = Math.max(tokenScore, 12);
-    if (hasWholeWordMatch(searchDocument.tags, token)) tokenScore = Math.max(tokenScore, 8);
-    if (hasWholeWordMatch(searchDocument.author, token)) tokenScore = Math.max(tokenScore, 6);
-    if (hasWholeWordMatch(searchDocument.description, token) || hasWholeWordMatch(searchDocument.excerpt, token)) {
+    if (hasSearchTokenMatch(searchDocument.title, token)) tokenScore = Math.max(tokenScore, 12);
+    if (hasSearchTokenMatch(searchDocument.tags, token)) tokenScore = Math.max(tokenScore, 8);
+    if (hasSearchTokenMatch(searchDocument.author, token)) tokenScore = Math.max(tokenScore, 6);
+    if (hasSearchTokenMatch(searchDocument.description, token) || hasSearchTokenMatch(searchDocument.excerpt, token)) {
       tokenScore = Math.max(tokenScore, 4);
     }
-    if (hasWholeWordMatch(searchDocument.content, token)) tokenScore = Math.max(tokenScore, 2);
+    if (hasSearchTokenMatch(searchDocument.content, token)) tokenScore = Math.max(tokenScore, 2);
 
     if (tokenScore === 0) {
       return 0;
@@ -125,13 +138,14 @@ function highlightSearchTerms(value = "", tokens = []) {
       continue;
     }
 
-    const pattern = new RegExp(`(^|\\s)(${escapeRegExp(token)})(?=\\s|$)`, "g");
+    const pattern = new RegExp(`(^|\\s)(${escapeRegExp(token)}[a-z0-9-]*)(?=\\s|$)`, "g");
     let match;
 
     while ((match = pattern.exec(normalizedValue)) !== null) {
       const matchIndex = match.index + match[1].length;
       const start = indexMap[matchIndex];
-      const end = indexMap[Math.min(matchIndex + token.length - 1, indexMap.length - 1)] + 1;
+      const matchedToken = match[2] ?? token;
+      const end = indexMap[Math.min(matchIndex + matchedToken.length - 1, indexMap.length - 1)] + 1;
 
       if (typeof start === "number" && typeof end === "number" && end > start) {
         ranges.push({ start, end });
@@ -190,7 +204,7 @@ function buildHighlightedSnippet(article, tokens) {
     let score = 0;
 
     for (const token of tokens) {
-      if (hasWholeWordMatch(normalizedSegment, token)) {
+      if (hasSearchTokenMatch(normalizedSegment, token)) {
         score += token.length;
       }
     }
