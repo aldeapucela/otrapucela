@@ -379,7 +379,11 @@ async function loadSharePage() {
     }
 
     const payload = await response.json();
-    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const items = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.items)
+        ? payload.items
+        : [];
     const article = items.find((item) => String(item?.id) === rawId);
 
     if (!article?.publicPath || !article?.title) {

@@ -2,4 +2,12 @@
 permalink: /api/articulos.json
 eleventyExcludeFromCollections: true
 ---
-{{ articulos.items | excludeVineta | excludeIds(vinetaIds) | dump(2) | safe }}
+{% set filteredItems = articulos.items | excludeVineta | excludeIds(vinetaIds) %}
+{{ {
+  discourseBaseUrl: articulos.discourseBaseUrl,
+  categoryUrl: articulos.categoryUrl,
+  generatedAt: articulos.generatedAt,
+  items: filteredItems,
+  authors: articulos.authors,
+  tags: articulos.tags
+} | dump(2) | safe }}
