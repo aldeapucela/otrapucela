@@ -333,17 +333,31 @@ export function sanitizeDiscourseHtml(html = "") {
   });
 
   $(".lightbox").each((_, element) => {
-    const imageElement = $(element).find("img").first();
+    const lightboxElement = $(element);
+    const imageElement = lightboxElement.find("img").first();
 
     if (imageElement.length) {
+      const optimizedSource = imageElement.attr("src")?.trim() || "";
+      const fullResolutionSource = lightboxElement.attr("href")?.trim() || "";
+
       imageElement.attr("loading", "lazy");
       imageElement.removeAttr("width");
       imageElement.removeAttr("height");
-      $(element).replaceWith(imageElement);
+
+      if (optimizedSource && fullResolutionSource && optimizedSource !== fullResolutionSource) {
+        imageElement.attr("data-fallback-src", optimizedSource);
+        imageElement.attr("data-fullres-src", fullResolutionSource);
+        imageElement.attr("src", fullResolutionSource);
+        imageElement.removeAttr("srcset");
+      } else if (fullResolutionSource) {
+        imageElement.attr("data-fullres-src", fullResolutionSource);
+      }
+
+      lightboxElement.replaceWith(imageElement);
       return;
     }
 
-    $(element).replaceWith($(element).html() || "");
+    lightboxElement.replaceWith(lightboxElement.html() || "");
   });
 
   $(".d-wrap").each((_, element) => {
@@ -420,7 +434,6 @@ export function sanitizeDiscourseHtml(html = "") {
     $(element).attr("loading", "lazy");
     $(element).removeAttr("width");
     $(element).removeAttr("height");
-    $(element).removeAttr("srcset");
     $(element).removeAttr("data-base62-sha1");
     $(element).removeAttr("data-dominant-color");
   });

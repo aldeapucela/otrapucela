@@ -214,6 +214,7 @@ function setupArticleImageLightbox() {
   }
 
   let previousActiveElement = null;
+  let activeLightboxLoadId = 0;
   const dialogController = bindDialogInteractions(lightboxElement, {
     surfaceElement: dialogElement,
     isOpen: () => lightboxElement.dataset.open === "true",
@@ -259,6 +260,85 @@ function setupArticleImageLightbox() {
     return altText || titleText;
   }
 
+  function applyInlineImageFallback(imageElement) {
+    if (!(imageElement instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const fallbackSource = imageElement.dataset.fallbackSrc?.trim() || "";
+
+    if (!fallbackSource || imageElement.dataset.fallbackApplied === "true") {
+      return;
+    }
+
+    imageElement.dataset.fallbackApplied = "true";
+    imageElement.src = fallbackSource;
+
+    if (imageElement.dataset.fallbackSrcset) {
+      imageElement.srcset = imageElement.dataset.fallbackSrcset;
+    }
+  }
+
+  function primeInlineImageFallback(imageElement) {
+    if (!(imageElement instanceof HTMLImageElement) || !imageElement.dataset.fallbackSrc) {
+      return;
+    }
+
+    const fallbackSrcset = imageElement.getAttribute("srcset")?.trim();
+
+    if (fallbackSrcset) {
+      imageElement.dataset.fallbackSrcset = fallbackSrcset;
+    }
+
+    imageElement.addEventListener("error", () => {
+      applyInlineImageFallback(imageElement);
+    });
+
+    if (imageElement.complete && imageElement.naturalWidth === 0) {
+      applyInlineImageFallback(imageElement);
+    }
+  }
+
+  function loadLightboxImage(imageElement, candidateSources) {
+    const uniqueSources = candidateSources
+      .map((source) => String(source || "").trim())
+      .filter(Boolean)
+      .filter((source, index, sources) => sources.indexOf(source) === index);
+
+    if (!uniqueSources.length) {
+      return;
+    }
+
+    activeLightboxLoadId += 1;
+    const loadId = activeLightboxLoadId;
+
+    function trySource(index) {
+      if (index >= uniqueSources.length || loadId !== activeLightboxLoadId) {
+        return;
+      }
+
+      const nextSource = uniqueSources[index];
+      const probeImage = new Image();
+
+      probeImage.onload = () => {
+        if (loadId !== activeLightboxLoadId) {
+          return;
+        }
+
+        lightboxImageElement.src = nextSource;
+        lightboxImageElement.alt = imageElement.alt || "";
+      };
+
+      probeImage.onerror = () => {
+        trySource(index + 1);
+      };
+
+      probeImage.src = nextSource;
+    }
+
+    trySource(0);
+  }
+
   function injectInlineCaption(imageElement, caption) {
     if (!caption) {
       return;
@@ -292,14 +372,16 @@ function setupArticleImageLightbox() {
   }
 
   function openLightbox(imageElement) {
+    const fullResolutionSource = imageElement.dataset.fullresSrc?.trim() || "";
+    const fallbackSource = imageElement.dataset.fallbackSrc?.trim() || "";
     const source = imageElement.currentSrc || imageElement.src;
 
-    if (!source) {
+    if (!fullResolutionSource && !fallbackSource && !source) {
       return;
     }
 
     previousActiveElement = imageElement;
-    lightboxImageElement.src = source;
+    lightboxImageElement.removeAttribute("src");
     lightboxImageElement.alt = imageElement.alt || "";
 
     const caption = getImageCaption(imageElement);
@@ -314,6 +396,12 @@ function setupArticleImageLightbox() {
       document.body.classList.add("overflow-hidden");
       closeButton?.focus();
     });
+
+    loadLightboxImage(imageElement, [
+      fullResolutionSource,
+      fallbackSource,
+      source
+    ]);
   }
 
   imageElements.forEach((imageElement) => {
@@ -321,6 +409,8 @@ function setupArticleImageLightbox() {
     if (articleBody?.contains(imageElement)) {
       injectInlineCaption(imageElement, caption);
     }
+
+    primeInlineImageFallback(imageElement);
 
     imageElement.dataset.lightboxImage = "true";
     imageElement.tabIndex = 0;

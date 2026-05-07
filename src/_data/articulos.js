@@ -31,6 +31,7 @@ const remoteAudioBaseUrl = "https://media.aldeapucela.org/public.php/dav/files/q
 const defaultAudioManifestUrl = `${remoteAudioBaseUrl}/audio-manifest.json`;
 const audioManifestUrl = process.env.AUDIO_MANIFEST_URL?.trim() || defaultAudioManifestUrl;
 const audioManifestTtlMs = Number.parseInt(process.env.AUDIO_MANIFEST_TTL_MS ?? "", 10) || (10 * 60 * 1000);
+const imageMarkupCacheVersion = 2;
 const fetchJson = fetchJsonFactory(maxFetchAttempts, baseRetryDelayMs);
 const mapWithConcurrency = mapWithConcurrencyFactory();
 function normalizeCommentCount(topic) {
@@ -627,6 +628,7 @@ export default async function articulos() {
       const canReuseCachedItem = cachedItem
         && cachedItem.updatedAt === updatedAt
         && cachedItem.contentHtml
+        && cachedItem.imageMarkupCacheVersion === imageMarkupCacheVersion
         && cachedAuthor.username
         && cachedAuthor.avatarUrl
         && cachedAuthor.name !== "Aldea Pucela";
@@ -671,6 +673,7 @@ export default async function articulos() {
           },
           publicPath: `/p/${topic.id}/${topic.slug}/`,
           publicUrl: undefined,
+          imageMarkupCacheVersion,
           cacheHit: true,
           fetchError: null
         };
@@ -707,6 +710,7 @@ export default async function articulos() {
           categoryUrl,
           topicJsonUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}.json`
         },
+        imageMarkupCacheVersion,
         cacheHit: false,
         fetchError: detail.fetchError ?? null
       };

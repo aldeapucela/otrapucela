@@ -23,6 +23,7 @@ const maxFetchAttempts = 4;
 const baseRetryDelayMs = 1200;
 const cacheDirectory = path.resolve(process.cwd(), ".cache");
 const cacheFilePath = path.join(cacheDirectory, "vineta.json");
+const imageMarkupCacheVersion = 2;
 const fetchJson = fetchJsonFactory(maxFetchAttempts, baseRetryDelayMs);
 const mapWithConcurrency = mapWithConcurrencyFactory();
 
@@ -212,6 +213,7 @@ function normalizeTopicItem(topic, detail, updatedAt, tags) {
       categoryUrl,
       topicJsonUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}.json`
     },
+    imageMarkupCacheVersion,
     cacheHit: false,
     fetchError: detail.fetchError ?? null,
     contentType,
@@ -278,7 +280,12 @@ export default async function vineta() {
       const updatedAt = topic.last_posted_at ?? topic.bumped_at ?? topic.created_at;
       const cachedItem = cache.itemsById[String(topic.id)];
 
-      if (cachedItem && cachedItem.updatedAt === updatedAt && cachedItem.contentHtml) {
+      if (
+        cachedItem
+        && cachedItem.updatedAt === updatedAt
+        && cachedItem.contentHtml
+        && cachedItem.imageMarkupCacheVersion === imageMarkupCacheVersion
+      ) {
         const sanitizedCachedHtml = sanitizeDiscourseHtml(cachedItem.contentHtml ?? "");
         const cachedHtmlWithOriginalImages = normalizeImageSourcesInHtml(sanitizedCachedHtml);
         const normalizedExcerpt = excerptFromHtml(cachedHtmlWithOriginalImages);
@@ -311,6 +318,7 @@ export default async function vineta() {
             categoryUrl,
             topicJsonUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}.json`
           },
+          imageMarkupCacheVersion,
           cacheHit: true,
           fetchError: null,
           contentType,
