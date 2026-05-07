@@ -14,7 +14,7 @@ eleventyComputed:
   ogImage: "{{ articulo.image or site.defaultSocialImage }}"
   canonicalUrl: "{{ articulo.publicPath }}"
 ---
-{% set relatedItems = articulos.items | relatedArticles(articulo, 5) %}
+{% set relatedItems = articulos.items | excludeVineta | excludeIds(vinetaIds) | relatedArticles(articulo, 5) %}
 {% set audioDownloadName = articulo.title ~ ' (' ~ articulo.author.name ~ ' - La Otra Pucela).mp3' %}
 {% set articleDescription = articulo.description or articulo.excerpt or 'Artículo publicado en La Otra Pucela.' %}
 {% set articleImage = (articulo.image or site.defaultSocialImage) | absoluteUrl(site.siteUrl) %}

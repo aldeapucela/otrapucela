@@ -47,6 +47,10 @@ function createArticleRailItemMarkup(article) {
   `;
 }
 
+function isVinetaArticle(article) {
+  return article?.source?.categoryUrl === "https://foro.aldeapucela.org/c/otra-pucela/la-vineta/11.json";
+}
+
 function createMostReadMoreItemMarkup() {
   return `
     <article class="w-[15rem] min-w-[15rem] border-r border-gray-200 pr-4 last:border-r-0 last:pr-0 dark:border-gray-800 sm:w-[19rem] sm:min-w-[19rem] sm:pr-5 lg:w-[14rem] lg:min-w-[14rem] lg:pr-4">
@@ -206,6 +210,7 @@ async function setupMostReadArticles() {
   try {
     const mostReadArticles = (await loadMostReadArticles())
       .filter((article) => article?.publicPath)
+      .filter((article) => !isVinetaArticle(article))
       .filter((article) => normalizePathname(article.publicPath) !== currentArticlePath)
       .slice(0, 3);
 
