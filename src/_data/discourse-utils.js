@@ -109,9 +109,6 @@ export function normalizeDiscourseImageUrl(imageUrl = "") {
 
   try {
     const parsedUrl = new URL(imageUrl);
-    parsedUrl.pathname = parsedUrl.pathname
-      .replace(/\/optimized\/\dX\//, "/original/1X/")
-      .replace(/_(\d+)_\d+x\d+(?=\.[^.]+$)/, "");
     parsedUrl.search = "";
     parsedUrl.hash = "";
     return parsedUrl.toString();
