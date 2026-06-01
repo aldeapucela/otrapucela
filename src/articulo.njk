@@ -11,13 +11,13 @@ eleventyComputed:
   ogType: "article"
   ogTitle: "{{ articulo.title }} - La Otra Pucela"
   ogDescription: "{{ articulo.description or 'Artículo publicado en Aldea Pucela.' }}"
-  ogImage: "{{ articulo.image or site.defaultSocialImage }}"
+  ogImage: "{{ articulo.previewImage or articulo.image or site.defaultSocialImage }}"
   canonicalUrl: "{{ articulo.publicPath }}"
 ---
 {% set relatedItems = articulos.items | excludeVineta | excludeIds(vinetaIds) | relatedArticles(articulo, 5) %}
 {% set audioDownloadName = articulo.title ~ ' (' ~ articulo.author.name ~ ' - La Otra Pucela).mp3' %}
 {% set articleDescription = articulo.description or articulo.excerpt or 'Artículo publicado en La Otra Pucela.' %}
-{% set articleImage = (articulo.image or site.defaultSocialImage) | absoluteUrl(site.siteUrl) %}
+{% set articleImage = (articulo.previewImage or articulo.image or site.defaultSocialImage) | absoluteUrl(site.siteUrl) %}
 {% set articleUrl = articulo.publicPath | absoluteUrl(site.siteUrl) %}
 {% set authorUrl = articulo.author.publicPath | absoluteUrl(site.siteUrl) %}
 {% set publisherLogo = '/assets/logo-wordmark.png' | absoluteUrl(site.siteUrl) %}
@@ -143,7 +143,7 @@ eleventyComputed:
               data-article-id="{{ articulo.id }}"
               data-article-title="{{ articulo.title }}"
               data-article-url="{{ articulo.publicPath }}"
-              data-article-image="{{ articulo.image }}"
+              data-article-image="{{ articulo.previewImage or articulo.image }}"
               data-article-author="{{ articulo.author.name }}"
               data-article-date="{{ articulo.createdAt }}"
               aria-pressed="false"

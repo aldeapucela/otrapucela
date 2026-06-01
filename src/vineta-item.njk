@@ -11,7 +11,7 @@ eleventyComputed:
   ogType: "article"
   ogTitle: "{{ pieza.title }} - La viñeta - La Otra Pucela"
   ogDescription: "{{ pieza.description or 'La viñeta de La Otra Pucela.' }}"
-  ogImage: "{{ pieza.image or site.defaultSocialImage }}"
+  ogImage: "{{ pieza.previewImage or pieza.image or site.defaultSocialImage }}"
   canonicalUrl: "{{ pieza.publicPath }}"
 ---
 <section class="vineta-page mx-auto max-w-6xl px-4 pb-32 pt-8 sm:px-6 md:pb-24 lg:px-8 lg:pt-12">
