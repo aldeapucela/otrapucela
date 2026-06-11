@@ -4,6 +4,7 @@ import {
   bodyHtmlFromContent as sharedBodyHtmlFromContent,
   detectContentType,
   excerptFromHtml as sharedExcerptFromHtml,
+  excerptHtmlFromHtml as sharedExcerptHtmlFromHtml,
   excerptFromText as sharedExcerptFromText,
   extractPrimaryMediaFromHtml,
   fetchAllCategoryTopics,
@@ -517,11 +518,13 @@ async function fetchTopicDetail(topic) {
       ? extractPrimaryMediaFromHtml(cookedWithOriginalImages)
       : { mediaUrl: null, bodyHtml: cookedWithOriginalImages };
     const excerpt = sharedExcerptFromHtml(cookedWithOriginalImages);
+    const excerptHtml = sharedExcerptHtmlFromHtml(cookedWithOriginalImages);
 
     return {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
       html: cookedWithOriginalImages,
       excerpt,
+      excerptHtml,
       bodyHtml: sharedBodyHtmlFromContent(primaryMedia.bodyHtml, excerpt),
       image: normalizeDiscourseImageUrl(topicPayload.image_url ?? null),
       previewImage: null,
@@ -537,6 +540,7 @@ async function fetchTopicDetail(topic) {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
       html: "",
       excerpt: sharedExcerptFromText(topic.excerpt ?? ""),
+      excerptHtml: "",
       bodyHtml: "",
       image: null,
       previewImage: null,
@@ -644,6 +648,7 @@ export default async function articulos() {
           ? extractPrimaryMediaFromHtml(cachedHtmlWithOriginalImages)
           : { mediaUrl: cachedItem.mediaUrl ?? null, bodyHtml: cachedHtmlWithOriginalImages };
         const normalizedExcerpt = sharedExcerptFromHtml(cachedHtmlWithOriginalImages);
+        const excerptHtml = sharedExcerptHtmlFromHtml(cachedHtmlWithOriginalImages);
 
         return {
           ...cachedItem,
@@ -658,6 +663,7 @@ export default async function articulos() {
           updatedAt,
           author: cachedAuthor,
           excerpt: normalizedExcerpt,
+          excerptHtml,
           description: normalizedExcerpt || sharedExcerptFromText(topic.excerpt ?? ""),
           bodyHtml: sharedBodyHtmlFromContent(primaryMedia.bodyHtml, normalizedExcerpt),
           contentHtml: cachedHtmlWithOriginalImages,
@@ -694,6 +700,7 @@ export default async function articulos() {
         updatedAt,
         author: detail.author,
         excerpt: detail.excerpt,
+        excerptHtml: detail.excerptHtml,
         description: detail.excerpt || sharedExcerptFromText(topic.excerpt ?? ""),
         bodyHtml: detail.bodyHtml,
         contentHtml: normalizeImageSourcesInHtml(detail.html),

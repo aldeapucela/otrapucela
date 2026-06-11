@@ -230,6 +230,32 @@ export function excerptFromHtml(html = "", maxLength = 220) {
   return ensureExcerptEnding(excerptFromText(stripHtml(html), maxLength));
 }
 
+export function excerptHtmlFromHtml(html = "", maxLength = 220) {
+  if (!html) {
+    return "";
+  }
+
+  const $ = load(html);
+  const firstParagraph = $("p").toArray().find((element) => {
+    const text = normalizeExcerptText($(element).text());
+
+    return text && !/^compartir en redes y grupos$/i.test(text);
+  });
+
+  if (!firstParagraph) {
+    return "";
+  }
+
+  const paragraph = $(firstParagraph).clone();
+  const paragraphText = normalizeExcerptText(paragraph.text());
+
+  if (!paragraphText || paragraphText.length > maxLength) {
+    return "";
+  }
+
+  return $.html(paragraph).trim();
+}
+
 export function bodyHtmlFromContent(html = "", excerpt = "") {
   if (!html) {
     return "";

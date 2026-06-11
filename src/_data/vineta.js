@@ -5,6 +5,7 @@ import {
   bodyHtmlFromContent,
   detectContentType,
   excerptFromHtml,
+  excerptHtmlFromHtml,
   excerptFromText,
   fetchAllCategoryTopics,
   fetchJsonFactory,
@@ -154,6 +155,7 @@ async function fetchTopicDetail(topic) {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
       html: cookedWithOriginalImages,
       excerpt: excerptFromHtml(cookedWithOriginalImages),
+      excerptHtml: excerptHtmlFromHtml(cookedWithOriginalImages),
       bodyHtml: bodyHtmlFromContent(cookedWithOriginalImages, excerptFromHtml(cookedWithOriginalImages)),
       image: originalImage,
       previewImage,
@@ -168,6 +170,7 @@ async function fetchTopicDetail(topic) {
       canonicalUrl: `${discourseBaseUrl}/t/${topic.slug}/${topic.id}`,
       html: "",
       excerpt: excerptFromText(topic.excerpt ?? ""),
+      excerptHtml: "",
       image: null,
       previewImage: null,
       mediaUrl: null,
@@ -289,6 +292,7 @@ export default async function vineta() {
         const sanitizedCachedHtml = sanitizeDiscourseHtml(cachedItem.contentHtml ?? "");
         const cachedHtmlWithOriginalImages = normalizeImageSourcesInHtml(sanitizedCachedHtml);
         const normalizedExcerpt = excerptFromHtml(cachedHtmlWithOriginalImages);
+        const excerptHtml = excerptHtmlFromHtml(cachedHtmlWithOriginalImages);
         const contentType = detectContentType({
           raw: cachedItem.raw ?? "",
           html: cachedHtmlWithOriginalImages
@@ -306,6 +310,7 @@ export default async function vineta() {
           createdAt: topic.created_at,
           updatedAt,
           excerpt: normalizedExcerpt,
+          excerptHtml,
           description: normalizedExcerpt || excerptFromText(topic.excerpt ?? ""),
           bodyHtml: bodyHtmlFromContent(cachedHtmlWithOriginalImages, normalizedExcerpt),
           contentHtml: cachedHtmlWithOriginalImages,

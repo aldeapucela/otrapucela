@@ -87,10 +87,16 @@ eleventyComputed:
           {{ articulo.title }}
         </h1>
 
-        {% if articulo.description or articulo.excerpt %}
-        <p class="mt-5 max-w-3xl text-[1.1rem] leading-[1.35] text-gray-600 dark:text-gray-400 md:text-[1.45rem] md:leading-[1.4]">
-          {{ articulo.description or articulo.excerpt }}
-        </p>
+        {% if articulo.description or articulo.excerpt or articulo.excerptHtml %}
+        <div class="mt-5 max-w-3xl text-[1.05rem] leading-[1.6] text-gray-600 dark:text-gray-400 md:text-[1.3rem] [&_a]:font-medium [&_a]:text-gray-900 [&_a]:underline [&_a]:decoration-gray-300 [&_a]:underline-offset-4 hover:[&_a]:decoration-gray-500 dark:[&_a]:text-white dark:[&_a]:decoration-gray-600">
+          {% if articulo.description %}
+          <p>{{ articulo.description }}</p>
+          {% elif articulo.excerptHtml %}
+          {{ articulo.excerptHtml | safe }}
+          {% elif articulo.excerpt %}
+          <p>{{ articulo.excerpt }}</p>
+          {% endif %}
+        </div>
         {% endif %}
 
         <div class="mt-7">
