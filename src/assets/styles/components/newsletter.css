@@ -169,7 +169,27 @@
   }
 
   .subscription-module__button {
-    @apply inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1F2937] dark:bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white dark:text-gray-900 transition-colors duration-200 hover:bg-[#111827] dark:hover:bg-gray-200;
+    @apply inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#1F2937] dark:bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white no-underline dark:text-gray-900 transition-colors duration-200 hover:bg-[#111827] hover:no-underline dark:hover:bg-gray-200;
+  }
+
+  .subscription-module--mid-article {
+    @apply overflow-hidden rounded-[1.5rem] border-[#DDD7CC] bg-[#FBF8F2] shadow-sm dark:border-gray-700 dark:bg-gray-800;
+  }
+
+  .subscription-module--mid-article .subscription-module__content {
+    @apply gap-3 px-5 py-4 sm:px-6 sm:py-5;
+  }
+
+  .subscription-module--mid-article .subscription-module__title {
+    @apply text-[1.18rem] sm:text-[1.4rem];
+  }
+
+  .subscription-module--mid-article .subscription-module__description {
+    @apply text-[0.95rem] leading-[1.6] sm:text-[0.98rem];
+  }
+
+  .subscription-module--mid-article .subscription-module__button {
+    @apply sm:w-auto sm:min-w-[12rem];
   }
 
   .subscription-module--compact .subscription-module__content {

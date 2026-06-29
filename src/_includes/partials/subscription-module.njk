@@ -4,8 +4,12 @@
 {% set subscriptionButton = subscriptionButton or 'Ir al boletín' %}
 {% set subscriptionSource = subscriptionSource or 'site-module' %}
 {% set subscriptionHref = subscriptionHref or '/boletin/' %}
+{% set subscriptionViewEvent = subscriptionViewEvent or '' %}
+{% set subscriptionClickEvent = subscriptionClickEvent or '' %}
+{% set subscriptionAnalyticsLocation = subscriptionAnalyticsLocation or subscriptionSource %}
+{% set subscriptionAnalyticsVariant = subscriptionAnalyticsVariant or subscriptionVariant %}
 
-<section class="subscription-module subscription-module--{{ subscriptionVariant }}{% if subscriptionArticleCard %} subscription-module--article-card{% endif %}" data-subscription-module data-newsletter-cta>
+<section class="subscription-module subscription-module--{{ subscriptionVariant }}{% if subscriptionArticleCard %} subscription-module--article-card{% endif %}" data-subscription-module data-newsletter-cta{% if subscriptionViewEvent %} data-analytics-view="{{ subscriptionViewEvent }}"{% endif %}{% if subscriptionAnalyticsLocation %} data-analytics-location="{{ subscriptionAnalyticsLocation }}"{% endif %}{% if subscriptionAnalyticsVariant %} data-analytics-variant="{{ subscriptionAnalyticsVariant }}"{% endif %}>
   {% if subscriptionEyebrow %}
   <p class="subscription-module__eyebrow">{{ subscriptionEyebrow }}</p>
   {% endif %}
@@ -23,6 +27,9 @@
       class="subscription-module__button"
       data-subscription-link
       data-subscription-source="{{ subscriptionSource }}"
+      {% if subscriptionClickEvent %}data-analytics-click="{{ subscriptionClickEvent }}"{% endif %}
+      {% if subscriptionAnalyticsLocation %}data-analytics-location="{{ subscriptionAnalyticsLocation }}"{% endif %}
+      {% if subscriptionAnalyticsVariant %}data-analytics-variant="{{ subscriptionAnalyticsVariant }}"{% endif %}
     >
       {{ subscriptionButton }}
     </a>

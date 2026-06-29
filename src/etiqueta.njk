@@ -7,17 +7,51 @@ pagination:
 permalink: "/tema/{{ tag.slug }}/index.html"
 eleventyComputed:
   title: "{{ tag.name | themeName }} - La Otra Pucela"
-  description: "Artículos del tema {{ tag.name | themeName }}."
+  description: "{{ tag.name | themeName | themeDescription }}"
   ogTitle: "{{ tag.name | themeName }} - La Otra Pucela"
-  ogDescription: "Artículos del tema {{ tag.name | themeName }}."
+  ogDescription: "{{ tag.name | themeName | themeDescription }}"
   canonicalUrl: "/tema/{{ tag.slug }}/"
+  pageType: "tema"
 ---
-{% set themeArticles = articulos.items | articlesForTheme(tag.slug) %}
+{% set themeArticles = articulos.items | excludeVineta | excludeCollectionItems(vineta.items) | articlesForTheme(tag.slug) %}
+{% set featuredArticle = themeArticles[0] %}
+{% set themeDisplayName = tag.name | themeName %}
+{% set themePageDescription = themeDisplayName | themeDescription %}
 <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Portada",
+        "item": "{{ site.siteUrl }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Temas",
+        "item": "{{ '/temas/' | absoluteUrl(site.siteUrl) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": {{ themeDisplayName | json | safe }},
+        "item": "{{ ('/tema/' + tag.slug + '/') | absoluteUrl(site.siteUrl) }}"
+      }
+    ]
+  }
+  </script>
+
   <div class="max-w-3xl">
     <h1 class="text-[2rem] font-extrabold uppercase tracking-tight text-gray-900 dark:text-white sm:text-[2.5rem]">
-      {{ tag.name | themeName }}
+      {{ themeDisplayName }}
     </h1>
+    <p class="mt-5 max-w-2xl text-[1rem] leading-[1.65] text-gray-600 dark:text-gray-400 sm:text-[1.06rem]">
+      {{ themePageDescription }}
+    </p>
     <div class="mt-6 h-px w-full max-w-6xl bg-gray-900"></div>
   </div>
 
@@ -69,7 +103,6 @@ eleventyComputed:
     {% endfor %}
   </div>
 
-  {% set featuredArticle = themeArticles[0] %}
   {% if featuredArticle %}
   <div class="mt-12 hidden border-t border-gray-300 dark:border-gray-600 pt-6 lg:grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.75fr)] lg:items-start lg:gap-8">
     <article class="pr-2">

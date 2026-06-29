@@ -13,6 +13,7 @@ eleventyComputed:
   ogDescription: "{{ articulo.description or 'Artículo publicado en Aldea Pucela.' }}"
   ogImage: "{{ articulo.previewImage or articulo.image or site.defaultSocialImage }}"
   canonicalUrl: "{{ articulo.publicPath }}"
+  pageType: "article"
 ---
 {% set relatedItems = articulos.items | excludeVineta | excludeIds(vinetaIds) | relatedArticles(articulo, 5) %}
 {% set audioDownloadName = articulo.title ~ ' (' ~ articulo.author.name ~ ' - La Otra Pucela).mp3' %}
@@ -21,6 +22,9 @@ eleventyComputed:
 {% set articleUrl = articulo.publicPath | absoluteUrl(site.siteUrl) %}
 {% set authorUrl = articulo.author.publicPath | absoluteUrl(site.siteUrl) %}
 {% set publisherLogo = '/assets/logo-wordmark.png' | absoluteUrl(site.siteUrl) %}
+{% set articleWordCount = (articulo.bodyHtml or articulo.contentHtml) | wordCountFromHtml %}
+{% set articleLengthBucket = articleWordCount | articleLengthBucket %}
+{% set shouldShowMidArticleCta = articleLengthBucket == 'long' %}
 
 <script type="application/ld+json">
 {
@@ -58,8 +62,44 @@ eleventyComputed:
 }
 </script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Portada",
+      "item": "{{ site.siteUrl }}"
+    }
+    {% if articulo.tags and articulo.tags.length %}
+    ,{
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ (articulo.tags[0].name | themeName) | json | safe }},
+      "item": "{{ ('/tema/' + articulo.tags[0].slug + '/') | absoluteUrl(site.siteUrl) }}"
+    }
+    ,{
+      "@type": "ListItem",
+      "position": 3,
+      "name": {{ articulo.title | json | safe }},
+      "item": "{{ articleUrl }}"
+    }
+    {% else %}
+    ,{
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ articulo.title | json | safe }},
+      "item": "{{ articleUrl }}"
+    }
+    {% endif %}
+  ]
+}
+</script>
+
 <section class="mx-auto max-w-6xl px-4 pb-40 pt-8 sm:px-6 md:pb-28 lg:px-8 lg:pt-12">
-  <article class="mx-auto mb-12 w-full max-w-6xl" data-article-id="{{ articulo.id }}">
+  <article class="mx-auto mb-12 w-full max-w-6xl" data-article-id="{{ articulo.id }}" data-article-slug="{{ articulo.slug }}" data-article-length-bucket="{{ articleLengthBucket }}">
     <div class="mx-auto max-w-4xl">
       <header class="border-b border-[#EEE] dark:border-gray-800 pb-8">
         {% if articulo.tags.length %}
@@ -76,6 +116,8 @@ eleventyComputed:
           <a
             href="/tema/{{ tag.slug }}/"
             class="transition-colors duration-200 hover:text-gray-900 dark:text-white"
+            data-analytics-click="click_topic_chip"
+            data-analytics-location="article-header"
           >
             {{ tag.name | themeName }}
           </a>
@@ -199,6 +241,22 @@ eleventyComputed:
       {{ (articulo.bodyHtml or articulo.contentHtml) | safe }}
     </div>
     {% endif %}
+
+    {% if shouldShowMidArticleCta %}
+    <template data-mid-article-newsletter-template>
+      <div class="not-prose mx-auto my-8 max-w-prose">
+        {% set subscriptionVariant = 'mid-article' %}
+        {% set subscriptionTitle = 'Valladolid en tu email' %}
+        {% set subscriptionDescription = 'Recibe cada domingo los artículos de la semana y una selección útil para seguir la ciudad.' %}
+        {% set subscriptionButton = 'Apuntarme' %}
+        {% set subscriptionSource = 'article-mid' %}
+        {% set subscriptionViewEvent = 'view_inline_mid_article' %}
+        {% set subscriptionClickEvent = 'click_inline_mid_article' %}
+        {% set subscriptionAnalyticsLocation = 'article-mid' %}
+        {% include "partials/subscription-module.njk" %}
+      </div>
+    </template>
+    {% endif %}
   </article>
 
   <div class="mx-auto mb-10 hidden max-w-prose justify-end lg:flex">
@@ -219,15 +277,19 @@ eleventyComputed:
 
   <div class="mx-auto max-w-prose">
     {% set subscriptionVariant = 'default' %}
-    {% set subscriptionTitle = '¿Te gusta lo que lees?' %}
-    {% set subscriptionDescription = 'Recibe gratis por correo los próximos artículos de La Otra Pucela, el único medio vecinal e independiente de la ciudad' %}
+    {% set subscriptionEyebrow = '' %}
+    {% set subscriptionTitle = '¿Te interesa este tipo de historias?' %}
+    {% set subscriptionDescription = 'Te las mandamos cada domingo, sin depender de redes.' %}
     {% set subscriptionButton = 'Apuntarme' %}
     {% set subscriptionSource = 'article-end' %}
+    {% set subscriptionViewEvent = 'view_inline_end_article' %}
+    {% set subscriptionClickEvent = 'click_inline_end_article' %}
+    {% set subscriptionAnalyticsLocation = 'article-end' %}
     {% include "partials/subscription-module.njk" %}
   </div>
 
   {% if relatedItems.length %}
-  <section class="mx-auto mt-16 max-w-6xl border-t border-[#EEE] dark:border-gray-800 pt-8">
+  <section class="mx-auto mt-16 max-w-6xl border-t border-[#EEE] dark:border-gray-800 pt-8" data-analytics-view="view_related" data-analytics-location="article-related">
     <div class="mb-6 flex items-center justify-between gap-4">
       <h2 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Relacionados</h2>
       <div class="hidden items-center gap-3 lg:flex">
@@ -252,7 +314,7 @@ eleventyComputed:
       <div class="js-related-track flex gap-5 lg:gap-4">
         {% for related in relatedItems %}
         <article class="w-[17.5rem] min-w-[17.5rem] border-r border-gray-200 dark:border-gray-800 pr-5 last:border-r-0 last:pr-0 sm:w-[19rem] sm:min-w-[19rem] lg:w-[14rem] lg:min-w-[14rem] lg:pr-4">
-          <a href="{{ related.publicPath }}" class="block">
+          <a href="{{ related.publicPath }}" class="block" data-analytics-click="click_related" data-analytics-location="article-related">
             {% if related.image %}
             <div class="mb-4 overflow-hidden bg-gray-100 dark:bg-gray-800">
               <img
@@ -287,6 +349,8 @@ eleventyComputed:
     class="js-most-read-section mx-auto mt-16 hidden max-w-6xl border-t border-[#EEE] pt-8 dark:border-gray-800"
     data-most-read-section
     data-current-article-path="{{ articulo.publicPath }}"
+    data-analytics-view="view_most_read"
+    data-analytics-location="article-most-read"
     aria-live="polite"
   >
     <div class="mb-6 flex items-center justify-between gap-4">
@@ -321,6 +385,7 @@ eleventyComputed:
     data-conditional-subscription
     data-newsletter-cta
     data-article-scroll-root
+    data-analytics-location="article-sticky-prompt"
     aria-hidden="true"
   >
     <div class="mx-auto max-w-prose rounded-[1.75rem] bg-[#F4F1E9] dark:bg-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.1)]">
@@ -347,6 +412,8 @@ eleventyComputed:
           class="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-200 hover:bg-[#1A1A1A]"
           data-subscription-link
           data-subscription-source="article-conditional-slideup"
+          data-analytics-click="click_sticky_returning_prompt"
+          data-analytics-location="article-sticky-prompt"
         >
           Sí, avisadme
         </a>

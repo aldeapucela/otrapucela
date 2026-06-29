@@ -1,3 +1,5 @@
+import { trackMatomoEvent } from "./analytics/modules.js";
+
 function setShareButtonFeedback(buttonElement, labelText, iconClass) {
   const iconElement = buttonElement.querySelector(".js-share-btn-icon");
   const labelElement = buttonElement.querySelector(".js-share-btn-label");
@@ -19,26 +21,10 @@ function restoreShareButton(buttonElement) {
   setShareButtonFeedback(buttonElement, originalLabel, originalIcon);
 }
 
-export function trackMatomoEvent(category, action, name, value) {
-  if (typeof window._paq?.push !== "function") {
-    return;
-  }
-
-  const payload = ["trackEvent", category, action];
-
-  if (typeof name !== "undefined") {
-    payload.push(name);
-  }
-
-  if (typeof value !== "undefined") {
-    payload.push(value);
-  }
-
-  window._paq.push(payload);
-}
-
 function trackSubscriptionIntent(source) {
-  trackMatomoEvent("subscription", "open_boletin", source || "unknown");
+  trackMatomoEvent("subscription", "open_boletin", {
+    subscription_source: source || "unknown"
+  });
 }
 
 function withShareCampaign(rawUrl) {
@@ -75,7 +61,10 @@ function getSharePayload(buttonElement) {
 
 function trackShare(buttonElement, method) {
   const { eventName } = getSharePayload(buttonElement);
-  trackMatomoEvent("share", method, eventName);
+  trackMatomoEvent("share", method, {
+    share_target: eventName,
+    share_source: buttonElement.dataset.shareSource || "unknown"
+  });
 }
 
 async function copyCurrentUrl(sharePayload) {

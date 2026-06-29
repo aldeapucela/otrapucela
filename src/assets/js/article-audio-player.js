@@ -1,3 +1,5 @@
+import { trackMatomoEvent } from "./analytics/modules.js";
+
 export function setupArticleAudioPlayer() {
   const audioElement = document.querySelector(".js-article-audio");
 
@@ -42,6 +44,7 @@ export function setupArticleAudioPlayer() {
   let hasTrackedPlay = false;
   let hasTrackedComplete = false;
   let shouldRestoreSavedTime = false;
+  let currentPlaySource = "article_top";
   const articleTitle = audioElement.dataset.articleTitle?.trim() || "";
   const articleAuthor = audioElement.dataset.articleAuthor?.trim() || "";
   const articleUrl = audioElement.dataset.articleUrl?.trim() || "";
@@ -137,22 +140,20 @@ export function setupArticleAudioPlayer() {
   }
 
   function trackAudioPlay() {
-    if (hasTrackedPlay || typeof window._paq?.push !== "function") {
+    if (hasTrackedPlay) {
       return;
     }
 
     hasTrackedPlay = true;
-    const deviceType = isDesktopViewport() ? "desktop" : "mobile";
-    window._paq.push(["trackEvent", "audio", `play_${deviceType}`, articleId]);
+    trackMatomoEvent("audio", `play_${currentPlaySource}`, {
+      article_id: articleId
+    });
   }
 
   function trackAudioMetric(action, value) {
-    if (typeof window._paq?.push !== "function") {
-      return;
-    }
-
-    const deviceType = isDesktopViewport() ? "desktop" : "mobile";
-    window._paq.push(["trackEvent", "audio", `${action}_${deviceType}`, articleId, value]);
+    trackMatomoEvent("audio", `${action}_${currentPlaySource}`, {
+      article_id: articleId
+    }, value);
   }
 
   function resetPlaybackMetrics() {
@@ -429,6 +430,7 @@ export function setupArticleAudioPlayer() {
 
   startButtons.forEach((buttonElement) => {
     buttonElement.addEventListener("click", async () => {
+      currentPlaySource = buttonElement.closest("[data-mobile-article-bar]") ? "article_sticky" : "article_top";
       showPlayer();
 
       if (audioElement.ended) {
@@ -445,6 +447,7 @@ export function setupArticleAudioPlayer() {
   });
 
   playToggleButton?.addEventListener("click", () => {
+    currentPlaySource = "article_sticky";
     togglePlayback();
   });
 

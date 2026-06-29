@@ -1,5 +1,6 @@
 export const newsletterVisitedStorageKey = "newsletterPageVisited";
 export const conditionalSubscriptionStateStorageKey = "conditionalSubscriptionState";
+export const conditionalSubscriptionSessionStorageKey = "conditionalSubscriptionSessionSeen";
 export const newsletterSubscribedStorageKey = "newsletterSubscribed";
 export const newsletterEmailVerifiedStorageKey = "newsletterEmailVerified";
 export const visitedArticlesStorageKey = "visitedArticleIds";

@@ -36,7 +36,7 @@ function createArticleRailItemMarkup(article) {
 
   return `
     <article class="w-[15rem] min-w-[15rem] border-r border-gray-200 pr-4 last:border-r-0 last:pr-0 dark:border-gray-800 sm:w-[19rem] sm:min-w-[19rem] sm:pr-5 lg:w-[14rem] lg:min-w-[14rem] lg:pr-4">
-      <a href="${publicPath}" class="block">
+      <a href="${publicPath}" class="block" data-analytics-click="click_most_read" data-analytics-location="article-most-read">
         ${imageMarkup}
         <h3 class="font-serif text-[1.18rem] font-semibold leading-[1.1] tracking-tight text-gray-900 dark:text-white sm:text-[1.35rem] lg:text-[1.28rem]">
           ${title}
@@ -57,6 +57,8 @@ function createMostReadMoreItemMarkup() {
       <a
         href="/populares/"
         class="flex min-h-full min-h-[15.5rem] flex-col rounded-[1.5rem] border border-gray-200 bg-white p-4 transition-colors duration-200 hover:bg-gray-50 dark:border-gray-800 dark:bg-[#1a2529] dark:hover:bg-[#202b31] sm:min-h-[18.5rem] sm:p-5 lg:min-h-[16.25rem]"
+        data-analytics-click="click_most_read"
+        data-analytics-location="article-most-read-more"
       >
         <div>
           <span class="inline-flex min-h-9 items-center text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">

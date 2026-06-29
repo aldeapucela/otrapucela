@@ -1,3 +1,4 @@
+import { setupModuleAnalytics } from "./analytics/modules.js";
 import { setupArticleAudioPlayer } from "./article-audio-player.js";
 import { setupCommentsSection } from "./comments.js";
 import { setupCoreUi } from "./core-ui.js";
@@ -22,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupReadingListFeatures();
   setupReadingProgressFeatures();
   setupNewsletterFeatures();
+  setupModuleAnalytics();
   setupNuevoParaTiFeatures();
   setupSearchPage();
   setupPopularContent();

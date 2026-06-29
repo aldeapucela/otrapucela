@@ -1,5 +1,6 @@
 import {
   conditionalSubscriptionCooldownDays,
+  conditionalSubscriptionSessionStorageKey,
   conditionalSubscriptionScrollThreshold,
   conditionalSubscriptionStateStorageKey,
   conditionalSubscriptionVisitThreshold,
@@ -7,6 +8,7 @@ import {
   newsletterSubscribedStorageKey,
   newsletterVisitedStorageKey
 } from "./app-constants.js";
+import { trackMatomoEvent } from "./analytics/modules.js";
 import {
   safelyReadJsonFromLocalStorage,
   safelyReadLocalStorage,
@@ -80,6 +82,22 @@ function setNewsletterEmailVerified(verified) {
   safelyRemoveLocalStorage(newsletterEmailVerifiedStorageKey);
 }
 
+function hasSeenConditionalPromptThisSession() {
+  try {
+    return window.sessionStorage.getItem(conditionalSubscriptionSessionStorageKey) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function markConditionalPromptSeenThisSession() {
+  try {
+    window.sessionStorage.setItem(conditionalSubscriptionSessionStorageKey, "true");
+  } catch {
+    // Ignore storage errors in privacy-restricted contexts.
+  }
+}
+
 export function syncNewsletterCtasVisibility() {
   const shouldHideNewsletterCtas = hasSubscribedToNewsletter();
   const newsletterCtas = document.querySelectorAll("[data-newsletter-cta]");
@@ -132,6 +150,7 @@ function setupConditionalSubscriptionVisitTracking() {
 function setupConditionalSubscriptionModule() {
   const moduleElement = document.querySelector("[data-conditional-subscription]");
   const articleBody = document.querySelector(".article-body");
+  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
 
   if (!moduleElement || !articleBody) {
     return;
@@ -144,6 +163,14 @@ function setupConditionalSubscriptionModule() {
   const today = getTodayStorageDate();
 
   if (currentState.subscribed) {
+    return;
+  }
+
+  if (currentPath === "/boletin") {
+    return;
+  }
+
+  if (hasSeenConditionalPromptThisSession()) {
     return;
   }
 
@@ -162,6 +189,7 @@ function setupConditionalSubscriptionModule() {
     isVisible = visible;
 
     if (visible) {
+      markConditionalPromptSeenThisSession();
       moduleElement.dataset.ready = "true";
       window.setTimeout(() => {
         moduleElement.dataset.visible = "true";
@@ -194,6 +222,9 @@ function setupConditionalSubscriptionModule() {
 
     hasTriggered = true;
     setVisible(true);
+    trackMatomoEvent("modules", "view_sticky_returning_prompt", {
+      module_location: "article"
+    });
   }, 100);
 
   closeButton?.addEventListener("click", () => {
@@ -239,6 +270,33 @@ function setupNewsletterHeaderState() {
   newsletterHeaderLink.addEventListener("click", () => {
     safelyWriteLocalStorage(newsletterVisitedStorageKey, "true");
   });
+}
+
+function setupMidArticleNewsletterModule() {
+  const articleBody = document.querySelector(".article-body");
+  const templateElement = document.querySelector("[data-mid-article-newsletter-template]");
+
+  if (!articleBody || !templateElement || hasSubscribedToNewsletter()) {
+    return;
+  }
+
+  const eligibleBlocks = [...articleBody.children].filter((element) => {
+    const tagName = element.tagName.toLowerCase();
+    return ["p", "h2", "h3", "blockquote", "figure", "ul", "ol"].includes(tagName);
+  });
+
+  if (eligibleBlocks.length < 5) {
+    return;
+  }
+
+  const insertionIndex = Math.min(
+    eligibleBlocks.length - 2,
+    Math.max(2, Math.round(eligibleBlocks.length * 0.3))
+  );
+  const anchorElement = eligibleBlocks[insertionIndex];
+  const fragment = templateElement.content.cloneNode(true);
+
+  anchorElement.after(fragment);
 }
 
 function setupNewsletterConfirmationState() {
@@ -297,6 +355,7 @@ function setupNewsletterPageState() {
 export function setupNewsletterFeatures() {
   setupConditionalSubscriptionVisitTracking();
   setupConditionalSubscriptionModule();
+  setupMidArticleNewsletterModule();
   setupNewsletterHeaderState();
   setupNewsletterConfirmationState();
   syncNewsletterCtasVisibility();

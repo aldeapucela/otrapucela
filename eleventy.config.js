@@ -11,6 +11,30 @@ function toValidDate(value) {
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
+function stripHtml(value = "") {
+  return String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function articleLengthBucketFromWordCount(wordCount) {
+  if (!Number.isFinite(wordCount) || wordCount <= 0) {
+    return "short";
+  }
+
+  if (wordCount >= 1000) {
+    return "long";
+  }
+
+  if (wordCount >= 700) {
+    return "medium";
+  }
+
+  return "short";
+}
+
 export default function eleventyConfig(config) {
   config.addPassthroughCopy({ "src/assets/favicon.ico": "favicon.ico" });
   config.addPassthroughCopy({ "src/assets/favicon.svg": "favicon.svg" });
@@ -128,6 +152,27 @@ export default function eleventyConfig(config) {
   });
 
   config.addFilter("json", (value) => JSON.stringify(value));
+
+  config.addFilter("wordCountFromHtml", (value = "") => {
+    const text = stripHtml(value);
+
+    if (!text) {
+      return 0;
+    }
+
+    return text.split(/\s+/).filter(Boolean).length;
+  });
+
+  config.addFilter("articleLengthBucket", (wordCount = 0) => (
+    articleLengthBucketFromWordCount(Number(wordCount))
+  ));
+
+  config.addFilter("listingSummary", (article = {}, fallback = "") => (
+    article?.description
+    || article?.excerpt
+    || stripHtml(article?.excerptHtml || "")
+    || fallback
+  ));
 
   config.addFilter("newsSitemapEntries", (items = [], siteUrl = "", maxItems = 1000) => {
     if (!Array.isArray(items)) {
@@ -287,12 +332,40 @@ export default function eleventyConfig(config) {
     return items.filter((item) => !excludedIds.has(String(item?.id)));
   });
 
+  config.addFilter("excludeCollectionItems", (items = [], excludedItems = []) => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    const excludedIds = new Set(
+      Array.isArray(excludedItems)
+        ? excludedItems.map((item) => String(item?.id)).filter(Boolean)
+        : []
+    );
+
+    if (!excludedIds.size) {
+      return items;
+    }
+
+    return items.filter((item) => !excludedIds.has(String(item?.id)));
+  });
+
   config.addFilter("withAudio", (items = []) => {
     if (!Array.isArray(items)) {
       return [];
     }
 
     return items.filter((item) => item?.audio?.sources?.length);
+  });
+
+  config.addFilter("themeDescription", (themeName = "") => {
+    const resolvedThemeName = String(themeName || "").trim();
+
+    if (!resolvedThemeName) {
+      return "Historias y claves locales de Valladolid.";
+    }
+
+    return `Historias, contexto y servicio sobre ${resolvedThemeName} en Valladolid.`;
   });
 
   return {

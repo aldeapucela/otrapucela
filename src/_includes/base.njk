@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" {% if pageType %}data-page-type="{{ pageType }}"{% endif %}>
   <head>
     {% set resolvedCanonicalUrl = (canonicalUrl or page.url) | absoluteUrl(site.siteUrl) %}
     {% set resolvedOgImage = (ogImage or site.defaultSocialImage) | absoluteUrl(site.siteUrl) %}
@@ -31,6 +31,20 @@
     <meta name="twitter:title" content="{{ twitterTitle or ogTitle or title or 'La Otra Pucela' }}">
     <meta name="twitter:description" content="{{ twitterDescription or ogDescription or description or 'Medio digital estático con artículos publicados desde Discourse.' }}">
     <meta name="twitter:image" content="{{ resolvedOgImage }}">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": {{ site.name | json | safe }},
+      "url": "{{ site.siteUrl }}",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ site.siteUrl }}/buscar/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 
     <link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS" href="{{ site.feedPath }}">
     <link rel="alternate" type="application/rss+xml" title="{{ site.vineta.title }} RSS" href="{{ site.vinetaFeedPath }}">
@@ -73,7 +87,7 @@
           </a>
 
           <div class="absolute right-2 flex items-center gap-0 sm:right-4 lg:right-0">
-            <a href="/boletin/" class="inline-flex h-9 items-center gap-1 rounded-full px-2 text-gray-700 transition-colors duration-200 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white sm:hidden" aria-label="Ir al boletín" data-newsletter-header-link data-newsletter-cta>
+            <a href="/boletin/" class="inline-flex h-9 items-center gap-1 rounded-full px-2 text-gray-700 transition-colors duration-200 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white sm:hidden" aria-label="Ir al boletín" data-newsletter-header-link data-newsletter-cta data-analytics-view="view_header_cta" data-analytics-click="click_header_cta" data-analytics-location="header-mobile">
               <i class="fa-regular fa-envelope text-[0.82rem]" aria-hidden="true"></i>
               <span class="inline-block font-['Montserrat',sans-serif] text-[9px] leading-none font-semibold uppercase tracking-[0.05em] text-inherit" data-newsletter-header-label>Boletín</span>
             </a>
@@ -134,6 +148,9 @@
               href="/boletin/"
               class="inline-flex h-10 items-center gap-1.5 rounded-full border border-[#0B2F4A] bg-[#092440] px-3.5 text-[0.72rem] font-semibold uppercase tracking-[0.055em] text-[#F4F7FA] shadow-sm transition-colors duration-200 hover:bg-[#0C2F50] dark:border-[#466170] dark:bg-[#294452] dark:text-[#F3F7F9] dark:hover:bg-[#335463] lg:mr-1"
               data-newsletter-cta
+              data-analytics-view="view_header_cta"
+              data-analytics-click="click_header_cta"
+              data-analytics-location="header-desktop-home"
             >
               <i class="fa-regular fa-envelope text-[0.88rem]" aria-hidden="true"></i>
               <span>Boletín</span>
@@ -176,6 +193,9 @@
               href="/boletin/"
               class="inline-flex h-10 items-center gap-1.5 rounded-full border border-[#0B2F4A] bg-[#092440] px-3.5 text-[0.72rem] font-semibold uppercase tracking-[0.055em] text-[#F4F7FA] shadow-sm transition-colors duration-200 hover:bg-[#0C2F50] dark:border-[#466170] dark:bg-[#294452] dark:text-[#F3F7F9] dark:hover:bg-[#335463] lg:mr-1"
               data-newsletter-cta
+              data-analytics-view="view_header_cta"
+              data-analytics-click="click_header_cta"
+              data-analytics-location="header-desktop-inner"
             >
               <i class="fa-regular fa-envelope text-[0.88rem]" aria-hidden="true"></i>
               <span>Boletín</span>

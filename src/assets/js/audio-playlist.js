@@ -1,3 +1,5 @@
+import { trackMatomoEvent } from "./analytics/modules.js";
+
 export function setupAudioPlaylistPage() {
   const pageElement = document.querySelector("[data-audio-hub-page]");
 
@@ -279,12 +281,14 @@ export function setupAudioPlaylistPage() {
   function trackAudioMetric(action, value) {
     const currentItem = getCurrentItem();
 
-    if (!currentItem || typeof window._paq?.push !== "function") {
+    if (!currentItem) {
       return;
     }
 
-    const deviceType = isDesktopViewport() ? "desktop" : "mobile";
-    window._paq.push(["trackEvent", "audio", `${action}_audiohub_${deviceType}`, currentItem.id, value]);
+    trackMatomoEvent("audio", action === "play" ? "play_audiohub" : `${action}_audiohub`, {
+      article_id: currentItem.id,
+      audio_action: action
+    }, value);
   }
 
   function trackAudioPlay() {
