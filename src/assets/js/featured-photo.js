@@ -41,6 +41,40 @@ function normalizeFeaturedPhotoTitle(value = "", imageUrl = "") {
   return isFilenameTitle ? "" : trimmedValue;
 }
 
+function getCanonicalPhotoUrl(sourceUrl = "") {
+  const normalizedSourceUrl = String(sourceUrl).trim();
+
+  if (!normalizedSourceUrl) {
+    return "";
+  }
+
+  const candidates = [normalizedSourceUrl];
+
+  try {
+    const hashValue = new URL(normalizedSourceUrl).hash.slice(1);
+
+    if (hashValue) {
+      candidates.push(hashValue, decodeURIComponent(hashValue));
+    }
+  } catch {
+    // Keep the original URL as a fallback when a feed item is malformed.
+  }
+
+  for (const candidate of candidates) {
+    const photoMatch = candidate.match(/(?:^|\/)f\/(\d+)(?:[/?#]|$)/);
+
+    if (photoMatch) {
+      return `https://fotos.aldeapucela.org/f/${photoMatch[1]}/`;
+    }
+  }
+
+  const legacyHashId = normalizedSourceUrl.match(/#(\d+)\/?$/)?.[1];
+
+  return legacyHashId
+    ? `https://fotos.aldeapucela.org/f/${legacyHashId}/`
+    : normalizedSourceUrl;
+}
+
 function parsePhotoFeedItem(itemElement, licenseUrl) {
   const title = itemElement.querySelector("title")?.textContent?.trim() || "";
   const sourceUrl = itemElement.querySelector("link")?.textContent?.trim() || "";
@@ -71,10 +105,7 @@ function parsePhotoFeedItem(itemElement, licenseUrl) {
   const finalDescription = visualDescription && visualDescription !== normalizedTitle
     ? visualDescription
     : "";
-  const photoId = sourceUrl.split("#").pop()?.trim() || "";
-  const canonicalPhotoUrl = photoId
-    ? `https://fotos.aldeapucela.org/#${photoId}`
-    : sourceUrl;
+  const canonicalPhotoUrl = getCanonicalPhotoUrl(sourceUrl);
 
   return {
     title: normalizedTitle,
@@ -88,13 +119,18 @@ function parsePhotoFeedItem(itemElement, licenseUrl) {
   };
 }
 
-function pickRandomPhoto(items) {
-  if (!Array.isArray(items) || !items.length) {
-    return null;
+function shufflePhotoItems(items) {
+  const shuffledItems = [...items];
+
+  for (let index = shuffledItems.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffledItems[index], shuffledItems[randomIndex]] = [
+      shuffledItems[randomIndex],
+      shuffledItems[index]
+    ];
   }
 
-  const index = Math.floor(Math.random() * items.length);
-  return items[index];
+  return shuffledItems;
 }
 
 async function loadPhotoFeedItems(feedUrl) {
@@ -120,9 +156,13 @@ async function loadPhotoFeedItems(feedUrl) {
     ?.textContent?.trim()
     || "https://creativecommons.org/licenses/by-sa/4.0/deed.es";
 
-  return Array.from(xmlDocument.querySelectorAll("item"))
+  const items = Array.from(xmlDocument.querySelectorAll("item"))
     .map((itemElement) => parsePhotoFeedItem(itemElement, licenseUrl))
     .filter(Boolean);
+
+  return items.filter((item, index) => (
+    items.findIndex((candidate) => candidate.sourceUrl === item.sourceUrl) === index
+  ));
 }
 
 function renderFeaturedPhotoCard(sectionElement, photo) {
@@ -264,7 +304,8 @@ export async function setupFeaturedPhoto() {
 
   try {
     const photoItems = await loadPhotoFeedItems(feedUrl);
-    let currentPhoto = pickRandomPhoto(photoItems);
+    let upcomingPhotos = shufflePhotoItems(photoItems);
+    let currentPhoto = upcomingPhotos.shift() || null;
 
     if (!currentPhoto) {
       return;
@@ -283,13 +324,15 @@ export async function setupFeaturedPhoto() {
         return;
       }
 
-      let nextPhoto = currentPhoto;
+      if (!upcomingPhotos.length) {
+        upcomingPhotos = shufflePhotoItems(photoItems);
 
-      while (nextPhoto?.sourceUrl === currentPhoto?.sourceUrl) {
-        nextPhoto = pickRandomPhoto(photoItems);
+        if (upcomingPhotos[0]?.sourceUrl === currentPhoto?.sourceUrl) {
+          [upcomingPhotos[0], upcomingPhotos[1]] = [upcomingPhotos[1], upcomingPhotos[0]];
+        }
       }
 
-      currentPhoto = nextPhoto;
+      currentPhoto = upcomingPhotos.shift() || currentPhoto;
       if (shouldTrackFeaturedPhotoRandomClick()) {
         trackFeaturedPhotoEvent("random_click", source);
       }
