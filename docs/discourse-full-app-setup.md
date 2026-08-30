@@ -31,9 +31,6 @@ window.DiscourseEmbed = {
   discourseUrl: "https://foro.aldeapucela.org/",
   topicId: 2153,
   fullApp: true,
-  dynamicHeight: true,
-  embedMinHeight: "420",
-  embedMaxHeight: "2400",
   embedHeight: "720px",
   lazyLoad: true,
   lazyLoadMargin: "1000",
@@ -42,7 +39,10 @@ window.DiscourseEmbed = {
 ~~~
 
 La web ya genera esta configuración desde src/assets/js/comments.js; no hay
-que copiar el fragmento de cada artículo.
+que copiar el fragmento de cada artículo. La altura es fija para evitar que
+los cambios de tamaño del contenido desplacen la página principal mientras el
+foro muestra avisos o abre el compositor. El scroll largo queda dentro del
+iframe.
 
 ## Inicio de sesión y vuelta al tema
 
