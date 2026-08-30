@@ -265,6 +265,37 @@ function setupCommentsEmbedVisibility(
   };
 }
 
+function setupCommentsOverlayVisibility(commentsRoot) {
+  if (!commentsRoot || !("IntersectionObserver" in window)) {
+    return;
+  }
+
+  const floatingActions = document.querySelector(".js-floating-actions");
+  const hasArticleAudio = Boolean(document.querySelector(".js-article-audio"));
+  const mobileArticleBar = hasArticleAudio
+    ? null
+    : document.querySelector("[data-mobile-article-bar]");
+  const overlays = [floatingActions, mobileArticleBar].filter(Boolean);
+
+  if (!overlays.length) {
+    return;
+  }
+
+  const setOverlaysHidden = (commentsInView) => {
+    overlays.forEach((overlay) => {
+      overlay.classList.toggle("hidden", commentsInView);
+      overlay.toggleAttribute("inert", commentsInView);
+      overlay.setAttribute("aria-hidden", String(commentsInView));
+    });
+  };
+
+  const observer = new IntersectionObserver(([entry]) => {
+    setOverlaysHidden(Boolean(entry?.isIntersecting));
+  });
+
+  observer.observe(commentsRoot);
+}
+
 export async function fetchTopicMetadata(topicJsonUrl, fallbackCount, fallbackLatestPostNumber = 2) {
   if (!topicJsonUrl) {
     return {
@@ -307,6 +338,8 @@ export async function setupCommentsSection() {
   if (!commentsRoot) {
     return;
   }
+
+  setupCommentsOverlayVisibility(commentsRoot);
 
   const addCommentLink = commentsRoot.querySelector(".js-add-comment-link");
   const fallbackLink = commentsRoot.querySelector(".js-comments-fallback-link");
