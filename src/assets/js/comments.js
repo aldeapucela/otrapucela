@@ -92,6 +92,9 @@ const DISCOURSE_DARK_COLOR_SCHEME_ID = 1;
 const EMBED_FALLBACK_DELAY_MS = 10000;
 const FULL_APP_EMBED_OPTIONS = Object.freeze({
   fullApp: true,
+  dynamicHeight: true,
+  embedMinHeight: "420",
+  embedMaxHeight: "2400",
   embedHeight: "720px",
   lazyLoad: true,
   lazyLoadMargin: "1000"
