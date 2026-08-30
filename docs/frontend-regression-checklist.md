@@ -199,17 +199,38 @@ Usa este documento después de cualquier cambio en frontend, plantillas o JavaSc
   - El listado se carga sin romper layout.
   - Los comentarios por pieza aparecen cuando hay datos.
 
-### QA-020 Comentarios
+### QA-020 Comentarios fullApp
 
-- Ruta: artículo con comentarios
+- Ruta: artículo con y sin respuestas
 - Pasos:
   1. Abrir artículo.
-  2. Revisar bloque de comentarios.
+  2. Revisar bloque de conversación.
   3. Volver a la pestaña tras cambiar visibilidad.
 - Esperado:
-  - Se muestra conteo o estado vacío correcto.
-  - El enlace de añadir comentario apunta al post correcto.
-  - El bloque reintenta sincronizar al volver.
+  - El iframe se carga también con cero respuestas.
+  - El contador se sincroniza sin recargar el iframe.
+  - La cabecera de Comentarios se mantiene y el botón de responder lo aporta el iframe.
+  - No aparece una tarjeta o CTA local adicional.
+
+### QA-021 Comentarios en orígenes autorizados
+
+- Repetir QA-020 en http://localhost:8000, http://localhost:4000,
+  http://localhost:4173 y https://otrapucela.org, en 390×844 y escritorio,
+  con tema claro y oscuro.
+- Esperado:
+  - Cada origen carga el embed.
+  - Si uno falla, comprobar primero la allowlist de Discourse y la diferencia
+    entre localhost y 127.0.0.1.
+
+### QA-022 Auth y fallback de comentarios
+
+- Desde un tema integrado, iniciar sesión y crear una cuenta de prueba,
+  comprobar el retorno al mismo tema y abrir el compositor.
+- Simular una carga fallida del iframe.
+- Esperado:
+  - Se vuelve al tema original.
+  - El compositor sigue visible.
+  - El fallback ofrece un enlace textual para ver la conversación.
 
 ### QA-021 Audio artículo
 

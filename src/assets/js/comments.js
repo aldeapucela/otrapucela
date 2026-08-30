@@ -89,9 +89,29 @@ function updateCommentCount(commentCount) {
 }
 
 const DISCOURSE_DARK_COLOR_SCHEME_ID = 1;
+const EMBED_FALLBACK_DELAY_MS = 10000;
+const FULL_APP_EMBED_OPTIONS = Object.freeze({
+  fullApp: true,
+  dynamicHeight: true,
+  embedMinHeight: "420",
+  embedMaxHeight: "2400",
+  embedHeight: "720px",
+  lazyLoad: true,
+  lazyLoadMargin: "1000"
+});
 
 function getDiscourseColorScheme() {
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
+function getDiscourseEmbedFrame(container = document) {
+  if (!container?.querySelector) {
+    return null;
+  }
+
+  return container.querySelector(
+    'iframe#discourse-embed-frame, iframe[id^="discourse-embed"]'
+  );
 }
 
 function loadDiscourseEmbed(discourseUrl, topicId) {
@@ -115,6 +135,7 @@ function loadDiscourseEmbed(discourseUrl, topicId) {
   const isDark = getDiscourseColorScheme() === "dark";
 
   window.DiscourseEmbed = {
+    ...FULL_APP_EMBED_OPTIONS,
     discourseUrl,
     topicId: Number(topicId),
     colorScheme: isDark ? "dark" : "light"
@@ -132,9 +153,7 @@ function loadDiscourseEmbed(discourseUrl, topicId) {
 }
 
 function applyDiscourseColorSchemeToFrame() {
-  const embedFrame =
-    document.getElementById("discourse-embed-frame") ??
-    document.querySelector('iframe[id^="discourse-embed"]');
+  const embedFrame = getDiscourseEmbedFrame();
 
   if (!embedFrame || !embedFrame.src) {
     return;
@@ -144,8 +163,17 @@ function applyDiscourseColorSchemeToFrame() {
     const url = new URL(embedFrame.src);
 
     if (getDiscourseColorScheme() === "dark") {
+      if (
+        url.searchParams.get("color_scheme_id") ===
+        String(DISCOURSE_DARK_COLOR_SCHEME_ID)
+      ) {
+        return;
+      }
       url.searchParams.set("color_scheme_id", String(DISCOURSE_DARK_COLOR_SCHEME_ID));
     } else {
+      if (!url.searchParams.has("color_scheme_id")) {
+        return;
+      }
       url.searchParams.delete("color_scheme_id");
     }
 
@@ -155,11 +183,13 @@ function applyDiscourseColorSchemeToFrame() {
   }
 }
 
-function refreshDiscourseEmbed() {
-  applyDiscourseColorSchemeToFrame();
-}
-
-function setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState) {
+function setupCommentsEmbedVisibility(
+  embedContainer,
+  embedWrapper,
+  loadingState,
+  fallbackState,
+  onEmbedReady
+) {
   if (!embedContainer || !embedWrapper) {
     return {
       disconnect() {},
@@ -170,18 +200,51 @@ function setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState) 
   }
 
   const toggleEmbedVisibility = () => {
-    const hasIframe = Boolean(
-      embedContainer.querySelector('iframe[id^="discourse-embed"], iframe#discourse-embed-frame')
-    );
+    const embedFrame = getDiscourseEmbedFrame(embedContainer);
+    const hasIframe = Boolean(embedFrame);
 
     embedWrapper.classList.toggle("hidden", !hasIframe);
+    loadingState?.classList.toggle("hidden", hasIframe);
+    fallbackState?.classList.toggle("hidden", hasIframe);
 
-    if (hasIframe) {
-      emptyState?.classList.add("hidden");
+    if (embedFrame) {
+      embedFrame.setAttribute("title", "Comentarios");
     }
 
     return hasIframe;
   };
+
+  const discourseUrl = embedContainer
+    .closest(".js-comments-root")
+    ?.dataset.discourseUrl;
+  let discourseOrigin = null;
+
+  try {
+    discourseOrigin = discourseUrl ? new URL(discourseUrl).origin : null;
+  } catch {
+    discourseOrigin = null;
+  }
+
+  const handleEmbedMessage = (event) => {
+    const embedFrame = getDiscourseEmbedFrame(embedContainer);
+    const messageType =
+      typeof event.data === "string"
+        ? event.data
+        : event.data?.type;
+
+    if (
+      !embedFrame ||
+      event.source !== embedFrame.contentWindow ||
+      (discourseOrigin && event.origin !== discourseOrigin) ||
+      messageType !== "discourse-resize"
+    ) {
+      return;
+    }
+
+    onEmbedReady?.();
+  };
+
+  window.addEventListener("message", handleEmbedMessage);
 
   toggleEmbedVisibility();
 
@@ -199,6 +262,7 @@ function setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState) 
   return {
     disconnect() {
       observer.disconnect();
+      window.removeEventListener("message", handleEmbedMessage);
     },
     sync: toggleEmbedVisibility
   };
@@ -248,7 +312,10 @@ export async function setupCommentsSection() {
   }
 
   const addCommentLink = commentsRoot.querySelector(".js-add-comment-link");
+  const fallbackLink = commentsRoot.querySelector(".js-comments-fallback-link");
   const emptyState = commentsRoot.querySelector(".js-comments-empty-state");
+  const loadingState = commentsRoot.querySelector(".js-comments-loading");
+  const fallbackState = commentsRoot.querySelector(".js-comments-fallback");
   const embedContainer = commentsRoot.querySelector(".js-comments-embed");
   const embedWrapper = commentsRoot.querySelector(".js-comments-embed-wrapper");
   const discourseUrl = commentsRoot.dataset.discourseUrl;
@@ -256,13 +323,58 @@ export async function setupCommentsSection() {
   const topicUrl = commentsRoot.dataset.topicUrl;
   const topicJsonUrl = commentsRoot.dataset.topicJsonUrl;
   const initialReplies = Number(commentsRoot.dataset.initialReplies ?? 0);
+  const isFullApp = commentsRoot.dataset.commentsMode === "full-app";
 
   let commentCount = initialReplies;
   let latestPostNumber = 2;
   let hasLoadedEmbed = false;
-  let embedVisibilityController = setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState);
+  let hasSeenEmbed = false;
+  let fallbackTimer = null;
+
+  const clearFallbackTimer = () => {
+    if (fallbackTimer) {
+      window.clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
+  };
+
+  const showEmbedFallback = () => {
+    fallbackTimer = null;
+    if (hasSeenEmbed) {
+      return;
+    }
+
+    embedWrapper?.classList.add("hidden");
+    loadingState?.classList.add("hidden");
+    fallbackState?.classList.remove("hidden");
+  };
+
+  const scheduleEmbedFallback = () => {
+    clearFallbackTimer();
+    loadingState?.classList.remove("hidden");
+    fallbackState?.classList.add("hidden");
+    fallbackTimer = window.setTimeout(showEmbedFallback, EMBED_FALLBACK_DELAY_MS);
+  };
+
+  const handleEmbedReady = () => {
+    hasSeenEmbed = true;
+    clearFallbackTimer();
+    embedWrapper?.classList.remove("hidden");
+    loadingState?.classList.add("hidden");
+    fallbackState?.classList.add("hidden");
+  };
+
+  let embedVisibilityController = setupCommentsEmbedVisibility(
+    embedContainer,
+    embedWrapper,
+    loadingState,
+    fallbackState,
+    handleEmbedReady
+  );
 
   function resetCommentsEmbed() {
+    clearFallbackTimer();
+    embedVisibilityController.disconnect();
     document.querySelector('script[data-js-discourse-embed="true"]')?.remove();
     document.getElementById("discourse-embed-frame")?.remove();
     document.querySelector('iframe[id^="discourse-embed"]')?.remove();
@@ -272,46 +384,69 @@ export async function setupCommentsSection() {
     }
 
     embedWrapper?.classList.add("hidden");
-    embedVisibilityController.disconnect();
-    embedVisibilityController = setupCommentsEmbedVisibility(embedContainer, embedWrapper, emptyState);
+    loadingState?.classList.remove("hidden");
+    fallbackState?.classList.add("hidden");
+    embedVisibilityController = setupCommentsEmbedVisibility(
+      embedContainer,
+      embedWrapper,
+      loadingState,
+      fallbackState,
+      handleEmbedReady
+    );
     hasLoadedEmbed = false;
+    hasSeenEmbed = false;
   }
 
-  function renderCommentsSection(nextCommentCount, previousCommentCount = commentCount) {
+  function renderCommentsSection(nextCommentCount) {
     updateCommentCount(nextCommentCount);
 
-    if (nextCommentCount > 0) {
-      if (addCommentLink) {
-        addCommentLink.href = buildTopicPostUrl(topicUrl, latestPostNumber);
+    if (addCommentLink) {
+      addCommentLink.href = buildTopicPostUrl(topicUrl, latestPostNumber);
+      addCommentLink.classList.remove("hidden");
+    }
+    if (fallbackLink) {
+      fallbackLink.href = buildTopicPostUrl(topicUrl, latestPostNumber);
+    }
+
+    if (isFullApp) {
+      emptyState?.classList.toggle("hidden", nextCommentCount > 0);
+
+      if (!hasLoadedEmbed) {
+        loadDiscourseEmbed(discourseUrl, topicId);
+        hasLoadedEmbed = true;
+        scheduleEmbedFallback();
       }
 
-      addCommentLink?.classList.remove("hidden");
+      embedVisibilityController.sync();
+
+      return;
+    }
+
+    if (nextCommentCount > 0) {
       emptyState?.classList.add("hidden");
       embedWrapper?.classList.remove("hidden");
 
       if (!hasLoadedEmbed) {
         loadDiscourseEmbed(discourseUrl, topicId);
         hasLoadedEmbed = true;
-      } else if (nextCommentCount !== previousCommentCount) {
-        refreshDiscourseEmbed();
       }
 
       embedVisibilityController.sync();
       return;
     }
 
-    addCommentLink?.classList.add("hidden");
     embedWrapper?.classList.add("hidden");
     emptyState?.classList.remove("hidden");
+    loadingState?.classList.add("hidden");
+    fallbackState?.classList.add("hidden");
   }
 
   async function syncCommentsSection() {
     const topicMetadata = await fetchTopicMetadata(topicJsonUrl, commentCount, latestPostNumber);
-    const previousCommentCount = commentCount;
 
     commentCount = topicMetadata.commentCount;
     latestPostNumber = topicMetadata.latestPostNumber;
-    renderCommentsSection(commentCount, previousCommentCount);
+    renderCommentsSection(commentCount);
   }
 
   await syncCommentsSection();
@@ -329,11 +464,12 @@ export async function setupCommentsSection() {
   });
 
   window.addEventListener("pageshow", () => {
-    const embedFrame =
-      document.getElementById("discourse-embed-frame") ??
-      document.querySelector('iframe[id^="discourse-embed"]');
+    const embedFrame = getDiscourseEmbedFrame();
 
-    if (commentCount > 0 && !embedFrame) {
+    if (
+      (isFullApp && hasSeenEmbed && !embedFrame) ||
+      (!isFullApp && commentCount > 0 && !embedFrame)
+    ) {
       resetCommentsEmbed();
     }
 

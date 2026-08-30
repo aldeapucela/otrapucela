@@ -246,20 +246,27 @@ Para compatibilidad con Spotify e iTunes, el feed de podcast publica el bloque `
 
 ## Comentarios de Discourse
 
-La página de artículo integra comentarios usando `embed.js` de Discourse.
+La página de artículo integra comentarios usando el embed oficial de Discourse
+en modo fullApp.
 
 Detalles relevantes:
 
-- cuando hay comentarios, se muestra el embed
-- cuando no hay comentarios, se muestra un CTA para añadir el primero
-- el contador de comentarios se actualiza en cliente
+- el iframe se carga también cuando el tema todavía no tiene respuestas
+- la sección conserva únicamente su cabecera y deja la interacción al iframe
+- si el iframe falla, queda un enlace textual de recuperación
+- el contador se actualiza en cliente sin recargar el iframe
+
+La configuración de Discourse y el override visual del tema están documentados
+en docs/discourse-full-app-setup.md. En local, localhost:8000 y
+127.0.0.1:8000 deben tratarse como orígenes distintos: usa el primero para
+las pruebas previstas o autoriza también el segundo.
 
 ## Diseño y estilos
 
 Reglas del proyecto:
 
-- no se escribe CSS custom de componentes fuera del flujo de Tailwind
-- la UI se resuelve con utilidades de Tailwind
+- los estilos de componentes se importan dentro del flujo de Tailwind
+- la UI se resuelve con utilidades de Tailwind y capas de componentes puntuales
 - la lógica JS usa hooks `js-*` para no depender de clases visuales
 
 ## Problemas habituales
@@ -275,7 +282,9 @@ npm run build
 
 ### El embed de comentarios no se ve en local
 
-Depende de la configuración de `Discourse` y de los orígenes permitidos para `embed`.
+Depende de la configuración de Discourse y de los orígenes permitidos para
+embed. Consulta docs/discourse-full-app-setup.md y usa exactamente el mismo
+host autorizado en el navegador.
 
 Para algunas pruebas conviene servir `dist/` en:
 

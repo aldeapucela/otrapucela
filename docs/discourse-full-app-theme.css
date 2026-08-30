@@ -1,0 +1,105 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
+
+/*
+ * Pegar en el CSS/SCSS del tema de Discourse.
+ * Solo afecta al documento cuando Discourse se sirve en modo embed.
+ */
+
+body.embed-mode {
+  --aldea-ink: #092440;
+  --aldea-surface: #ffffff;
+  --aldea-muted: #6b6253;
+  --aldea-border: transparent;
+  background: var(--aldea-surface) !important;
+  color: var(--aldea-ink);
+  font-family: Georgia, ui-serif, serif;
+}
+
+html:has(body.embed-mode),
+body.embed-mode #main-outlet,
+body.embed-mode .topic-container,
+body.embed-mode .topic {
+  background: var(--aldea-surface) !important;
+}
+
+body.embed-mode .topic {
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 1rem;
+}
+
+body.embed-mode .d-header,
+body.embed-mode .topic-map,
+body.embed-mode .topic-footer-main-buttons {
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+}
+
+body.embed-mode a {
+  color: #425560;
+}
+
+body.embed-mode a:hover {
+  color: #092440;
+}
+
+body.embed-mode :is(button, .btn, input, textarea, select) {
+  font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Discourse puede dejar este panel oculto después de una navegación dentro
+ * del iframe. El modo fullApp necesita que el compositor abierto siga siendo
+ * visible y usable en móvil.
+ */
+body.embed-mode #reply-control.open {
+  display: block !important;
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 1rem 0 0;
+}
+
+body.embed-mode #reply-control.open .composer-popup,
+body.embed-mode #reply-control.open .grippie {
+  max-width: 100%;
+}
+
+body.embed-mode .topic-footer-main-buttons {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  body.embed-mode {
+    font-size: 16px;
+  }
+
+  body.embed-mode .d-header {
+    min-height: 3.5rem;
+  }
+
+  body.embed-mode #reply-control.open {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+  }
+}
+
+body.embed-mode.dark,
+body.dark.embed-mode {
+  --aldea-ink: #e4edf0;
+  --aldea-surface: #222222;
+  --aldea-muted: #b1c8d3;
+  --aldea-border: transparent;
+  background: var(--aldea-surface) !important;
+  color: var(--aldea-ink);
+}
+
+body.embed-mode.dark a,
+body.dark.embed-mode a {
+  color: #b1c8d3;
+}
+
+body.embed-mode.dark a:hover,
+body.dark.embed-mode a:hover {
+  color: #ffffff;
+}
