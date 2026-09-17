@@ -13,6 +13,7 @@ eleventyComputed:
   ogDescription: "{{ articulo.description or 'Artículo publicado en Aldea Pucela.' }}"
   ogImage: "{{ articulo.previewImage or articulo.image or site.defaultSocialImage }}"
   canonicalUrl: "{{ articulo.publicPath }}"
+  robots: "{% if vinetaIds and vinetaIds.includes(articulo.id) %}noindex,follow{% endif %}"
   pageType: "article"
 ---
 {% set relatedItems = articulos.items | excludeVineta | excludeIds(vinetaIds) | relatedArticles(articulo, 5) %}

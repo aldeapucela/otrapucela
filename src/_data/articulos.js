@@ -498,7 +498,7 @@ function buildFallbackDataFromCache(cache, authorsCache, error, vinetaIdSet = ne
     generatedAt: new Date().toISOString(),
     items,
     authors,
-    tags: buildTagsFromItems(items)
+    tags: buildTagsFromItems(items.filter((item) => !vinetaIdSet.has(Number(item.id))))
   };
 }
 
@@ -747,15 +747,17 @@ export default async function articulos() {
   const articleIdsByAuthor = new Map();
 
   for (const articulo of items) {
-    for (const tag of articulo.tags) {
-      if (!tagsMap.has(tag.slug)) {
-        tagsMap.set(tag.slug, {
-          ...tag,
-          count: 0
-        });
-      }
+    if (!vinetaIdSet.has(Number(articulo.id))) {
+      for (const tag of articulo.tags) {
+        if (!tagsMap.has(tag.slug)) {
+          tagsMap.set(tag.slug, {
+            ...tag,
+            count: 0
+          });
+        }
 
-      tagsMap.get(tag.slug).count += 1;
+        tagsMap.get(tag.slug).count += 1;
+      }
     }
 
     if (articulo.author?.username) {

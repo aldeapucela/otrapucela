@@ -6,12 +6,10 @@ eleventyExcludeFromCollections: true
   "/",
   "/audios/",
   "/boletin/",
-  "/buscar/",
   "/contacto/",
-  "/nuevo/",
-  "/populares/",
   "/quienes-somos/",
-  "/temas/"
+  "/temas/",
+  "/vineta/"
 ] -%}
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -20,7 +18,7 @@ eleventyExcludeFromCollections: true
     <loc>{{ path | absoluteUrl(site.siteUrl) }}</loc>
   </url>
 {%- endfor %}
-{%- for article in articulos.items %}
+{%- for article in articulos.items | excludeIds(vinetaIds) %}
   <url>
     <loc>{{ article.publicPath | absoluteUrl(site.siteUrl) }}</loc>
     {%- if article.updatedAt %}
